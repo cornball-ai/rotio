@@ -1,0 +1,22 @@
+Package: nle.api
+Type: Package
+Title: Neutral Sequence Model and Driver Dispatch for Non-Linear Editors
+Version: 0.0.1
+Date: 2026-06-02
+Authors@R: c(
+    person("Troy", "Hernandez", role = c("aut", "cre"),
+           email = "troy.h@cball.ai",
+           comment = c(ORCID = "0009-0005-4248-604X")),
+    person("cornball.ai", role = "cph"))
+Description: A neutral sequence model and driver dispatch layer for
+    non-linear video editors. Defines a strict sequence schema, edit
+    verbs that operate as pure functions on the sequence, and a driver
+    registry so backend packages (e.g. blendR for Blender VSE, future
+    drivers for ffmpeg, OTIO, FCP XML) can register dump and apply
+    handlers. The canonical artifact is a Markdown file with a single
+    delimited state block; a JSON companion is a generated cache.
+License: MIT + file LICENSE
+Imports: jsonlite
+Suggests: tinytest
+Encoding: UTF-8
+RoxygenNote: 7.3.2

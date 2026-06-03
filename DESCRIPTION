@@ -1,8 +1,8 @@
 Package: nle.api
 Type: Package
 Title: Neutral Sequence Model and Driver Dispatch for Non-Linear Editors
-Version: 0.0.2
-Date: 2026-06-02
+Version: 0.0.2.1
+Date: 2026-06-03
 Authors@R: c(
     person("Troy", "Hernandez", role = c("aut", "cre"),
            email = "troy.h@cball.ai",
@@ -16,7 +16,11 @@ Description: A neutral sequence model and driver dispatch layer for
     handlers. The canonical artifact is a Markdown file with a single
     delimited state block; a JSON companion is a generated cache.
 License: MIT + file LICENSE
-Imports: jsonlite
+Imports: jsonlite, Rcpp
+LinkingTo: Rcpp
 Suggests: tinytest
+SystemRequirements: C++17, libopentimelineio (>= 0.17), built from source
+    and installed under /usr/local (not available via apt; ships no
+    pkg-config file). See PLAN.md for the build recipe.
 Encoding: UTF-8
 RoxygenNote: 7.3.2

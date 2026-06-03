@@ -6,3 +6,6 @@
 ^\.claude$
 ^README\.Rmd$
 ^CLAUDE\.md$
+^PLAN\.md$
+^AGENTS\.md$
+^tasks$

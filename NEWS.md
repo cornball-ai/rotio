@@ -1,3 +1,23 @@
+# nle.api 0.0.2.2 (dev)
+
+## Changes
+
+* OTIO migration PR 2: wrap the OpenTimelineIO object model. Adds C++ bindings
+  for Timeline, Track, Clip, and ExternalReference, with construction,
+  population (`otio_add_track`, `otio_add_clip`, `otio_remove_clip`), data.frame
+  views (`otio_tracks`, `otio_clips`), and JSON (de)serialization through OTIO's
+  own serializer (`otio_to_json` / `otio_from_json`). A timeline can be built,
+  serialized to canonical `.otio` JSON, and parsed back entirely through the
+  wrapped C++ — no R-side schema code in the data path.
+* Objects use OTIO's intrusive ref-counting (`SerializableObject::Retainer`)
+  held through `Rcpp::XPtr`; OTIO objects are never `delete`d directly.
+* Header-driven codegen: `tools/otio_introspect.R` parses the OTIO C++ headers
+  with treesitR to extract each class's API; `tools/otio_codegen.R` validates a
+  binding manifest against those headers and emits the trivial scalar field
+  getters (`src/otio_gen.cpp`). The lifetime-sensitive code is hand-written.
+* The pure-R `rational_time()`/`new_sequence()` model and `otio_time()` are
+  unchanged. The user-facing verb layer migrates onto these objects in PR 3.
+
 # nle.api 0.0.2.1 (dev)
 
 ## Changes

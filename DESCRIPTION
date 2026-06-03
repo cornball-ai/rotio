@@ -1,7 +1,7 @@
 Package: nle.api
 Type: Package
 Title: Neutral Sequence Model and Driver Dispatch for Non-Linear Editors
-Version: 0.0.1
+Version: 0.0.2
 Date: 2026-06-02
 Authors@R: c(
     person("Troy", "Hernandez", role = c("aut", "cre"),

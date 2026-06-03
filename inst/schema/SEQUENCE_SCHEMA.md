@@ -5,8 +5,15 @@ Owned by `nle.api`; targeted by drivers (e.g. `blendR` for Blender VSE).
 
 ## File layout
 
-Canonical artifact: `sequence.md`. Markdown prose, with a single delimited
-state block carrying the structural data:
+`sequence.md` is the canonical sequence artifact for the cornyverse stack.
+It **replaces** the earlier `*.cb.md` (e.g. `FileName.cb.md`) convention,
+which conflated human-editable project briefs with structural sequence
+state and had no strict parser. New projects, tools, and agents use
+`sequence.md` exclusively; `cornductor` still parses `*.cb.md` for
+import-only legacy support.
+
+Markdown prose, with a single delimited state block carrying the
+structural data:
 
 ```
 <!-- sequence:state json cornball.sequence.v1 -->

@@ -1,3 +1,24 @@
+# nle.api 0.0.2.7 (dev)
+
+## New: generic clip effects (clone-based)
+
+* `clip_effect_add()`, `clip_effects()`, `clip_effect_params()`,
+  `clip_effect_remove()` — attach, list, read, and remove arbitrary OTIO
+  `Effect`s on a clip. An effect is an `effect_name` plus a metadata dictionary,
+  modelled directly on OTIO's `Effect` schema; parameters are stored as
+  individual OTIO metadata entries. A driver maps `effect_name` + params to its
+  engine (e.g. Kdenlive/MLT filters). Transform, crop, colour, etc. are generic
+  effects via this API rather than fixed fields.
+* These verbs are **clone-based**: each deep-clones the timeline (OTIO `clone()`
+  copies every clip/gap/effect/metadata), mutates the target clip, and returns
+  the clone, leaving the input untouched. Effects added this way survive
+  subsequent structural edits — the scalar-table rebuild clones non-time
+  effects forward by clip id — and survive JSON round-trips.
+* Removed the Blender-shaped `clip_transform`/`clip_crop`/`clip_set` stubs;
+  compositing is now generic OTIO effects via `clip_effect_add()`. `clip_speed`
+  (an OTIO `LinearTimeWarp`) is unchanged and lists alongside generic effects in
+  `clip_effects()`.
+
 # nle.api 0.0.2.6 (dev)
 
 ## Changes

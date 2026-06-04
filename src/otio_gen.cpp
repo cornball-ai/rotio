@@ -10,6 +10,20 @@
 #include <opentimelineio/externalReference.h>
 #include <opentimelineio/serializableObjectWithMetadata.h>
 
+// --- constructors ---
+
+// [[Rcpp::export]]
+SEXP otio_timeline_create(std::string name) {
+    return wrap_otio<otio::Timeline>(new otio::Timeline(name));
+}
+
+// [[Rcpp::export]]
+SEXP otio_externalreference_create(std::string name) {
+    return wrap_otio<otio::ExternalReference>(new otio::ExternalReference(name));
+}
+
+// --- scalar getters ---
+
 // [[Rcpp::export]]
 std::string otio_get_timeline_name(SEXP p) {
     return unwrap_otio<otio::Timeline>(p)->name();
@@ -38,5 +52,27 @@ std::string otio_get_clip_active_media_reference_key(SEXP p) {
 // [[Rcpp::export]]
 std::string otio_get_externalreference_target_url(SEXP p) {
     return unwrap_otio<otio::ExternalReference>(p)->target_url();
+}
+
+// --- scalar setters ---
+
+// [[Rcpp::export]]
+void otio_set_timeline_name(SEXP p, std::string v) {
+    unwrap_otio<otio::Timeline>(p)->set_name(v);
+}
+
+// [[Rcpp::export]]
+void otio_set_track_name(SEXP p, std::string v) {
+    unwrap_otio<otio::Track>(p)->set_name(v);
+}
+
+// [[Rcpp::export]]
+void otio_set_track_kind(SEXP p, std::string v) {
+    unwrap_otio<otio::Track>(p)->set_kind(v);
+}
+
+// [[Rcpp::export]]
+void otio_set_externalreference_target_url(SEXP p, std::string v) {
+    unwrap_otio<otio::ExternalReference>(p)->set_target_url(v);
 }
 

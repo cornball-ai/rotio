@@ -10,7 +10,7 @@ clip_split(seq, clip, at)
 
 \item{clip}{Clip id.}
 
-\item{at}{Timeline time at which to cut (interpreted via \code{.to_frames_at_seq}).}
+\item{at}{Timeline time at which to cut.}
 }
 \description{
 Split a clip at a timeline frame

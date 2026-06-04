@@ -1,3 +1,37 @@
+# nle.api 0.0.2.3 (dev)
+
+## Changes
+
+* OTIO migration PR 3: the sequence model is now OTIO-backed. `new_sequence()`
+  returns an `nle_sequence` wrapping a live OTIO `Timeline`; `seq$clips` and
+  `seq$tracks` materialise data.frame views from C++ on read, and edits go
+  through the verbs only.
+* Structural verbs reimplemented on OTIO: `track_add`, `clip_add`,
+  `clip_delete`, `clip_move`, `clip_trim`, `clip_split`, `shift_after`. Each
+  reads the current state, applies the edit, and rebuilds the Timeline.
+* **Gap model A.** A track is sequential; a clip's timeline position is encoded
+  by OTIO `Gap`s computed from `tl_in`. Overlapping clips on one track are now
+  an error (use separate tracks). fps/canvas/sample_rate live in the Timeline
+  metadata and survive serialization.
+* `sequence.md` now carries raw OTIO JSON in a `<!-- sequence:state otio -->`
+  block (was `cornball.sequence.v1`). `read_sequence`/`write_sequence` and
+  `sequence_to_json`/`sequence_from_json` go through OTIO's serializer. Old
+  `cornball.sequence.v1` files no longer load.
+* New OTIO object API exposed: `otio_external_reference()`, `otio_target_url()`,
+  `otio_set_target_url()`, `otio_set_name()`, `otio_set_kind()`.
+* Codegen extended: `tools/otio_codegen.R` now emits trivial constructors and
+  scalar setters (in addition to getters), each validated against the headers
+  via treesitR. The gap-model rebuild/materialize is bespoke and hand-written.
+* `R/json.R` and `R/coords.R` removed (OTIO owns serialization; coordinate
+  transforms return with effects). `inst/schema/SEQUENCE_SCHEMA.md` rewritten
+  to describe the carrier and point at the OTIO docs.
+
+## Deferred to PR 4
+
+* `clip_speed`, `clip_transform`, `clip_crop`, `clip_set`, and `clip_add`'s
+  `speed != 1` error with a pointer to PR 4; they migrate to OTIO Effects /
+  `LinearTimeWarp` / per-clip metadata.
+
 # nle.api 0.0.2.2 (dev)
 
 ## Changes

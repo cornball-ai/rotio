@@ -10,6 +10,75 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
+// otio_timeline_clips_df
+Rcpp::DataFrame otio_timeline_clips_df(SEXP tl);
+RcppExport SEXP _nle_api_otio_timeline_clips_df(SEXP tlSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type tl(tlSEXP);
+    rcpp_result_gen = Rcpp::wrap(otio_timeline_clips_df(tl));
+    return rcpp_result_gen;
+END_RCPP
+}
+// otio_build_timeline
+SEXP otio_build_timeline(std::string name, double fps_num, double fps_den, double canvas_w, double canvas_h, double sample_rate, Rcpp::CharacterVector track_ids, Rcpp::CharacterVector track_kinds, Rcpp::CharacterVector clip_track, Rcpp::CharacterVector clip_id, Rcpp::CharacterVector clip_asset, Rcpp::NumericVector clip_tl_in, Rcpp::NumericVector clip_tl_out, Rcpp::NumericVector clip_src_in, Rcpp::NumericVector clip_rate);
+RcppExport SEXP _nle_api_otio_build_timeline(SEXP nameSEXP, SEXP fps_numSEXP, SEXP fps_denSEXP, SEXP canvas_wSEXP, SEXP canvas_hSEXP, SEXP sample_rateSEXP, SEXP track_idsSEXP, SEXP track_kindsSEXP, SEXP clip_trackSEXP, SEXP clip_idSEXP, SEXP clip_assetSEXP, SEXP clip_tl_inSEXP, SEXP clip_tl_outSEXP, SEXP clip_src_inSEXP, SEXP clip_rateSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type name(nameSEXP);
+    Rcpp::traits::input_parameter< double >::type fps_num(fps_numSEXP);
+    Rcpp::traits::input_parameter< double >::type fps_den(fps_denSEXP);
+    Rcpp::traits::input_parameter< double >::type canvas_w(canvas_wSEXP);
+    Rcpp::traits::input_parameter< double >::type canvas_h(canvas_hSEXP);
+    Rcpp::traits::input_parameter< double >::type sample_rate(sample_rateSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type track_ids(track_idsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type track_kinds(track_kindsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type clip_track(clip_trackSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type clip_id(clip_idSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type clip_asset(clip_assetSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type clip_tl_in(clip_tl_inSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type clip_tl_out(clip_tl_outSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type clip_src_in(clip_src_inSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type clip_rate(clip_rateSEXP);
+    rcpp_result_gen = Rcpp::wrap(otio_build_timeline(name, fps_num, fps_den, canvas_w, canvas_h, sample_rate, track_ids, track_kinds, clip_track, clip_id, clip_asset, clip_tl_in, clip_tl_out, clip_src_in, clip_rate));
+    return rcpp_result_gen;
+END_RCPP
+}
+// otio_timeline_config
+Rcpp::NumericVector otio_timeline_config(SEXP tl);
+RcppExport SEXP _nle_api_otio_timeline_config(SEXP tlSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type tl(tlSEXP);
+    rcpp_result_gen = Rcpp::wrap(otio_timeline_config(tl));
+    return rcpp_result_gen;
+END_RCPP
+}
+// otio_timeline_create
+SEXP otio_timeline_create(std::string name);
+RcppExport SEXP _nle_api_otio_timeline_create(SEXP nameSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type name(nameSEXP);
+    rcpp_result_gen = Rcpp::wrap(otio_timeline_create(name));
+    return rcpp_result_gen;
+END_RCPP
+}
+// otio_externalreference_create
+SEXP otio_externalreference_create(std::string name);
+RcppExport SEXP _nle_api_otio_externalreference_create(SEXP nameSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type name(nameSEXP);
+    rcpp_result_gen = Rcpp::wrap(otio_externalreference_create(name));
+    return rcpp_result_gen;
+END_RCPP
+}
 // otio_get_timeline_name
 std::string otio_get_timeline_name(SEXP p);
 RcppExport SEXP _nle_api_otio_get_timeline_name(SEXP pSEXP) {
@@ -76,15 +145,48 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// otio_timeline_create
-SEXP otio_timeline_create(std::string name);
-RcppExport SEXP _nle_api_otio_timeline_create(SEXP nameSEXP) {
+// otio_set_timeline_name
+void otio_set_timeline_name(SEXP p, std::string v);
+RcppExport SEXP _nle_api_otio_set_timeline_name(SEXP pSEXP, SEXP vSEXP) {
 BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< std::string >::type name(nameSEXP);
-    rcpp_result_gen = Rcpp::wrap(otio_timeline_create(name));
-    return rcpp_result_gen;
+    Rcpp::traits::input_parameter< SEXP >::type p(pSEXP);
+    Rcpp::traits::input_parameter< std::string >::type v(vSEXP);
+    otio_set_timeline_name(p, v);
+    return R_NilValue;
+END_RCPP
+}
+// otio_set_track_name
+void otio_set_track_name(SEXP p, std::string v);
+RcppExport SEXP _nle_api_otio_set_track_name(SEXP pSEXP, SEXP vSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type p(pSEXP);
+    Rcpp::traits::input_parameter< std::string >::type v(vSEXP);
+    otio_set_track_name(p, v);
+    return R_NilValue;
+END_RCPP
+}
+// otio_set_track_kind
+void otio_set_track_kind(SEXP p, std::string v);
+RcppExport SEXP _nle_api_otio_set_track_kind(SEXP pSEXP, SEXP vSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type p(pSEXP);
+    Rcpp::traits::input_parameter< std::string >::type v(vSEXP);
+    otio_set_track_kind(p, v);
+    return R_NilValue;
+END_RCPP
+}
+// otio_set_externalreference_target_url
+void otio_set_externalreference_target_url(SEXP p, std::string v);
+RcppExport SEXP _nle_api_otio_set_externalreference_target_url(SEXP pSEXP, SEXP vSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type p(pSEXP);
+    Rcpp::traits::input_parameter< std::string >::type v(vSEXP);
+    otio_set_externalreference_target_url(p, v);
+    return R_NilValue;
 END_RCPP
 }
 // otio_track_create
@@ -288,13 +390,21 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_nle_api_otio_timeline_clips_df", (DL_FUNC) &_nle_api_otio_timeline_clips_df, 1},
+    {"_nle_api_otio_build_timeline", (DL_FUNC) &_nle_api_otio_build_timeline, 15},
+    {"_nle_api_otio_timeline_config", (DL_FUNC) &_nle_api_otio_timeline_config, 1},
+    {"_nle_api_otio_timeline_create", (DL_FUNC) &_nle_api_otio_timeline_create, 1},
+    {"_nle_api_otio_externalreference_create", (DL_FUNC) &_nle_api_otio_externalreference_create, 1},
     {"_nle_api_otio_get_timeline_name", (DL_FUNC) &_nle_api_otio_get_timeline_name, 1},
     {"_nle_api_otio_get_track_name", (DL_FUNC) &_nle_api_otio_get_track_name, 1},
     {"_nle_api_otio_get_track_kind", (DL_FUNC) &_nle_api_otio_get_track_kind, 1},
     {"_nle_api_otio_get_clip_name", (DL_FUNC) &_nle_api_otio_get_clip_name, 1},
     {"_nle_api_otio_get_clip_active_media_reference_key", (DL_FUNC) &_nle_api_otio_get_clip_active_media_reference_key, 1},
     {"_nle_api_otio_get_externalreference_target_url", (DL_FUNC) &_nle_api_otio_get_externalreference_target_url, 1},
-    {"_nle_api_otio_timeline_create", (DL_FUNC) &_nle_api_otio_timeline_create, 1},
+    {"_nle_api_otio_set_timeline_name", (DL_FUNC) &_nle_api_otio_set_timeline_name, 2},
+    {"_nle_api_otio_set_track_name", (DL_FUNC) &_nle_api_otio_set_track_name, 2},
+    {"_nle_api_otio_set_track_kind", (DL_FUNC) &_nle_api_otio_set_track_kind, 2},
+    {"_nle_api_otio_set_externalreference_target_url", (DL_FUNC) &_nle_api_otio_set_externalreference_target_url, 2},
     {"_nle_api_otio_track_create", (DL_FUNC) &_nle_api_otio_track_create, 2},
     {"_nle_api_otio_clip_create", (DL_FUNC) &_nle_api_otio_clip_create, 6},
     {"_nle_api_otio_timeline_add_track", (DL_FUNC) &_nle_api_otio_timeline_add_track, 2},

@@ -112,6 +112,76 @@ otio_kind <- function(x) {
     otio_get_track_kind(x$ptr)
 }
 
+#' External media reference
+#'
+#' An OTIO \code{ExternalReference} points a clip at media by URL. Construct one
+#' with \code{otio_external_reference()}, read or change its URL with
+#' \code{otio_target_url()} / \code{otio_set_target_url()}.
+#'
+#' @param target_url Media URL.
+#' @return An \code{otio_external_reference}.
+#' @examples
+#' ref <- otio_external_reference("a.mp4")
+#' otio_target_url(ref)
+#' @export
+otio_external_reference <- function(target_url = "") {
+    structure(list(ptr = otio_externalreference_create(as.character(target_url))),
+              class = "otio_external_reference")
+}
+
+#' @rdname otio_external_reference
+#' @param x An \code{otio_external_reference}.
+#' @export
+otio_target_url <- function(x) {
+    stopifnot(inherits(x, "otio_external_reference"))
+    otio_get_externalreference_target_url(x$ptr)
+}
+
+#' @rdname otio_external_reference
+#' @export
+otio_set_target_url <- function(x, target_url) {
+    stopifnot(inherits(x, "otio_external_reference"))
+    otio_set_externalreference_target_url(x$ptr, as.character(target_url))
+    invisible(x)
+}
+
+#' @export
+print.otio_external_reference <- function(x, ...) {
+    cat(sprintf("<otio_external_reference \"%s\">\n", otio_target_url(x)))
+    invisible(x)
+}
+
+#' Rename or re-kind an OTIO object
+#'
+#' \code{otio_set_name()} renames a timeline or track; \code{otio_set_kind()}
+#' changes a track's kind. Both mutate the object in place.
+#'
+#' @param x An \code{otio_timeline} or \code{otio_track}.
+#' @param name New name.
+#' @return The object, invisibly.
+#' @export
+otio_set_name <- function(x, name) {
+    name <- as.character(name)
+    if (inherits(x, "otio_timeline")) {
+        otio_set_timeline_name(x$ptr, name)
+    } else if (inherits(x, "otio_track")) {
+        otio_set_track_name(x$ptr, name)
+    } else {
+        stop("otio_set_name: not a timeline or track", call. = FALSE)
+    }
+    invisible(x)
+}
+
+#' @rdname otio_set_name
+#' @param track An \code{otio_track}.
+#' @param kind New track kind.
+#' @export
+otio_set_kind <- function(track, kind) {
+    stopifnot(inherits(track, "otio_track"))
+    otio_set_track_kind(track$ptr, as.character(kind))
+    invisible(track)
+}
+
 #' Serialize / deserialize an OTIO timeline as JSON
 #'
 #' \code{otio_to_json()} renders a timeline to canonical OTIO JSON via the

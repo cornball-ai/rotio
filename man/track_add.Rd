@@ -11,11 +11,11 @@ track_add(seq, kind, label = NULL, id = NULL, idx = NULL)
 \item{kind}{One of \code{"video"}, \code{"audio"}, \code{"image"},
 \code{"subtitle"}.}
 
-\item{label}{Track label; defaults to the track id.}
+\item{label}{Ignored for now (track labels return with metadata in PR 4).}
 
 \item{id}{Explicit track id; auto-generated from \code{kind} if NULL.}
 
-\item{idx}{Lane index; defaults to below the current bottom track.}
+\item{idx}{Ignored for now; tracks append in order.}
 }
 \value{
 The updated sequence.
@@ -26,6 +26,5 @@ Add a track
 \examples{
 seq <- new_sequence()
 seq <- track_add(seq, "video")
-seq <- track_add(seq, "audio")
 nrow(seq$tracks)
 }

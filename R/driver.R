@@ -21,7 +21,7 @@
 #'   if the driver does not implement write-through.
 #' @param capabilities Function: \code{function() -> list}. Should return
 #'   a list with at least \code{formats}, \code{coords}, \code{time},
-#'   \code{fields_preserved}, \code{extensions} (see SEQUENCE_SCHEMA.md).
+#'   \code{fields_preserved}, \code{metadata} (see SEQUENCE_SCHEMA.md).
 #'
 #' @return Invisible TRUE.
 #' @export
@@ -128,7 +128,7 @@ apply_sequence <- function(driver, seq, ...) {
 #'
 #' Returns whatever the driver's \code{capabilities()} function returns.
 #' Conventionally a list with \code{formats}, \code{coords}, \code{time},
-#' \code{fields_preserved}, \code{extensions}.
+#' \code{fields_preserved}, \code{metadata}.
 #'
 #' @param driver Driver name (string).
 #' @export

@@ -10,12 +10,9 @@ clip_trim(seq, clip, tl_in = NULL, tl_out = NULL)
 
 \item{clip}{Clip id.}
 
-\item{tl_in}{New left-edge timeline time; NULL to keep.}
-
-\item{tl_out}{New right-edge timeline time; NULL to keep.}
+\item{tl_in,tl_out}{New edge times; NULL to keep.}
 }
 \description{
-Moving \code{tl_in} (left edge) shifts the source in-point so the
-picture stays put. Moving \code{tl_out} (right edge) changes the
-duration.
+Moving \code{tl_in} (left edge) shifts the source in-point so the picture
+stays put. Moving \code{tl_out} (right edge) changes the duration.
 }

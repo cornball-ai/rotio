@@ -8,15 +8,13 @@ write_sequence(seq, path = NULL)
 \arguments{
 \item{seq}{An \code{nle_sequence}.}
 
-\item{path}{Path to write to. Defaults to the path \code{seq} was read
-from, if any.}
+\item{path}{Path to write to; defaults to where \code{seq} was read from.}
 }
 \value{
 The path, invisibly.
 }
 \description{
-Preserves all prose outside the state block, surgically replaces only
-the JSON payload between the markers. If \code{path} doesn't exist (or
-the in-memory sequence has no attached prose), writes a minimal new
-file with a stub header and the state block.
+Preserves prose outside the state block, surgically replacing only the OTIO
+JSON payload. If \code{path} doesn't exist (or the sequence has no attached
+prose), writes a minimal new file with a stub header and the state block.
 }

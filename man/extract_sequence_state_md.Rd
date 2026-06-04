@@ -9,10 +9,8 @@ extract_sequence_state_md(path)
 \item{path}{Path to a sequence.md file.}
 }
 \value{
-A character scalar — the payload between markers (with any
-  surrounding code fence stripped).
+The raw OTIO JSON payload between markers.
 }
 \description{
-Lower-level helper used by \code{\link{read_sequence}}. Errors strictly
-on marker problems; returns the raw payload string.
+Extract the state block payload from a sequence.md
 }

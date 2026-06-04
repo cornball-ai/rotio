@@ -1,4 +1,4 @@
-#' nle.api: neutral sequence model and OTIO wrap
+#' nle.api: neutral timeline model and OTIO wrap
 #'
 #' Provides the R verb surface, Markdown carrier, and driver registry over an
 #' OpenTimelineIO core bound through Rcpp. See PLAN.md for the migration.

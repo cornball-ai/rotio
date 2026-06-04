@@ -3,10 +3,10 @@
 \alias{track_add}
 \title{Add a track}
 \usage{
-track_add(seq, kind, label = NULL, id = NULL, idx = NULL)
+track_add(timeline, kind, label = NULL, id = NULL, idx = NULL)
 }
 \arguments{
-\item{seq}{An \code{nle_sequence}.}
+\item{timeline}{An \code{nle_timeline}.}
 
 \item{kind}{One of \code{"video"}, \code{"audio"}, \code{"image"},
 \code{"subtitle"}.}
@@ -18,13 +18,13 @@ track_add(seq, kind, label = NULL, id = NULL, idx = NULL)
 \item{idx}{Ignored for now; tracks append in order.}
 }
 \value{
-The updated sequence.
+The updated timeline.
 }
 \description{
 Add a track
 }
 \examples{
-seq <- new_sequence()
-seq <- track_add(seq, "video")
-nrow(seq$tracks)
+timeline <- new_timeline()
+timeline <- track_add(timeline, "video")
+nrow(timeline$tracks)
 }

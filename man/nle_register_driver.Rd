@@ -7,17 +7,17 @@ nle_register_driver(name, dump = NULL, apply = NULL, capabilities = NULL)
 }
 \arguments{
 \item{name}{Driver name (string). Used by callers as
-\code{dump_sequence(driver = name, ...)}.}
+\code{dump_timeline(driver = name, ...)}.}
 
-\item{dump}{Function: \code{function(...) -> nle_sequence}. NULL if
+\item{dump}{Function: \code{function(...) -> nle_timeline}. NULL if
 the driver does not implement read-back.}
 
-\item{apply}{Function: \code{function(seq, ...) -> invisible(...)}. NULL
+\item{apply}{Function: \code{function(timeline, ...) -> invisible(...)}. NULL
 if the driver does not implement write-through.}
 
 \item{capabilities}{Function: \code{function() -> list}. Should return
 a list with at least \code{formats}, \code{coords}, \code{time},
-\code{fields_preserved}, \code{metadata} (see SEQUENCE_SCHEMA.md).}
+\code{fields_preserved}, \code{metadata} (see TIMELINE_SCHEMA.md).}
 }
 \value{
 Invisible TRUE.
@@ -25,6 +25,6 @@ Invisible TRUE.
 \description{
 Drivers call this from \code{.onLoad()} (or any other entry point) to
 make themselves discoverable. The supplied functions are stored by
-reference; they're called by \code{\link{dump_sequence}} /
-\code{\link{apply_sequence}} / \code{\link{driver_capabilities}}.
+reference; they're called by \code{\link{dump_timeline}} /
+\code{\link{apply_timeline}} / \code{\link{driver_capabilities}}.
 }

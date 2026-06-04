@@ -3,10 +3,10 @@
 \alias{clip_delete}
 \title{Delete a clip}
 \usage{
-clip_delete(seq, clip)
+clip_delete(timeline, clip)
 }
 \arguments{
-\item{seq}{An \code{nle_sequence}.}
+\item{timeline}{An \code{nle_timeline}.}
 
 \item{clip}{Clip id.}
 }

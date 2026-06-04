@@ -7,19 +7,19 @@
 \alias{clip_set}
 \title{Add a clip to a track}
 \usage{
-clip_add(seq, track, tl_in, tl_out, asset, kind = NULL, source_in = 0L,
+clip_add(timeline, track, tl_in, tl_out, asset, kind = NULL, source_in = 0L,
          source_out = NULL, speed = 1, label = NULL, id = NULL)
 
-clip_speed(seq, clip, speed)
+clip_speed(timeline, clip, speed)
 
-clip_transform(seq, clip, ...)
+clip_transform(timeline, clip, ...)
 
-clip_crop(seq, clip, ...)
+clip_crop(timeline, clip, ...)
 
-clip_set(seq, clip, ...)
+clip_set(timeline, clip, ...)
 }
 \arguments{
-\item{seq}{An \code{nle_sequence}.}
+\item{timeline}{An \code{nle_timeline}.}
 
 \item{track}{Target track id (must exist).}
 
@@ -40,9 +40,9 @@ clip_set(seq, clip, ...)
 \item{label,id}{Optional; \code{id} auto-generated if NULL.}
 }
 \value{
-The updated sequence.
+The updated timeline.
 }
 \description{
-Time inputs accept integer frames at the sequence fps, numeric seconds, or a
+Time inputs accept integer frames at the timeline fps, numeric seconds, or a
 \code{rational_time} / \code{otio_time}.
 }

@@ -10,7 +10,7 @@
 #'
 #' This is the OTIO-native counterpart to \code{\link{rational_time}}. The
 #' pure-R \code{rational_time()} remains in place; \code{otio_time()} is the
-#' path the sequence model migrates onto as the C++ wrap grows (see PLAN.md).
+#' path the timeline model migrates onto as the C++ wrap grows (see PLAN.md).
 #'
 #' All conversions (\code{to_seconds}, \code{to_frames}, timecode) are computed
 #' by the OTIO library, not reimplemented in R, so they match the canonical

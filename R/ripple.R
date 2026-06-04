@@ -11,46 +11,46 @@
 #' push them later (open).
 #'
 #' Both \code{after} and \code{delta} accept any time form: integer
-#' frames at the sequence fps, numeric seconds, or a
+#' frames at the timeline fps, numeric seconds, or a
 #' \code{\link{rational_time}}.
 #'
-#' @param seq An \code{nle_sequence}.
+#' @param timeline An \code{nle_timeline}.
 #' @param after Timeline boundary; clips at or after this frame shift.
-#' @param delta Shift amount in frames at the sequence fps (or seconds /
+#' @param delta Shift amount in frames at the timeline fps (or seconds /
 #'   \code{rational_time} — converted at the boundary).
 #' @param inclusive When \code{TRUE} (the default), clips with
 #'   \code{tl_in == after} shift too. Set \code{FALSE} to keep clips
 #'   that start exactly at the boundary in place (useful when an edit
 #'   anchors at \code{after}).
 #'
-#' @return The updated sequence.
+#' @return The updated timeline.
 #' @examples
-#' seq <- new_sequence(fps = 30L)
-#' seq <- track_add(seq, "video", id = "v1")
-#' seq <- clip_add(seq, "v1", tl_in = rational_time(0, 30),
+#' timeline <- new_timeline(fps = 30L)
+#' timeline <- track_add(timeline, "video", id = "v1")
+#' timeline <- clip_add(timeline, "v1", tl_in = rational_time(0, 30),
 #'                 tl_out = rational_time(90, 30), asset = "a.mp4", id = "a")
-#' seq <- clip_add(seq, "v1", tl_in = rational_time(90, 30),
+#' timeline <- clip_add(timeline, "v1", tl_in = rational_time(90, 30),
 #'                 tl_out = rational_time(180, 30), asset = "b.mp4", id = "b")
-#' seq <- shift_after(seq, after = rational_time(90, 30), delta = -30)
-#' seq$clips$tl_in
+#' timeline <- shift_after(timeline, after = rational_time(90, 30), delta = -30)
+#' timeline$clips$tl_in
 #' @export
-shift_after <- function(seq, after, delta, inclusive = TRUE) {
-    if (!is_sequence(seq)) {
-        stop("shift_after: seq must be an nle_sequence", call. = FALSE)
+shift_after <- function(timeline, after, delta, inclusive = TRUE) {
+    if (!is_timeline(timeline)) {
+        stop("shift_after: timeline must be an nle_timeline", call. = FALSE)
     }
-    after_f <- .to_frames_at_seq(after, seq)
-    delta_f <- .to_frames_at_seq(delta, seq)
-    clips <- seq$clips
-    if (delta_f == 0L || nrow(clips) == 0L) return(seq)
+    after_f <- .to_frames_at_seq(after, timeline)
+    delta_f <- .to_frames_at_seq(delta, timeline)
+    clips <- timeline$clips
+    if (delta_f == 0L || nrow(clips) == 0L) return(timeline)
 
     mask <- if (isTRUE(inclusive)) clips$tl_in >= after_f
             else                   clips$tl_in >  after_f
-    if (!any(mask)) return(seq)
+    if (!any(mask)) return(timeline)
 
     clips$tl_in[mask]  <- clips$tl_in[mask]  + delta_f
     clips$tl_out[mask] <- clips$tl_out[mask] + delta_f
     if (any(clips$tl_in < 0)) {
         stop("shift_after: delta would push a clip before frame 0", call. = FALSE)
     }
-    .seq_rebuild(seq, .seq_tracks_tbl(seq), clips)
+    .seq_rebuild(timeline, .seq_tracks_tbl(timeline), clips)
 }

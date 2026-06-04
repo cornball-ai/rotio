@@ -3,10 +3,10 @@
 \alias{clip_split}
 \title{Split a clip at a timeline frame}
 \usage{
-clip_split(seq, clip, at)
+clip_split(timeline, clip, at)
 }
 \arguments{
-\item{seq}{An \code{nle_sequence}.}
+\item{timeline}{An \code{nle_timeline}.}
 
 \item{clip}{Clip id.}
 

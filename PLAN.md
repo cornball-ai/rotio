@@ -147,7 +147,7 @@ Goal: full verb parity with the current pure-R surface.
   similarly serializes the Timeline through OTIO and surgically
   replaces the state block.
 - Update marker text: `cornball.sequence.v1` → `otio`.
-- Rewrite `inst/schema/SEQUENCE_SCHEMA.md` to describe the carrier
+- Rewrite `inst/schema/TIMELINE_SCHEMA.md` to describe the carrier
   (the Markdown convention) and point at OTIO's docs for the inner
   JSON schema.
 - Delete `R/json.R`; OTIO owns serialization.

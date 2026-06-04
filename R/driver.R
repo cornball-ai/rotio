@@ -10,18 +10,18 @@
 #'
 #' Drivers call this from \code{.onLoad()} (or any other entry point) to
 #' make themselves discoverable. The supplied functions are stored by
-#' reference; they're called by \code{\link{dump_sequence}} /
-#' \code{\link{apply_sequence}} / \code{\link{driver_capabilities}}.
+#' reference; they're called by \code{\link{dump_timeline}} /
+#' \code{\link{apply_timeline}} / \code{\link{driver_capabilities}}.
 #'
 #' @param name Driver name (string). Used by callers as
-#'   \code{dump_sequence(driver = name, ...)}.
-#' @param dump Function: \code{function(...) -> nle_sequence}. NULL if
+#'   \code{dump_timeline(driver = name, ...)}.
+#' @param dump Function: \code{function(...) -> nle_timeline}. NULL if
 #'   the driver does not implement read-back.
-#' @param apply Function: \code{function(seq, ...) -> invisible(...)}. NULL
+#' @param apply Function: \code{function(timeline, ...) -> invisible(...)}. NULL
 #'   if the driver does not implement write-through.
 #' @param capabilities Function: \code{function() -> list}. Should return
 #'   a list with at least \code{formats}, \code{coords}, \code{time},
-#'   \code{fields_preserved}, \code{metadata} (see SEQUENCE_SCHEMA.md).
+#'   \code{fields_preserved}, \code{metadata} (see TIMELINE_SCHEMA.md).
 #'
 #' @return Invisible TRUE.
 #' @export
@@ -78,50 +78,50 @@ nle_driver_registered <- function(name) {
     d
 }
 
-#' Read a sequence in from a driver's backing store
+#' Read a timeline in from a driver's backing store
 #'
 #' Dispatches to the registered driver's \code{dump} function.
 #'
 #' @param driver Driver name (string).
 #' @param ... Driver-specific arguments (e.g. \code{file = "scene.blend"}).
-#' @return An \code{nle_sequence}.
+#' @return An \code{nle_timeline}.
 #' @examples
 #' \dontrun{
 #' library(blendR)  # registers "blender"
-#' seq <- dump_sequence("blender")
+#' timeline <- dump_timeline("blender")
 #' }
 #' @export
-dump_sequence <- function(driver, ...) {
+dump_timeline <- function(driver, ...) {
     d <- .get_driver(driver, capability = "dump")
     res <- d$dump(...)
-    if (!is_sequence(res)) {
-        stop(sprintf("driver '%s' dump did not return an nle_sequence", driver),
+    if (!is_timeline(res)) {
+        stop(sprintf("driver '%s' dump did not return an nle_timeline", driver),
              call. = FALSE)
     }
     res
 }
 
-#' Push a sequence into a driver's backing store
+#' Push a timeline into a driver's backing store
 #'
 #' Dispatches to the registered driver's \code{apply} function.
 #'
 #' @param driver Driver name (string).
-#' @param seq An \code{nle_sequence}.
+#' @param timeline An \code{nle_timeline}.
 #' @param ... Driver-specific arguments.
 #' @return Invisibly whatever the driver returns.
 #' @examples
 #' \dontrun{
 #' library(blendR)
-#' seq <- read_sequence("sequence.md")
-#' apply_sequence("blender", seq)
+#' timeline <- read_timeline("timeline.md")
+#' apply_timeline("blender", timeline)
 #' }
 #' @export
-apply_sequence <- function(driver, seq, ...) {
-    if (!is_sequence(seq)) {
-        stop("apply_sequence: seq must be an nle_sequence", call. = FALSE)
+apply_timeline <- function(driver, timeline, ...) {
+    if (!is_timeline(timeline)) {
+        stop("apply_timeline: timeline must be an nle_timeline", call. = FALSE)
     }
     d <- .get_driver(driver, capability = "apply")
-    invisible(d$apply(seq, ...))
+    invisible(d$apply(timeline, ...))
 }
 
 #' A driver's capability report

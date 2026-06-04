@@ -14,7 +14,7 @@
 // Rebuilding from scratch on each edit gives pure-function verb semantics for
 // free (every verb returns a new timeline) and keeps the gap bookkeeping in one
 // audited place. This is bespoke algorithm, not a uniform binding, so it is
-// hand-written rather than generated. All times are in the sequence fps; we
+// hand-written rather than generated. All times are in the timeline fps; we
 // store fps/canvas in the timeline metadata so they survive serialization.
 
 #include "otio_common.h"
@@ -173,7 +173,7 @@ SEXP otio_build_timeline(std::string name,
     return wrapped;
 }
 
-// Read the sequence config (fps/canvas/sample_rate) back from metadata.
+// Read the timeline config (fps/canvas/sample_rate) back from metadata.
 // [[Rcpp::export]]
 Rcpp::NumericVector otio_timeline_config(SEXP tl) {
     otio::Timeline* t = unwrap_otio<otio::Timeline>(tl);

@@ -63,16 +63,7 @@ seqd <- clip_delete(timeline, "b")
 expect_equal(nrow(seqd$clips), 2L)
 expect_false("b" %in% seqd$clips$id)
 
-# Effect-dependent verbs are deferred to PR 4.
-expect_error(clip_speed(timeline, "a", 2), "PR 4")
-expect_error(clip_transform(timeline, "a", pos_x = 1), "PR 4")
-expect_error(clip_crop(timeline, "a"), "PR 4")
-expect_error(clip_set(timeline, "a"), "PR 4")
-expect_error(
-    clip_add(timeline, "v1", tl_in = rational_time(300, 30),
-             tl_out = rational_time(360, 30), asset = "x.mp4", id = "x",
-             speed = 2),
-    "PR 4")
+# clip_speed and the deferred compositing verbs are covered in test_effects.R.
 
 # JSON round-trip: canonical OTIO, shape and config preserved.
 js <- timeline_to_json(timeline)

@@ -1,3 +1,26 @@
+# nle.api 0.0.2.6 (dev)
+
+## Changes
+
+* OTIO migration PR 4 (effects, part 1): `clip_speed()` is implemented, modelled
+  on OTIO's own effect schema. Speed is recorded as a `LinearTimeWarp`
+  (`time_scalar = speed`, >1 faster) on the clip. Per OTIO's model the warp is an
+  annotation, so it does **not** change the clip's timeline footprint — the
+  source range still defines what is shown and a player/driver applies the rate.
+  `clip_add()` accepts a `speed`, and `timeline$clips` gains a `speed` column.
+  Speed survives serialization and structural edits.
+* Wrapped OTIO's `LinearTimeWarp` (the speed effect). The effect set OTIO codes
+  is `Effect` -> `TimeEffect` -> `LinearTimeWarp` -> `FreezeFrame`; OTIO has no
+  spatial-transform or crop schema, so those will be generic `Effect` objects.
+
+## Still deferred
+
+* `clip_transform`, `clip_crop`, `clip_set` — these become a **generic OTIO
+  `Effect` API** (`clip_effect_add`/`clip_effects`), modelled on OTIO rather than
+  Blender-shaped fixed fields. That needs a clone-based mutation path (the
+  scalar-table rebuild can't carry arbitrary per-clip effects), which lands in
+  its own PR. They error with a pointer for now.
+
 # nle.api 0.0.2.5 (dev)
 
 ## New verbs

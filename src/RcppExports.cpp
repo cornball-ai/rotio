@@ -22,8 +22,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // otio_build_timeline
-SEXP otio_build_timeline(std::string name, double fps_num, double fps_den, double canvas_w, double canvas_h, double sample_rate, Rcpp::CharacterVector track_ids, Rcpp::CharacterVector track_kinds, Rcpp::CharacterVector clip_track, Rcpp::CharacterVector clip_id, Rcpp::CharacterVector clip_asset, Rcpp::NumericVector clip_tl_in, Rcpp::NumericVector clip_tl_out, Rcpp::NumericVector clip_src_in, Rcpp::NumericVector clip_rate);
-RcppExport SEXP _nle_api_otio_build_timeline(SEXP nameSEXP, SEXP fps_numSEXP, SEXP fps_denSEXP, SEXP canvas_wSEXP, SEXP canvas_hSEXP, SEXP sample_rateSEXP, SEXP track_idsSEXP, SEXP track_kindsSEXP, SEXP clip_trackSEXP, SEXP clip_idSEXP, SEXP clip_assetSEXP, SEXP clip_tl_inSEXP, SEXP clip_tl_outSEXP, SEXP clip_src_inSEXP, SEXP clip_rateSEXP) {
+SEXP otio_build_timeline(std::string name, double fps_num, double fps_den, double canvas_w, double canvas_h, double sample_rate, Rcpp::CharacterVector track_ids, Rcpp::CharacterVector track_kinds, Rcpp::CharacterVector clip_track, Rcpp::CharacterVector clip_id, Rcpp::CharacterVector clip_asset, Rcpp::NumericVector clip_tl_in, Rcpp::NumericVector clip_tl_out, Rcpp::NumericVector clip_src_in, Rcpp::NumericVector clip_rate, Rcpp::NumericVector clip_speed);
+RcppExport SEXP _nle_api_otio_build_timeline(SEXP nameSEXP, SEXP fps_numSEXP, SEXP fps_denSEXP, SEXP canvas_wSEXP, SEXP canvas_hSEXP, SEXP sample_rateSEXP, SEXP track_idsSEXP, SEXP track_kindsSEXP, SEXP clip_trackSEXP, SEXP clip_idSEXP, SEXP clip_assetSEXP, SEXP clip_tl_inSEXP, SEXP clip_tl_outSEXP, SEXP clip_src_inSEXP, SEXP clip_rateSEXP, SEXP clip_speedSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -42,7 +42,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type clip_tl_out(clip_tl_outSEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type clip_src_in(clip_src_inSEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type clip_rate(clip_rateSEXP);
-    rcpp_result_gen = Rcpp::wrap(otio_build_timeline(name, fps_num, fps_den, canvas_w, canvas_h, sample_rate, track_ids, track_kinds, clip_track, clip_id, clip_asset, clip_tl_in, clip_tl_out, clip_src_in, clip_rate));
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type clip_speed(clip_speedSEXP);
+    rcpp_result_gen = Rcpp::wrap(otio_build_timeline(name, fps_num, fps_den, canvas_w, canvas_h, sample_rate, track_ids, track_kinds, clip_track, clip_id, clip_asset, clip_tl_in, clip_tl_out, clip_src_in, clip_rate, clip_speed));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -391,7 +392,7 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_nle_api_otio_timeline_clips_df", (DL_FUNC) &_nle_api_otio_timeline_clips_df, 1},
-    {"_nle_api_otio_build_timeline", (DL_FUNC) &_nle_api_otio_build_timeline, 15},
+    {"_nle_api_otio_build_timeline", (DL_FUNC) &_nle_api_otio_build_timeline, 16},
     {"_nle_api_otio_timeline_config", (DL_FUNC) &_nle_api_otio_timeline_config, 1},
     {"_nle_api_otio_timeline_create", (DL_FUNC) &_nle_api_otio_timeline_create, 1},
     {"_nle_api_otio_externalreference_create", (DL_FUNC) &_nle_api_otio_externalreference_create, 1},

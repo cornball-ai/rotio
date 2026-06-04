@@ -5,8 +5,8 @@ otio_timeline_clips_df <- function(tl) {
     .Call(`_nle_api_otio_timeline_clips_df`, tl)
 }
 
-otio_build_timeline <- function(name, fps_num, fps_den, canvas_w, canvas_h, sample_rate, track_ids, track_kinds, clip_track, clip_id, clip_asset, clip_tl_in, clip_tl_out, clip_src_in, clip_rate) {
-    .Call(`_nle_api_otio_build_timeline`, name, fps_num, fps_den, canvas_w, canvas_h, sample_rate, track_ids, track_kinds, clip_track, clip_id, clip_asset, clip_tl_in, clip_tl_out, clip_src_in, clip_rate)
+otio_build_timeline <- function(name, fps_num, fps_den, canvas_w, canvas_h, sample_rate, track_ids, track_kinds, clip_track, clip_id, clip_asset, clip_tl_in, clip_tl_out, clip_src_in, clip_rate, clip_speed) {
+    .Call(`_nle_api_otio_build_timeline`, name, fps_num, fps_den, canvas_w, canvas_h, sample_rate, track_ids, track_kinds, clip_track, clip_id, clip_asset, clip_tl_in, clip_tl_out, clip_src_in, clip_rate, clip_speed)
 }
 
 otio_timeline_config <- function(tl) {

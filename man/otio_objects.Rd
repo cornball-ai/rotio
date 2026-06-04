@@ -54,8 +54,8 @@ An \code{otio_timeline}, \code{otio_track}, or \code{otio_clip}.
 \description{
 These constructors build live OpenTimelineIO objects in the linked C++
 library and return lightweight S3 handles wrapping an external pointer. They
-are the foundation the sequence model migrates onto (see PLAN.md); the
-pure-R \code{\link{new_sequence}} model is unchanged for now.
+are the foundation the timeline model migrates onto (see PLAN.md); the
+pure-R \code{\link{new_timeline}} model is unchanged for now.
 }
 \details{
 Unlike the pure-R edit verbs, these objects are mutable: \code{otio_add_track}

@@ -3,10 +3,10 @@
 \alias{clip_move}
 \title{Move a clip in time and/or to another track}
 \usage{
-clip_move(seq, clip, tl_in = NULL, track = NULL)
+clip_move(timeline, clip, tl_in = NULL, track = NULL)
 }
 \arguments{
-\item{seq}{An \code{nle_sequence}.}
+\item{timeline}{An \code{nle_timeline}.}
 
 \item{clip}{Clip id.}
 

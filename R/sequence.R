@@ -1,30 +1,30 @@
-# The sequence model, backed by an OpenTimelineIO Timeline.
+# The timeline model, backed by an OpenTimelineIO Timeline.
 #
-# An nle_sequence wraps an external pointer to a live OTIO Timeline (the single
+# An nle_timeline wraps an external pointer to a live OTIO Timeline (the single
 # source of truth). Tracks, clips, gaps, and source ranges live in OTIO; fps,
 # canvas, and sample rate are stored in the Timeline metadata so they survive
-# serialization. `seq$clips` / `seq$tracks` materialise fresh data.frame views
+# serialization. `timeline$clips` / `timeline$tracks` materialise fresh data.frame views
 # from the C++ side on each read; edits go through the verbs, which read the
 # current state, apply the change, and rebuild the Timeline (gap model A: clip
 # timeline position is encoded by OTIO Gaps, computed from tl_in).
 
 `%||%` <- function(a, b) if (is.null(a)) b else a
 
-#' Construct an empty sequence
+#' Construct an empty timeline
 #'
-#' The sequence is nle.api's canonical S3 model, backed by an OpenTimelineIO
+#' The timeline is nle.api's canonical S3 model, backed by an OpenTimelineIO
 #' Timeline. Times are integer frame counts at \code{fps}.
 #'
-#' @param id Sequence id (becomes the OTIO Timeline name).
+#' @param id Timeline id (becomes the OTIO Timeline name).
 #' @param fps Frames per second (default 30). For non-integer rates pass a
 #'   \code{list(num = 24000, den = 1001)}.
 #' @param sample_rate Audio sample rate in Hz (default 48000).
 #' @param canvas Length-2 numeric \code{c(width, height)}.
-#' @return A \code{nle_sequence} S3 object wrapping a live OTIO Timeline.
+#' @return A \code{nle_timeline} S3 object wrapping a live OTIO Timeline.
 #' @examples
-#' seq <- new_sequence(id = "demo", fps = 30, canvas = c(1080, 1080))
+#' timeline <- new_timeline(id = "demo", fps = 30, canvas = c(1080, 1080))
 #' @export
-new_sequence <- function(id = "untitled",
+new_timeline <- function(id = "untitled",
                          fps = 30L,
                          sample_rate = 48000L,
                          canvas = c(1080L, 1080L)) {
@@ -39,17 +39,17 @@ new_sequence <- function(id = "untitled",
         character(0), character(0),                       # tracks
         character(0), character(0), character(0),         # clip track/id/asset
         numeric(0), numeric(0), numeric(0), numeric(0))   # clip times
-    structure(list(ptr = ptr), class = "nle_sequence")
+    structure(list(ptr = ptr), class = "nle_timeline")
 }
 
-#' Is x an nle_sequence?
+#' Is x an nle_timeline?
 #' @param x Object to test.
 #' @export
-is_sequence <- function(x) inherits(x, "nle_sequence")
+is_timeline <- function(x) inherits(x, "nle_timeline")
 
 # Materialised views and config are read from the OTIO Timeline on access.
 #' @export
-`$.nle_sequence` <- function(x, name) {
+`$.nle_timeline` <- function(x, name) {
     p <- .subset2(x, "ptr")
     switch(name,
         ptr     = p,
@@ -70,33 +70,33 @@ is_sequence <- function(x) inherits(x, "nle_sequence")
                n_clips = tr$n_children, stringsAsFactors = FALSE)
 }
 
-#' Sequence frame rate as a single value (frames per second)
-#' @param seq An \code{nle_sequence}.
+#' Timeline frame rate as a single value (frames per second)
+#' @param timeline An \code{nle_timeline}.
 #' @export
-seq_fps <- function(seq) {
-    cf <- otio_timeline_config(seq$ptr)
+timeline_fps <- function(timeline) {
+    cf <- otio_timeline_config(timeline$ptr)
     cf[["fps_num"]] / cf[["fps_den"]]
 }
 
-#' Total sequence duration in frames (end of the last clip)
-#' @param seq An \code{nle_sequence}.
+#' Total timeline duration in frames (end of the last clip)
+#' @param timeline An \code{nle_timeline}.
 #' @export
-seq_duration_frames <- function(seq) {
-    cl <- seq$clips
+timeline_duration_frames <- function(timeline) {
+    cl <- timeline$clips
     if (nrow(cl) == 0L) return(0L)
     as.integer(max(cl$tl_out))
 }
 
-#' Concise human summary of a sequence
-#' @param seq An \code{nle_sequence}.
+#' Concise human summary of a timeline
+#' @param timeline An \code{nle_timeline}.
 #' @export
-sequence_summary <- function(seq) {
-    fps <- seq_fps(seq)
-    dur_f <- seq_duration_frames(seq)
-    tracks <- seq$tracks
-    clips <- seq$clips
-    cv <- seq$canvas
-    cat(sprintf("nle_sequence '%s'\n", seq$id))
+timeline_summary <- function(timeline) {
+    fps <- timeline_fps(timeline)
+    dur_f <- timeline_duration_frames(timeline)
+    tracks <- timeline$tracks
+    clips <- timeline$clips
+    cv <- timeline$canvas
+    cat(sprintf("nle_timeline '%s'\n", timeline$id))
     cat(sprintf("  canvas %gx%g @ %g fps, %d tracks, %d clips, dur %.2fs (%d frames)\n",
                 cv$width, cv$height, fps, nrow(tracks), nrow(clips),
                 dur_f / fps, dur_f))
@@ -117,26 +117,26 @@ sequence_summary <- function(seq) {
                         cl$tl_in, cl$tl_out, cl$source_in, cl$source_out))
         }
     }
-    invisible(seq)
+    invisible(timeline)
 }
 
 #' @export
-print.nle_sequence <- function(x, ...) sequence_summary(x)
+print.nle_timeline <- function(x, ...) timeline_summary(x)
 
 # ---- internal edit helpers ----------------------------------------------
 
 # Current track table (id, kind) in track order, for rebuilding.
-.seq_tracks_tbl <- function(seq) {
-    tr <- otio_timeline_tracks_df(seq$ptr)
+.seq_tracks_tbl <- function(timeline) {
+    tr <- otio_timeline_tracks_df(timeline$ptr)
     data.frame(id = tr$name, kind = tr$kind, stringsAsFactors = FALSE)
 }
 
 # Rebuild the Timeline from edited track and clip tables; return a new
-# nle_sequence. Tracks are given in order; clips are placed by tl_in.
-.seq_rebuild <- function(seq, tracks_tbl, clips_tbl) {
-    cf <- otio_timeline_config(seq$ptr)
+# nle_timeline. Tracks are given in order; clips are placed by tl_in.
+.seq_rebuild <- function(timeline, tracks_tbl, clips_tbl) {
+    cf <- otio_timeline_config(timeline$ptr)
     ptr <- otio_build_timeline(
-        otio_get_timeline_name(seq$ptr),
+        otio_get_timeline_name(timeline$ptr),
         cf[["fps_num"]], cf[["fps_den"]], cf[["canvas_w"]], cf[["canvas_h"]],
         cf[["sample_rate"]],
         as.character(tracks_tbl$id), as.character(tracks_tbl$kind),
@@ -144,7 +144,7 @@ print.nle_sequence <- function(x, ...) sequence_summary(x)
         as.character(clips_tbl$asset),
         as.double(clips_tbl$tl_in), as.double(clips_tbl$tl_out),
         as.double(clips_tbl$source_in), as.double(clips_tbl$rate))
-    structure(list(ptr = ptr), class = "nle_sequence")
+    structure(list(ptr = ptr), class = "nle_timeline")
 }
 
 # Index of a clip by id in the materialised table, error if missing.
@@ -155,8 +155,8 @@ print.nle_sequence <- function(x, ...) sequence_summary(x)
 }
 
 # Error if a track id does not exist.
-.track_exists <- function(seq, track_id) {
-    if (!track_id %in% otio_timeline_tracks_df(seq$ptr)$name) {
+.track_exists <- function(timeline, track_id) {
+    if (!track_id %in% otio_timeline_tracks_df(timeline$ptr)$name) {
         stop(sprintf("no track with id '%s'", track_id), call. = FALSE)
     }
     invisible(TRUE)
@@ -173,10 +173,10 @@ print.nle_sequence <- function(x, ...) sequence_summary(x)
     }
 }
 
-# Convert a time argument to integer frames at the sequence fps. Accepts an
+# Convert a time argument to integer frames at the timeline fps. Accepts an
 # integer frame count, numeric seconds, or a rational_time / otio_time.
-.to_frames_at_seq <- function(x, seq) {
-    fps <- seq_fps(seq)
+.to_frames_at_seq <- function(x, timeline) {
+    fps <- timeline_fps(timeline)
     if (is_rational_time(x)) return(to_frames(x, as.integer(round(fps))))
     if (is_otio_time(x))     return(otio_to_frames(x, fps))
     if (is.numeric(x))       return(as.integer(round(x * fps)))

@@ -1,14 +1,14 @@
 % tinyrox says don't edit this manually, but it can't stop you!
-\name{apply_sequence}
-\alias{apply_sequence}
-\title{Push a sequence into a driver's backing store}
+\name{apply_timeline}
+\alias{apply_timeline}
+\title{Push a timeline into a driver's backing store}
 \usage{
-apply_sequence(driver, seq, ...)
+apply_timeline(driver, timeline, ...)
 }
 \arguments{
 \item{driver}{Driver name (string).}
 
-\item{seq}{An \code{nle_sequence}.}
+\item{timeline}{An \code{nle_timeline}.}
 
 \item{...}{Driver-specific arguments.}
 }
@@ -21,7 +21,7 @@ Dispatches to the registered driver's \code{apply} function.
 \examples{
 \dontrun{
 library(blendR)
-seq <- read_sequence("sequence.md")
-apply_sequence("blender", seq)
+timeline <- read_timeline("timeline.md")
+apply_timeline("blender", timeline)
 }
 }

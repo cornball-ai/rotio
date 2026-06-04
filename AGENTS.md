@@ -1,11 +1,11 @@
 # nle.api — agent guidance
 
-Guidance for LLM agents (Claude, Codex, etc.) and humans editing sequences
+Guidance for LLM agents (Claude, Codex, etc.) and humans editing timelines
 through nle.api. These rules apply whenever an agent is *constructing visual
-content* that will appear in a sequence — text overlays, data slides, "console
+content* that will appear in a timeline — text overlays, data slides, "console
 snapshot" frames, fake terminal frames, transcribed cards, etc.
 
-The schema and verbs are documented at `inst/schema/SEQUENCE_SCHEMA.md`. This
+The schema and verbs are documented at `inst/schema/TIMELINE_SCHEMA.md`. This
 file is about the *creative defaults* drivers and editing agents should
 respect.
 
@@ -86,7 +86,7 @@ then preserve it verbatim.
 
 Drivers (blendR for Blender, future drivers for ffmpeg / OTIO / FCP XML)
 should document their fidelity statement in their own README or in
-`inst/schema/SEQUENCE_SCHEMA.md` under a `## <driver> driver fidelity`
+`inst/schema/TIMELINE_SCHEMA.md` under a `## <driver> driver fidelity`
 section. The blendR driver's statement lives there already; future
 drivers should follow the same shape.
 

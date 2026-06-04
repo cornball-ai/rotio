@@ -1,9 +1,9 @@
 % tinyrox says don't edit this manually, but it can't stop you!
-\name{dump_sequence}
-\alias{dump_sequence}
-\title{Read a sequence in from a driver's backing store}
+\name{dump_timeline}
+\alias{dump_timeline}
+\title{Read a timeline in from a driver's backing store}
 \usage{
-dump_sequence(driver, ...)
+dump_timeline(driver, ...)
 }
 \arguments{
 \item{driver}{Driver name (string).}
@@ -11,7 +11,7 @@ dump_sequence(driver, ...)
 \item{...}{Driver-specific arguments (e.g. \code{file = "scene.blend"}).}
 }
 \value{
-An \code{nle_sequence}.
+An \code{nle_timeline}.
 }
 \description{
 Dispatches to the registered driver's \code{dump} function.
@@ -19,6 +19,6 @@ Dispatches to the registered driver's \code{dump} function.
 \examples{
 \dontrun{
 library(blendR)  # registers "blender"
-seq <- dump_sequence("blender")
+timeline <- dump_timeline("blender")
 }
 }

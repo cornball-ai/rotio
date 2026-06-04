@@ -3,10 +3,10 @@
 \alias{clip_trim}
 \title{Trim a clip's visible range}
 \usage{
-clip_trim(seq, clip, tl_in = NULL, tl_out = NULL)
+clip_trim(timeline, clip, tl_in = NULL, tl_out = NULL)
 }
 \arguments{
-\item{seq}{An \code{nle_sequence}.}
+\item{timeline}{An \code{nle_timeline}.}
 
 \item{clip}{Clip id.}
 

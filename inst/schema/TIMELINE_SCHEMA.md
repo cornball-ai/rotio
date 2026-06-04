@@ -1,7 +1,7 @@
-# nle.api sequence carrier
+# nle.api timeline carrier
 
-`nle.api`'s sequence model **is** OpenTimelineIO (OTIO). There is no separate
-`nle.api` schema: a sequence is an OTIO `Timeline`, and the on-disk JSON is
+`nle.api`'s timeline model **is** OpenTimelineIO (OTIO). There is no separate
+`nle.api` schema: a timeline is an OTIO `Timeline`, and the on-disk JSON is
 canonical OTIO (each object carries its own `OTIO_SCHEMA`, e.g. `Timeline.1`,
 `Track.1`, `Clip.2`, `Gap.1`, `ExternalReference.1`). nle.api binds the OTIO
 C++ library through Rcpp and lets OTIO own serialization, schema versioning,
@@ -13,21 +13,21 @@ docs: <https://opentimelineio.readthedocs.io>.
 
 ## File layout
 
-`sequence.md` is the canonical artifact. Markdown prose with a single delimited
+`timeline.md` is the canonical artifact. Markdown prose with a single delimited
 state block carrying raw OTIO JSON:
 
 ```
-<!-- sequence:state otio -->
+<!-- timeline:state otio -->
 { ...OTIO JSON... }
-<!-- /sequence:state -->
+<!-- /timeline:state -->
 ```
 
-The opening marker carries the literal `sequence:state` and the encoding token
+The opening marker carries the literal `timeline:state` and the encoding token
 `otio`. Encoding is implicit JSON (OTIO speaks JSON natively).
 
-`nle.api::read_sequence("sequence.md")` parses the block into an
-`nle_sequence` (a handle to a live OTIO `Timeline`) with the surrounding prose
-attached. `nle.api::write_sequence()` preserves all prose and surgically
+`nle.api::read_timeline("timeline.md")` parses the block into an
+`nle_timeline` (a handle to a live OTIO `Timeline`) with the surrounding prose
+attached. `nle.api::write_timeline()` preserves all prose and surgically
 replaces only the state block.
 
 Strict parser rules:
@@ -35,22 +35,22 @@ Strict parser rules:
 - Exactly one opening marker and exactly one closing marker.
 - Error if either marker is missing, duplicated, or malformed.
 
-`sequence.md` replaces the earlier `*.cb.md` convention, which is dead.
+`timeline.md` replaces the earlier `*.cb.md` convention, which is dead.
 
 ## Model
 
-A sequence is an OTIO `Timeline` containing a `Stack` of `Track`s. Each track is
+A timeline is an OTIO `Timeline` containing a `Stack` of `Track`s. Each track is
 an **ordered, contiguous** list of items: `Clip`s and `Gap`s. A clip has no
 absolute timeline position; its position is the sum of the durations before it,
 and empty space is an explicit `Gap`.
 
 nle.api's verbs think in absolute timeline frames (`tl_in`/`tl_out`) and
-translate to/from the sequential model: when a sequence is rebuilt, Gaps are
+translate to/from the sequential model: when a timeline is rebuilt, Gaps are
 inserted to honour each clip's `tl_in` ("gap model A"). Two clips may not
 overlap on one track; overlapping placements are an error (use separate
 tracks).
 
-`seq$clips` and `seq$tracks` are fresh data.frame views materialised from the
+`timeline$clips` and `timeline$tracks` are fresh data.frame views materialised from the
 OTIO Timeline on read. Edits go through the verbs only.
 
 ### Time

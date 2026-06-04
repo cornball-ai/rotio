@@ -39,7 +39,8 @@ new_timeline <- function(id = "untitled",
         character(0), character(0),                       # tracks
         character(0), character(0), character(0),         # clip track/id/asset
         numeric(0), numeric(0), numeric(0), numeric(0),   # clip times
-        numeric(0))                                       # clip speed
+        numeric(0),                                       # clip speed
+        NULL)                                             # no prev (fresh)
     structure(list(ptr = ptr), class = "nle_timeline")
 }
 
@@ -145,7 +146,8 @@ print.nle_timeline <- function(x, ...) timeline_summary(x)
         as.character(clips_tbl$asset),
         as.double(clips_tbl$tl_in), as.double(clips_tbl$tl_out),
         as.double(clips_tbl$source_in), as.double(clips_tbl$rate),
-        as.double(clips_tbl$speed %||% rep(1, nrow(clips_tbl))))
+        as.double(clips_tbl$speed %||% rep(1, nrow(clips_tbl))),
+        timeline$ptr)   # prev: clone non-time effects forward by clip id
     structure(list(ptr = ptr), class = "nle_timeline")
 }
 

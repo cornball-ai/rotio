@@ -1,3 +1,22 @@
+# nle.api 0.0.2.4 (dev)
+
+## Changes
+
+* Renamed the `sequence` vocabulary to OTIO's `timeline` throughout. OTIO's
+  top-level object is a `Timeline`, so the wrapper now speaks the format's own
+  language. Exported renames: `new_sequence` -> `new_timeline`, `nle_sequence`
+  (class) -> `nle_timeline`, `is_sequence` -> `is_timeline`, `seq_fps` ->
+  `timeline_fps`, `seq_duration_frames` -> `timeline_duration_frames`,
+  `sequence_summary` -> `timeline_summary`, `read_sequence`/`write_sequence` ->
+  `read_timeline`/`write_timeline`, `sequence_to_json`/`sequence_from_json` ->
+  `timeline_to_json`/`timeline_from_json`, `validate_sequence` ->
+  `validate_timeline`, `extract_sequence_state_md`/`replace_sequence_state_md`
+  -> `*_timeline_state_md`, `dump_sequence`/`apply_sequence` ->
+  `dump_timeline`/`apply_timeline`.
+* The canonical artifact is now `timeline.md` with a `<!-- timeline:state otio
+  -->` state block; `inst/schema/SEQUENCE_SCHEMA.md` -> `TIMELINE_SCHEMA.md`.
+* No behaviour change. (blendR's driver bridge picks up the new names in PR 5.)
+
 # nle.api 0.0.2.3 (dev)
 
 ## Changes
@@ -23,7 +42,7 @@
   scalar setters (in addition to getters), each validated against the headers
   via treesitR. The gap-model rebuild/materialize is bespoke and hand-written.
 * `R/json.R` and `R/coords.R` removed (OTIO owns serialization; coordinate
-  transforms return with effects). `inst/schema/SEQUENCE_SCHEMA.md` rewritten
+  transforms return with effects). `inst/schema/TIMELINE_SCHEMA.md` rewritten
   to describe the carrier and point at the OTIO docs.
 
 ## Deferred to PR 4

@@ -34,11 +34,8 @@ static void check(otio::ErrorStatus const& err, const char* what) {
 }
 
 // ---- construction -------------------------------------------------------
-
-// [[Rcpp::export]]
-SEXP otio_timeline_create(std::string name) {
-    return wrap_otio<otio::Timeline>(new otio::Timeline(name));
-}
+// (otio_timeline_create -- a trivial Timeline(name) ctor -- is generated into
+// otio_gen.cpp. Track and Clip construction is bespoke and stays here.)
 
 // [[Rcpp::export]]
 SEXP otio_track_create(std::string name, std::string kind) {

@@ -1,99 +1,108 @@
-# Sequence S3, verbs, JSON round-trip, sequence.md marker IO.
+# Sequence model (OTIO-backed), structural verbs, JSON + sequence.md IO.
+#
+# Times: numeric = seconds; rational_time = frame-exact. Under gap model A a
+# track is sequential, so overlapping clips on one track are an error.
 
-# Build a small sequence. Times are seconds; use rational_time for
-# frame-exact values.
 seq <- new_sequence(id = "demo", fps = 30L, canvas = c(1080L, 1080L))
 seq <- track_add(seq, "video", id = "v1")
 seq <- track_add(seq, "audio", id = "a1")
-# intro: TL 0-90 frames = 0-3 s, source from frame 0
-seq <- clip_add(seq, track = "v1",
-                tl_in  = rational_time(0,  30),
-                tl_out = rational_time(90, 30),
-                asset = "intro.mp4", id = "intro", speed = 1)
-# shot: TL 90-180 frames = 3-6 s, source_in at frame 30 = 1 s, speed 1.5
-seq <- clip_add(seq, track = "v1",
-                tl_in  = rational_time(90,  30),
-                tl_out = rational_time(180, 30),
-                asset = "shot.mp4", id = "shot",
-                source_in = rational_time(30, 30), speed = 1.5)
-
 expect_equal(nrow(seq$tracks), 2L)
-expect_equal(nrow(seq$clips),  2L)
-expect_equal(seq_duration_frames(seq), 180L)
+expect_equal(seq_fps(seq), 30)
+expect_equal(seq$canvas$width, 1080)
 
-# Validation passes
+# a: TL 0-90, source 0-90. b: TL 90-180 (contiguous), source_in 30 -> 30-120.
+seq <- clip_add(seq, "v1", tl_in = rational_time(0, 30),
+                tl_out = rational_time(90, 30), asset = "a.mp4", id = "a")
+seq <- clip_add(seq, "v1", tl_in = rational_time(90, 30),
+                tl_out = rational_time(180, 30), asset = "b.mp4", id = "b",
+                source_in = rational_time(30, 30))
+expect_equal(nrow(seq$clips), 2L)
+expect_equal(seq$clips$tl_in,      c(0, 90))
+expect_equal(seq$clips$tl_out,     c(90, 180))
+expect_equal(seq$clips$source_in,  c(0, 30))
+expect_equal(seq$clips$source_out, c(90, 120))
+expect_equal(seq_duration_frames(seq), 180L)
 expect_silent(validate_sequence(seq))
 
-# clip_move shifts tl_in but preserves duration (10 frames = 1/3 s)
-seq2 <- clip_move(seq, "intro", tl_in = rational_time(10, 30))
-expect_equal(seq2$clips$tl_in[1],  10L)
-expect_equal(seq2$clips$tl_out[1], 100L)
+# c after a 60-frame gap: TL 240-300 (gap 180-240 becomes an OTIO Gap).
+seq <- clip_add(seq, "v1", tl_in = rational_time(240, 30),
+                tl_out = rational_time(300, 30), asset = "c.mp4", id = "c")
+expect_equal(seq$clips$tl_in, c(0, 90, 240))
+expect_equal(seq_duration_frames(seq), 300L)
 
-# clip_trim recomputes source range (60 frames = 2 s)
-seq3 <- clip_trim(seq, "intro", tl_out = rational_time(60, 30))
-expect_equal(seq3$clips$tl_out[1], 60L)
-expect_equal(seq3$clips$source_out[1] - seq3$clips$source_in[1], 60L)
+# clip_move: slide c earlier into its gap (no overlap).
+seqm <- clip_move(seq, "c", tl_in = rational_time(210, 30))
+expect_equal(seqm$clips$tl_in[seqm$clips$id == "c"],  210)
+expect_equal(seqm$clips$tl_out[seqm$clips$id == "c"], 270)
 
-# clip_speed adjusts tl_out to keep source span fixed
-seq4 <- clip_speed(seq, "shot", 3)
-expect_equal(seq4$clips$speed[2], 3)
+# clip_move onto an occupied span overlaps -> error.
+expect_error(clip_move(seq, "c", tl_in = rational_time(90, 30)), "overlap")
 
-# clip_transform: topleft is identity
-seq5 <- clip_transform(seq, "intro", pos_x = 100, pos_y = 200)
-expect_equal(seq5$clips$pos_x[1], 100)
-expect_equal(seq5$clips$pos_y[1], 200)
+# clip_trim right edge of b (shrink); source span follows.
+seqt <- clip_trim(seq, "b", tl_out = rational_time(150, 30))
+b <- seqt$clips[seqt$clips$id == "b", ]
+expect_equal(b$tl_out, 150)
+expect_equal(b$source_out - b$source_in, 60)
 
-# clip_split halves a clip (at frame 45 = 1.5 s)
-seq6 <- clip_split(seq, "intro", at = rational_time(45, 30))
-expect_equal(nrow(seq6$clips), 3L)
-expect_equal(seq6$clips$tl_out[1], 45L)
-expect_true("intro_split" %in% seq6$clips$id)
+# clip_trim left edge of a; source in-point follows the edge.
+seqt2 <- clip_trim(seq, "a", tl_in = rational_time(30, 30))
+a2 <- seqt2$clips[seqt2$clips$id == "a", ]
+expect_equal(a2$tl_in, 30)
+expect_equal(a2$source_in, 30)
 
-# JSON round-trip
+# clip_split a at frame 45.
+seqs <- clip_split(seq, "a", at = rational_time(45, 30))
+expect_equal(nrow(seqs$clips), 4L)
+expect_true("a_split" %in% seqs$clips$id)
+asp <- seqs$clips[seqs$clips$id == "a_split", ]
+expect_equal(asp$tl_in, 45)
+expect_equal(asp$tl_out, 90)
+
+# clip_delete.
+seqd <- clip_delete(seq, "b")
+expect_equal(nrow(seqd$clips), 2L)
+expect_false("b" %in% seqd$clips$id)
+
+# Effect-dependent verbs are deferred to PR 4.
+expect_error(clip_speed(seq, "a", 2), "PR 4")
+expect_error(clip_transform(seq, "a", pos_x = 1), "PR 4")
+expect_error(clip_crop(seq, "a"), "PR 4")
+expect_error(clip_set(seq, "a"), "PR 4")
+expect_error(
+    clip_add(seq, "v1", tl_in = rational_time(300, 30),
+             tl_out = rational_time(360, 30), asset = "x.mp4", id = "x",
+             speed = 2),
+    "PR 4")
+
+# JSON round-trip: canonical OTIO, shape and config preserved.
 js <- sequence_to_json(seq)
+expect_true(grepl("Timeline\\.[0-9]", js))
 seq_rt <- sequence_from_json(js)
-expect_equal(nrow(seq_rt$tracks), 2L)
-expect_equal(nrow(seq_rt$clips),  2L)
 expect_equal(seq_rt$clips$id,    seq$clips$id)
 expect_equal(seq_rt$clips$tl_in, seq$clips$tl_in)
 expect_equal(seq_rt$clips$tl_out, seq$clips$tl_out)
-expect_equal(seq_rt$clips$speed, seq$clips$speed)
+expect_equal(seq_fps(seq_rt), 30)
 
-# sequence.md round-trip
+# sequence.md round-trip with the otio marker.
 tmp <- tempfile(fileext = ".md")
 on.exit(unlink(tmp), add = TRUE)
 write_sequence(seq, tmp)
 md <- readLines(tmp)
-expect_true(any(grepl("sequence:state json cornball.sequence.v1", md)))
+expect_true(any(grepl("sequence:state otio", md)))
 expect_true(any(grepl("/sequence:state", md)))
-
 seq_rt2 <- read_sequence(tmp)
 expect_equal(seq_rt2$clips$id, seq$clips$id)
 
-# Strict parser: missing close marker is an error
+# Strict parser: missing close marker.
 bad <- tempfile(fileext = ".md")
 on.exit(unlink(bad), add = TRUE)
-writeLines(c("# x", "<!-- sequence:state json cornball.sequence.v1 -->", "{}"),
-           bad)
+writeLines(c("# x", "<!-- sequence:state otio -->", "{}"), bad)
 expect_error(read_sequence(bad))
 
-# Duplicated open marker is an error
+# Duplicated open marker.
 bad2 <- tempfile(fileext = ".md")
 on.exit(unlink(bad2), add = TRUE)
-writeLines(c("<!-- sequence:state json cornball.sequence.v1 -->",
-             "{}",
-             "<!-- /sequence:state -->",
-             "<!-- sequence:state json cornball.sequence.v1 -->",
-             "{}",
-             "<!-- /sequence:state -->"),
+writeLines(c("<!-- sequence:state otio -->", "{}", "<!-- /sequence:state -->",
+             "<!-- sequence:state otio -->", "{}", "<!-- /sequence:state -->"),
            bad2)
 expect_error(read_sequence(bad2))
-
-# Schema mismatch is an error
-bad3 <- tempfile(fileext = ".md")
-on.exit(unlink(bad3), add = TRUE)
-writeLines(c("<!-- sequence:state json cornball.sequence.v2 -->",
-             "{}",
-             "<!-- /sequence:state -->"),
-           bad3)
-expect_error(read_sequence(bad3))

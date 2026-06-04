@@ -12,12 +12,7 @@ validate_sequence(seq)
 TRUE invisibly on success; stops with a clear error otherwise.
 }
 \description{
-Checks:
-\itemize{
-\item schema string is the expected version
-\item every clip's \code{track} refers to an existing track id
-\item every clip has \code{tl_out > tl_in}
-\item every clip has \code{source_out >= source_in}
-\item no two clips share the same id
-}
+Checks no duplicate clip ids, and that every clip has a positive duration.
+OTIO guarantees the rest of the structure (tracks are sequential, clips sit
+on real tracks).
 }

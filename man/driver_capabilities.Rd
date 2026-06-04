@@ -11,5 +11,5 @@ driver_capabilities(driver)
 \description{
 Returns whatever the driver's \code{capabilities()} function returns.
 Conventionally a list with \code{formats}, \code{coords}, \code{time},
-\code{fields_preserved}, \code{extensions}.
+\code{fields_preserved}, \code{metadata}.
 }

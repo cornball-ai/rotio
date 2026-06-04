@@ -27,12 +27,16 @@ whose \code{tl_in} is at-or-after (or strictly after, see
 \code{inclusive}) the given \code{after} frame. Source in/out points
 are NOT touched: clips keep showing the same source content, just at
 a shifted timeline position.
+}
+\details{
 This is the canonical "close a gap" / "open a gap" operation. Pass
 a negative \code{delta} to pull strips earlier (close); positive to
 push them later (open).
+
 Both \code{after} and \code{delta} accept any time form: integer
 frames at the sequence fps, numeric seconds, or a
 \code{\link{rational_time}}.
+
 }
 \examples{
 seq <- new_sequence(fps = 30L)

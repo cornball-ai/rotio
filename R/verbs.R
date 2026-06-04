@@ -1,71 +1,67 @@
-# Pure-function edit verbs: sequence -> sequence.
+# Edit verbs: nle_sequence -> nle_sequence (pure functions).
 #
-# Ported from kerNLE/R/commands.R with these changes:
-#   - times stored as integer frames at the sequence's fps (was: float seconds)
-#   - clip transform stored as canonical top-left + Y down (was: centre + Y up)
-#   - asset-cache logic (reconcile_demand, asset_id rebinds) removed; that's
-#     cornductor's concern, not nle.api's
-#   - verb names use `clip`/`track` argument names (was: `clip_id`/`track_id`)
-#   - coordinate inputs honour the `coord` argument (or options(nle.coords))
+# Each verb reads the current state from the OTIO Timeline, applies the change
+# to the materialised clip/track table, and rebuilds the Timeline (gap model A).
+# Rebuilding yields a fresh Timeline, so the verbs are naturally pure: the input
+# sequence is untouched.
+#
+# Effect-dependent verbs (clip_speed, clip_transform, clip_crop, clip_set) are
+# deferred to PR 4, when OTIO Effects / per-clip metadata are wrapped; they
+# currently stop with a pointer to that work.
 
 #' Add a track
 #'
 #' @param seq An \code{nle_sequence}.
 #' @param kind One of \code{"video"}, \code{"audio"}, \code{"image"},
 #'   \code{"subtitle"}.
-#' @param label Track label; defaults to the track id.
+#' @param label Ignored for now (track labels return with metadata in PR 4).
 #' @param id Explicit track id; auto-generated from \code{kind} if NULL.
-#' @param idx Lane index; defaults to below the current bottom track.
+#' @param idx Ignored for now; tracks append in order.
 #' @return The updated sequence.
 #' @examples
 #' seq <- new_sequence()
 #' seq <- track_add(seq, "video")
-#' seq <- track_add(seq, "audio")
 #' nrow(seq$tracks)
 #' @export
 track_add <- function(seq, kind, label = NULL, id = NULL, idx = NULL) {
     kind <- match.arg(kind, c("video", "audio", "image", "subtitle"))
-    stem <- substr(kind, 1, 1)
+    tracks <- .seq_tracks_tbl(seq)
     if (is.null(id)) {
-        n <- sum(startsWith(seq$tracks$id, stem)) + 1L
+        stem <- substr(kind, 1, 1)
+        n <- sum(startsWith(tracks$id, stem)) + 1L
         id <- sprintf("%s%d", stem, n)
     }
-    if (id %in% seq$tracks$id) {
+    if (id %in% tracks$id) {
         stop(sprintf("track '%s' already exists", id), call. = FALSE)
     }
-    if (is.null(idx)) {
-        idx <- if (nrow(seq$tracks) == 0L) 1L else max(seq$tracks$idx) + 1L
-    }
-    row <- data.frame(id = id, idx = as.integer(idx), kind = kind,
-                      label = label %||% id, stringsAsFactors = FALSE)
-    seq$tracks <- rbind(seq$tracks, row)
-    seq
+    tracks <- rbind(tracks, data.frame(id = id, kind = kind,
+                                       stringsAsFactors = FALSE))
+    .seq_rebuild(seq, tracks, seq$clips)
 }
 
 #' Add a clip to a track
 #'
-#' Time inputs accept either integer frames at the sequence fps, numeric
-#' seconds, or a \code{\link{rational_time}}.
+#' Time inputs accept integer frames at the sequence fps, numeric seconds, or a
+#' \code{rational_time} / \code{otio_time}.
 #'
 #' @param seq An \code{nle_sequence}.
 #' @param track Target track id (must exist).
-#' @param tl_in Timeline in-point.
-#' @param tl_out Timeline out-point.
-#' @param asset Source path or cornductor asset id.
-#' @param kind Clip kind; defaults to the track's kind.
+#' @param tl_in,tl_out Timeline in/out points.
+#' @param asset Source path or media url.
+#' @param kind Unused (clip kind follows its track).
 #' @param source_in Source media in-point (default 0).
-#' @param source_out Source media out-point (default = source_in + (tl_out - tl_in) * speed).
-#' @param speed Playback multiplier (default 1).
-#' @param label Clip label; defaults to the clip id.
-#' @param id Explicit clip id; auto-generated if NULL.
+#' @param source_out Source media out-point; default keeps clip duration.
+#' @param speed Must be 1 in this release; time-remap arrives in PR 4.
+#' @param label,id Optional; \code{id} auto-generated if NULL.
 #' @return The updated sequence.
 #' @export
 clip_add <- function(seq, track, tl_in, tl_out, asset,
                      kind = NULL, source_in = 0L, source_out = NULL,
                      speed = 1.0, label = NULL, id = NULL) {
     .track_exists(seq, track)
-    if (is.null(kind)) {
-        kind <- seq$tracks$kind[seq$tracks$id == track][1]
+    if (!isTRUE(all.equal(speed, 1.0))) {
+        stop("clip_add: speed != 1 (time-remap) lands in PR 4 with OTIO effects",
+             call. = FALSE)
     }
     tl_in_f  <- .to_frames_at_seq(tl_in, seq)
     tl_out_f <- .to_frames_at_seq(tl_out, seq)
@@ -73,26 +69,24 @@ clip_add <- function(seq, track, tl_in, tl_out, asset,
         stop("clip_add: tl_out must be strictly after tl_in", call. = FALSE)
     }
     src_in_f <- .to_frames_at_seq(source_in, seq)
-    if (is.null(source_out)) {
-        src_out_f <- src_in_f + as.integer(round((tl_out_f - tl_in_f) * speed))
-    } else {
+    if (!is.null(source_out)) {
         src_out_f <- .to_frames_at_seq(source_out, seq)
+        if (src_out_f - src_in_f != tl_out_f - tl_in_f) {
+            stop("clip_add: source span must equal timeline span (speed != 1 is PR 4)",
+                 call. = FALSE)
+        }
     }
-    id <- id %||% .new_clip_id(seq, stem = track)
+    clips <- seq$clips
+    tkind <- .seq_tracks_tbl(seq)$kind[.seq_tracks_tbl(seq)$id == track][1]
+    id <- id %||% .new_clip_id(clips, stem = track)
+    if (id %in% clips$id) stop(sprintf("clip '%s' already exists", id),
+                               call. = FALSE)
     row <- data.frame(
-        id = id, track = track, kind = kind, asset = asset,
+        id = id, track = track, kind = tkind, asset = as.character(asset),
         tl_in = tl_in_f, tl_out = tl_out_f,
-        source_in = src_in_f, source_out = src_out_f,
-        speed = as.numeric(speed),
-        pos_x = 0, pos_y = 0, scale_x = 1, scale_y = 1,
-        rotation_deg = 0,
-        crop_left = 0, crop_right = 0, crop_top = 0, crop_bottom = 0,
-        blend = "normal", opacity = 1, mute = FALSE,
-        label = label %||% id,
-        stringsAsFactors = FALSE)
-    row$notes <- I(list(character(0)))
-    seq$clips <- rbind(seq$clips, row)
-    seq
+        source_in = src_in_f, source_out = src_in_f + (tl_out_f - tl_in_f),
+        rate = seq_fps(seq), stringsAsFactors = FALSE)
+    .seq_rebuild(seq, .seq_tracks_tbl(seq), rbind(clips, row))
 }
 
 #' Delete a clip
@@ -100,9 +94,9 @@ clip_add <- function(seq, track, tl_in, tl_out, asset,
 #' @param clip Clip id.
 #' @export
 clip_delete <- function(seq, clip) {
-    i <- .clip_idx(seq, clip)
-    seq$clips <- seq$clips[-i, , drop = FALSE]
-    seq
+    clips <- seq$clips
+    i <- .clip_idx(clips, clip)
+    .seq_rebuild(seq, .seq_tracks_tbl(seq), clips[-i, , drop = FALSE])
 }
 
 #' Move a clip in time and/or to another track
@@ -112,189 +106,97 @@ clip_delete <- function(seq, clip) {
 #' @param track New track id (must exist); NULL to keep.
 #' @export
 clip_move <- function(seq, clip, tl_in = NULL, track = NULL) {
-    i <- .clip_idx(seq, clip)
+    clips <- seq$clips
+    i <- .clip_idx(clips, clip)
     if (!is.null(track)) {
         .track_exists(seq, track)
-        seq$clips$track[i] <- track
+        clips$track[i] <- track
     }
     if (!is.null(tl_in)) {
-        old_in  <- seq$clips$tl_in[i]
-        old_out <- seq$clips$tl_out[i]
-        new_in  <- .to_frames_at_seq(tl_in, seq)
-        seq$clips$tl_in[i]  <- new_in
-        seq$clips$tl_out[i] <- new_in + (old_out - old_in)
+        new_in <- .to_frames_at_seq(tl_in, seq)
+        span <- clips$tl_out[i] - clips$tl_in[i]
+        clips$tl_in[i]  <- new_in
+        clips$tl_out[i] <- new_in + span
     }
-    seq
+    .seq_rebuild(seq, .seq_tracks_tbl(seq), clips)
 }
 
 #' Trim a clip's visible range
 #'
-#' Moving \code{tl_in} (left edge) shifts the source in-point so the
-#' picture stays put. Moving \code{tl_out} (right edge) changes the
-#' duration.
+#' Moving \code{tl_in} (left edge) shifts the source in-point so the picture
+#' stays put. Moving \code{tl_out} (right edge) changes the duration.
 #'
 #' @param seq An \code{nle_sequence}.
 #' @param clip Clip id.
-#' @param tl_in New left-edge timeline time; NULL to keep.
-#' @param tl_out New right-edge timeline time; NULL to keep.
+#' @param tl_in,tl_out New edge times; NULL to keep.
 #' @export
 clip_trim <- function(seq, clip, tl_in = NULL, tl_out = NULL) {
-    i <- .clip_idx(seq, clip)
-    cl <- seq$clips[i, ]
+    clips <- seq$clips
+    i <- .clip_idx(clips, clip)
+    cl <- clips[i, ]
     new_in  <- if (is.null(tl_in)) cl$tl_in else .to_frames_at_seq(tl_in, seq)
     new_out <- if (is.null(tl_out)) cl$tl_out else .to_frames_at_seq(tl_out, seq)
     if (new_out <= new_in) {
         stop("clip_trim: would leave non-positive duration", call. = FALSE)
     }
-    # Shift source_in proportional to the left-edge move, accounting for speed
-    src_shift <- as.integer(round((new_in - cl$tl_in) * cl$speed))
-    new_src_in  <- cl$source_in + src_shift
-    new_src_out <- new_src_in +
-        as.integer(round((new_out - new_in) * cl$speed))
-    if (new_src_in < 0L) {
-        stop("clip_trim: would move source in-point before the start of the source",
+    new_src_in <- cl$source_in + (new_in - cl$tl_in)   # speed 1: 1:1 shift
+    if (new_src_in < 0) {
+        stop("clip_trim: would move source in-point before the source start",
              call. = FALSE)
     }
-    seq$clips$tl_in[i]       <- new_in
-    seq$clips$tl_out[i]      <- new_out
-    seq$clips$source_in[i]   <- new_src_in
-    seq$clips$source_out[i]  <- new_src_out
-    seq
+    clips$tl_in[i]      <- new_in
+    clips$tl_out[i]     <- new_out
+    clips$source_in[i]  <- new_src_in
+    clips$source_out[i] <- new_src_in + (new_out - new_in)
+    .seq_rebuild(seq, .seq_tracks_tbl(seq), clips)
 }
 
 #' Split a clip at a timeline frame
 #' @param seq An \code{nle_sequence}.
 #' @param clip Clip id.
-#' @param at Timeline time at which to cut (interpreted via \code{.to_frames_at_seq}).
+#' @param at Timeline time at which to cut.
 #' @export
 clip_split <- function(seq, clip, at) {
-    i <- .clip_idx(seq, clip)
-    cl <- seq$clips[i, ]
+    clips <- seq$clips
+    i <- .clip_idx(clips, clip)
+    cl <- clips[i, ]
     at_f <- .to_frames_at_seq(at, seq)
     if (at_f <= cl$tl_in || at_f >= cl$tl_out) {
         stop("clip_split: split point must fall strictly inside the clip",
              call. = FALSE)
     }
-    left_tl_dur <- at_f - cl$tl_in
-    left_src_dur <- as.integer(round(left_tl_dur * cl$speed))
-    # Left piece keeps id, shrinks
-    seq$clips$tl_out[i]     <- at_f
-    seq$clips$source_out[i] <- cl$source_in + left_src_dur
-    # Right piece is a clone with new id, starts at the split point
+    left_dur <- at_f - cl$tl_in
+    clips$tl_out[i]     <- at_f
+    clips$source_out[i] <- cl$source_in + left_dur
     right <- cl
-    right$id        <- .new_clip_id(seq, stem = paste0(cl$id, "_split"))
-    right$tl_in     <- at_f
-    right$tl_out    <- cl$tl_out
-    right$source_in <- cl$source_in + left_src_dur
+    right$id         <- .new_clip_id(clips, stem = paste0(cl$id, "_split"))
+    right$tl_in      <- at_f
+    right$tl_out     <- cl$tl_out
+    right$source_in  <- cl$source_in + left_dur
     right$source_out <- cl$source_out
-    seq$clips <- rbind(seq$clips, right)
-    seq
+    .seq_rebuild(seq, .seq_tracks_tbl(seq), rbind(clips, right))
 }
 
-#' Set a clip's playback speed (time-remap)
-#'
-#' Keeps the source span fixed and rescales the timeline duration, so
-#' speeding a clip up shortens it. Re-anchors at the clip's current
-#' \code{tl_in}.
-#'
-#' @param seq An \code{nle_sequence}.
-#' @param clip Clip id.
-#' @param speed Playback multiplier (> 0; >1 is faster/shorter).
-#' @export
-clip_speed <- function(seq, clip, speed) {
-    if (speed <= 0) {
-        stop("clip_speed: speed must be positive", call. = FALSE)
-    }
-    i <- .clip_idx(seq, clip)
-    cl <- seq$clips[i, ]
-    source_span <- cl$source_out - cl$source_in
-    new_tl_dur  <- as.integer(round(source_span / speed))
-    seq$clips$speed[i]  <- as.numeric(speed)
-    seq$clips$tl_out[i] <- cl$tl_in + new_tl_dur
-    seq
+# ---- deferred to PR 4 (OTIO effects / per-clip metadata) -----------------
+
+.pr4 <- function(verb) {
+    stop(sprintf("%s migrates to OTIO effects in PR 4; not available yet", verb),
+         call. = FALSE)
 }
 
-#' Set a clip's compositing transform (position, scale, rotation, opacity)
-#'
-#' Position is given in the chosen coord system (default \code{"topleft"},
-#' configurable via \code{options(nle.coords)}). Storage is always
-#' canonical top-left + Y down.
-#'
-#' @param seq An \code{nle_sequence}.
-#' @param clip Clip id.
-#' @param pos_x,pos_y Position in the chosen coord system; NULL to keep.
-#' @param scale_x,scale_y Per-axis scale; NULL to keep.
-#' @param rotation_deg Clockwise degrees, applied around the displayed
-#'   bbox centre after positioning; NULL to keep.
-#' @param opacity Opacity 0-1; NULL to keep.
-#' @param coord One of \code{"topleft"}, \code{"cartesian"},
-#'   \code{"center"}. Defaults to \code{options(nle.coords)} then
-#'   \code{"topleft"}.
-#' @param source_w,source_h Source dimensions in pixels, needed for
-#'   \code{coord = "cartesian"} or \code{"center"} when scale is set.
-#'   Defaults to the canvas size if not given.
+#' @rdname clip_add
+#' @param ... Deferred-verb arguments (see PR 4).
 #' @export
-clip_transform <- function(seq, clip,
-                           pos_x = NULL, pos_y = NULL,
-                           scale_x = NULL, scale_y = NULL,
-                           rotation_deg = NULL, opacity = NULL,
-                           coord = NULL,
-                           source_w = NULL, source_h = NULL) {
-    i <- .clip_idx(seq, clip)
-    if (!is.null(scale_x))      seq$clips$scale_x[i]      <- scale_x
-    if (!is.null(scale_y))      seq$clips$scale_y[i]      <- scale_y
-    if (!is.null(rotation_deg)) seq$clips$rotation_deg[i] <- rotation_deg
-    if (!is.null(opacity))      seq$clips$opacity[i]      <- opacity
-    if (!is.null(pos_x) || !is.null(pos_y)) {
-        coord <- resolve_coords(coord)
-        canvas_w <- seq$canvas$width
-        canvas_h <- seq$canvas$height
-        src_w <- source_w %||% canvas_w
-        src_h <- source_h %||% canvas_h
-        sx <- seq$clips$scale_x[i]
-        sy <- seq$clips$scale_y[i]
-        displayed_w <- src_w * sx
-        displayed_h <- src_h * sy
-        px <- pos_x %||% seq$clips$pos_x[i]
-        py <- pos_y %||% seq$clips$pos_y[i]
-        tl <- to_topleft(px, py, coord, canvas_w, canvas_h,
-                         displayed_w, displayed_h)
-        seq$clips$pos_x[i] <- tl[["pos_x"]]
-        seq$clips$pos_y[i] <- tl[["pos_y"]]
-    }
-    seq
-}
+clip_speed <- function(seq, clip, speed) .pr4("clip_speed")
 
-#' Set a clip's crop (normalized 0-1 from each edge)
-#'
-#' @param seq An \code{nle_sequence}.
-#' @param clip Clip id.
-#' @param left,right,top,bottom Normalized [0, 1] crop from each edge;
-#'   NULL to keep.
+#' @rdname clip_add
 #' @export
-clip_crop <- function(seq, clip,
-                      left = NULL, right = NULL, top = NULL, bottom = NULL) {
-    i <- .clip_idx(seq, clip)
-    if (!is.null(left))   seq$clips$crop_left[i]   <- left
-    if (!is.null(right))  seq$clips$crop_right[i]  <- right
-    if (!is.null(top))    seq$clips$crop_top[i]    <- top
-    if (!is.null(bottom)) seq$clips$crop_bottom[i] <- bottom
-    seq
-}
+clip_transform <- function(seq, clip, ...) .pr4("clip_transform")
 
-#' Set a clip's mute, blend mode, or label
-#'
-#' @param seq An \code{nle_sequence}.
-#' @param clip Clip id.
-#' @param mute Logical; NULL to keep.
-#' @param blend Blend mode (\code{"normal"}, \code{"alpha_over"}, ...);
-#'   NULL to keep.
-#' @param label Label string; NULL to keep.
+#' @rdname clip_add
 #' @export
-clip_set <- function(seq, clip, mute = NULL, blend = NULL, label = NULL) {
-    i <- .clip_idx(seq, clip)
-    if (!is.null(mute))  seq$clips$mute[i]  <- as.logical(mute)
-    if (!is.null(blend)) seq$clips$blend[i] <- blend
-    if (!is.null(label)) seq$clips$label[i] <- label
-    seq
-}
+clip_crop <- function(seq, clip, ...) .pr4("clip_crop")
+
+#' @rdname clip_add
+#' @export
+clip_set <- function(seq, clip, ...) .pr4("clip_set")

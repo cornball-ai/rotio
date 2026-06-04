@@ -40,17 +40,17 @@ shift_after <- function(seq, after, delta, inclusive = TRUE) {
     }
     after_f <- .to_frames_at_seq(after, seq)
     delta_f <- .to_frames_at_seq(delta, seq)
-    if (delta_f == 0L) return(seq)
-    if (nrow(seq$clips) == 0L) return(seq)
+    clips <- seq$clips
+    if (delta_f == 0L || nrow(clips) == 0L) return(seq)
 
-    mask <- if (isTRUE(inclusive))
-        seq$clips$tl_in >= after_f
-    else
-        seq$clips$tl_in >  after_f
-
+    mask <- if (isTRUE(inclusive)) clips$tl_in >= after_f
+            else                   clips$tl_in >  after_f
     if (!any(mask)) return(seq)
 
-    seq$clips$tl_in[mask]  <- seq$clips$tl_in[mask]  + delta_f
-    seq$clips$tl_out[mask] <- seq$clips$tl_out[mask] + delta_f
-    seq
+    clips$tl_in[mask]  <- clips$tl_in[mask]  + delta_f
+    clips$tl_out[mask] <- clips$tl_out[mask] + delta_f
+    if (any(clips$tl_in < 0)) {
+        stop("shift_after: delta would push a clip before frame 0", call. = FALSE)
+    }
+    .seq_rebuild(seq, .seq_tracks_tbl(seq), clips)
 }

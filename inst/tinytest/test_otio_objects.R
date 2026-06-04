@@ -54,3 +54,21 @@ expect_error(otio_remove_clip(v1, 99L), "out of range")
 # Audio track kind round-trips.
 a1 <- otio_track("a1", "Audio")
 expect_equal(otio_kind(a1), "Audio")
+
+# ExternalReference object + generated getter/setter.
+ref <- otio_external_reference("a.mp4")
+expect_true(inherits(ref, "otio_external_reference"))
+expect_equal(otio_target_url(ref), "a.mp4")
+otio_set_target_url(ref, "b.mov")
+expect_equal(otio_target_url(ref), "b.mov")
+
+# Generated name/kind setters (mutate in place).
+tl3 <- otio_timeline("old")
+otio_set_name(tl3, "new")
+expect_equal(otio_name(tl3), "new")
+
+trk <- otio_track("t", "Video")
+otio_set_name(trk, "renamed")
+expect_equal(otio_name(trk), "renamed")
+otio_set_kind(trk, "Audio")
+expect_equal(otio_kind(trk), "Audio")

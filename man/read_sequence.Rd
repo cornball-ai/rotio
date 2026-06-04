@@ -12,10 +12,7 @@ read_sequence(path)
 An \code{nle_sequence}.
 }
 \description{
-Parses the single delimited state block, validates schema/version,
-and returns the resulting \code{nle_sequence}. The surrounding prose
-is attached as the \code{"prose"} attribute so \code{write_sequence()}
-can preserve it.
-Strict parser: errors on missing, duplicated, or malformed markers, on
-unsupported encoding, or on schema mismatch.
+Parses the single OTIO state block and returns an \code{nle_sequence}. The
+surrounding prose is attached as the \code{"prose"} attribute so
+\code{write_sequence()} can preserve it. Strict parser.
 }

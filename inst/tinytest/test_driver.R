@@ -18,7 +18,7 @@ nle_register_driver(
     apply = function(seq, ...) "applied",
     capabilities = function() list(formats = "memory", coords = "topleft",
                                    time = "frames", fields_preserved = "all",
-                                   extensions = "extensions.fake")
+                                   metadata = "fake")
 )
 expect_true(nle_driver_registered("fake"))
 expect_true("fake" %in% nle_drivers())

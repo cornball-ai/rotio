@@ -17,7 +17,7 @@ if the driver does not implement write-through.}
 
 \item{capabilities}{Function: \code{function() -> list}. Should return
 a list with at least \code{formats}, \code{coords}, \code{time},
-\code{fields_preserved}, \code{extensions} (see SEQUENCE_SCHEMA.md).}
+\code{fields_preserved}, \code{metadata} (see SEQUENCE_SCHEMA.md).}
 }
 \value{
 Invisible TRUE.

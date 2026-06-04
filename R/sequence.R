@@ -38,7 +38,8 @@ new_timeline <- function(id = "untitled",
         as.double(canvas[1]), as.double(canvas[2]), as.double(sample_rate),
         character(0), character(0),                       # tracks
         character(0), character(0), character(0),         # clip track/id/asset
-        numeric(0), numeric(0), numeric(0), numeric(0))   # clip times
+        numeric(0), numeric(0), numeric(0), numeric(0),   # clip times
+        numeric(0))                                       # clip speed
     structure(list(ptr = ptr), class = "nle_timeline")
 }
 
@@ -143,7 +144,8 @@ print.nle_timeline <- function(x, ...) timeline_summary(x)
         as.character(clips_tbl$track), as.character(clips_tbl$id),
         as.character(clips_tbl$asset),
         as.double(clips_tbl$tl_in), as.double(clips_tbl$tl_out),
-        as.double(clips_tbl$source_in), as.double(clips_tbl$rate))
+        as.double(clips_tbl$source_in), as.double(clips_tbl$rate),
+        as.double(clips_tbl$speed %||% rep(1, nrow(clips_tbl))))
     structure(list(ptr = ptr), class = "nle_timeline")
 }
 

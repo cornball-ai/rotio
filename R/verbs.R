@@ -59,10 +59,7 @@ clip_add <- function(timeline, track, tl_in, tl_out, asset,
                      kind = NULL, source_in = 0L, source_out = NULL,
                      speed = 1.0, label = NULL, id = NULL) {
     .track_exists(timeline, track)
-    if (!isTRUE(all.equal(speed, 1.0))) {
-        stop("clip_add: speed != 1 (time-remap) lands in PR 4 with OTIO effects",
-             call. = FALSE)
-    }
+    if (speed <= 0) stop("clip_add: speed must be positive", call. = FALSE)
     tl_in_f  <- .to_frames_at_seq(tl_in, timeline)
     tl_out_f <- .to_frames_at_seq(tl_out, timeline)
     if (tl_out_f <= tl_in_f) {
@@ -72,7 +69,8 @@ clip_add <- function(timeline, track, tl_in, tl_out, asset,
     if (!is.null(source_out)) {
         src_out_f <- .to_frames_at_seq(source_out, timeline)
         if (src_out_f - src_in_f != tl_out_f - tl_in_f) {
-            stop("clip_add: source span must equal timeline span (speed != 1 is PR 4)",
+            stop("clip_add: source span must equal the timeline span; ",
+                 "speed is recorded separately as a LinearTimeWarp",
                  call. = FALSE)
         }
     }
@@ -85,7 +83,8 @@ clip_add <- function(timeline, track, tl_in, tl_out, asset,
         id = id, track = track, kind = tkind, asset = as.character(asset),
         tl_in = tl_in_f, tl_out = tl_out_f,
         source_in = src_in_f, source_out = src_in_f + (tl_out_f - tl_in_f),
-        rate = timeline_fps(timeline), stringsAsFactors = FALSE)
+        rate = timeline_fps(timeline), speed = as.numeric(speed),
+        stringsAsFactors = FALSE)
     .seq_rebuild(timeline, .seq_tracks_tbl(timeline), rbind(clips, row))
 }
 
@@ -177,26 +176,48 @@ clip_split <- function(timeline, clip, at) {
     .seq_rebuild(timeline, .seq_tracks_tbl(timeline), rbind(clips, right))
 }
 
-# ---- deferred to PR 4 (OTIO effects / per-clip metadata) -----------------
+#' Set a clip's playback speed (time-remap)
+#'
+#' Records the speed as an OTIO \code{LinearTimeWarp} on the clip
+#' (\code{time_scalar = speed}; >1 is faster). Modelled on OTIO: the warp is an
+#' annotation, so it does not change the clip's timeline footprint — the source
+#' range still defines what is shown, and a player / driver applies the rate.
+#' Pass \code{speed = 1} to clear the warp.
+#'
+#' @param timeline An \code{nle_timeline}.
+#' @param clip Clip id.
+#' @param speed Playback multiplier (> 0).
+#' @return The updated timeline.
+#' @export
+clip_speed <- function(timeline, clip, speed) {
+    if (speed <= 0) stop("clip_speed: speed must be positive", call. = FALSE)
+    clips <- timeline$clips
+    i <- .clip_idx(clips, clip)
+    clips$speed[i] <- as.numeric(speed)
+    .seq_rebuild(timeline, .seq_tracks_tbl(timeline), clips)
+}
 
-.pr4 <- function(verb) {
-    stop(sprintf("%s migrates to OTIO effects in PR 4; not available yet", verb),
-         call. = FALSE)
+# ---- deferred: generic compositing effects (transform/crop/blend/...) -----
+# These become a generic OTIO Effect API (clip_effect_add / clip_effects),
+# modelled on OTIO's Effect schema rather than Blender-shaped fixed fields.
+# They need a clone-based mutation path (the scalar-table rebuild can't carry
+# arbitrary per-clip effects), which lands in its own PR.
+
+.effects_pr <- function(verb) {
+    stop(sprintf(
+        "%s: compositing effects move to a generic OTIO Effect API in a later PR",
+        verb), call. = FALSE)
 }
 
 #' @rdname clip_add
-#' @param ... Deferred-verb arguments (see PR 4).
+#' @param ... Deferred-verb arguments.
 #' @export
-clip_speed <- function(timeline, clip, speed) .pr4("clip_speed")
+clip_transform <- function(timeline, clip, ...) .effects_pr("clip_transform")
 
 #' @rdname clip_add
 #' @export
-clip_transform <- function(timeline, clip, ...) .pr4("clip_transform")
+clip_crop <- function(timeline, clip, ...) .effects_pr("clip_crop")
 
 #' @rdname clip_add
 #' @export
-clip_crop <- function(timeline, clip, ...) .pr4("clip_crop")
-
-#' @rdname clip_add
-#' @export
-clip_set <- function(timeline, clip, ...) .pr4("clip_set")
+clip_set <- function(timeline, clip, ...) .effects_pr("clip_set")

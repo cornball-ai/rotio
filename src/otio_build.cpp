@@ -26,6 +26,8 @@
 #include <opentimelineio/externalReference.h>
 #include <opentimelineio/composition.h>
 #include <opentimelineio/item.h>
+#include <opentimelineio/linearTimeWarp.h>
+#include <opentimelineio/effect.h>
 #include <opentimelineio/errorStatus.h>
 #include <opentime/timeRange.h>
 #include <algorithm>
@@ -46,11 +48,23 @@ static double child_duration(otio::Composable* comp) {
     return d.value();
 }
 
+// A clip's playback speed, read from its first LinearTimeWarp effect
+// (time_scalar). 1.0 if the clip has no time warp. Modelled on OTIO: the warp
+// is an annotation; per OTIO it does not change the clip's track footprint.
+static double clip_speed_of(otio::Clip* c) {
+    for (auto const& eff : c->effects()) {
+        if (auto w = dynamic_cast<otio::LinearTimeWarp*>((otio::Effect*) eff)) {
+            return w->time_scalar();
+        }
+    }
+    return 1.0;
+}
+
 // [[Rcpp::export]]
 Rcpp::DataFrame otio_timeline_clips_df(SEXP tl) {
     otio::Timeline* t = unwrap_otio<otio::Timeline>(tl);
     std::vector<std::string> id, track, kind, asset;
-    std::vector<double> tl_in, tl_out, source_in, source_out, rate;
+    std::vector<double> tl_in, tl_out, source_in, source_out, rate, speed;
 
     for (auto const& tchild : t->tracks()->children()) {
         otio::Track* tr = dynamic_cast<otio::Track*>((otio::Composable*) tchild);
@@ -80,6 +94,7 @@ Rcpp::DataFrame otio_timeline_clips_df(SEXP tl) {
                 source_in.push_back(sv);
                 source_out.push_back(sv + dur);
                 rate.push_back(sr);
+                speed.push_back(clip_speed_of(c));
             }
             cursor += dur; // gaps advance the cursor but are not surfaced
         }
@@ -94,6 +109,7 @@ Rcpp::DataFrame otio_timeline_clips_df(SEXP tl) {
         Rcpp::Named("source_in") = source_in,
         Rcpp::Named("source_out") = source_out,
         Rcpp::Named("rate") = rate,
+        Rcpp::Named("speed") = speed,
         Rcpp::Named("stringsAsFactors") = false);
 }
 
@@ -112,7 +128,8 @@ SEXP otio_build_timeline(std::string name,
                          Rcpp::NumericVector clip_tl_in,
                          Rcpp::NumericVector clip_tl_out,
                          Rcpp::NumericVector clip_src_in,
-                         Rcpp::NumericVector clip_rate) {
+                         Rcpp::NumericVector clip_rate,
+                         Rcpp::NumericVector clip_speed) {
     otio::Timeline* timeline = new otio::Timeline(name);
     otio::AnyDictionary& meta = timeline->metadata();
     meta["nle_fps_num"] = fps_num;
@@ -160,6 +177,12 @@ SEXP otio_build_timeline(std::string name,
             TimeRange range(RationalTime(sin, r), RationalTime(tout - tin, r));
             otio::Clip* clip =
                 new otio::Clip(Rcpp::as<std::string>(clip_id[i]), ref, range);
+            double sp = clip_speed[i];
+            if (sp != 1.0) {
+                clip->effects().push_back(
+                    Ret<otio::Effect>(new otio::LinearTimeWarp(
+                        "", "LinearTimeWarp", sp)));
+            }
             otio::ErrorStatus cerr;
             tr->append_child(clip, &cerr);
             if (otio::is_error(cerr)) Rcpp::stop("clip: %s", cerr.details);

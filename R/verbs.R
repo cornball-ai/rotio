@@ -197,27 +197,7 @@ clip_speed <- function(timeline, clip, speed) {
     .seq_rebuild(timeline, .seq_tracks_tbl(timeline), clips)
 }
 
-# ---- deferred: generic compositing effects (transform/crop/blend/...) -----
-# These become a generic OTIO Effect API (clip_effect_add / clip_effects),
-# modelled on OTIO's Effect schema rather than Blender-shaped fixed fields.
-# They need a clone-based mutation path (the scalar-table rebuild can't carry
-# arbitrary per-clip effects), which lands in its own PR.
-
-.effects_pr <- function(verb) {
-    stop(sprintf(
-        "%s: compositing effects move to a generic OTIO Effect API in a later PR",
-        verb), call. = FALSE)
-}
-
-#' @rdname clip_add
-#' @param ... Deferred-verb arguments.
-#' @export
-clip_transform <- function(timeline, clip, ...) .effects_pr("clip_transform")
-
-#' @rdname clip_add
-#' @export
-clip_crop <- function(timeline, clip, ...) .effects_pr("clip_crop")
-
-#' @rdname clip_add
-#' @export
-clip_set <- function(timeline, clip, ...) .effects_pr("clip_set")
+# Compositing effects (transform, crop, colour, ...) are not fixed verbs:
+# they are generic OTIO Effects attached via clip_effect_add() (see R/effects.R),
+# modelled on OTIO's Effect schema rather than a Blender-shaped field set. Speed
+# is clip_speed() (an OTIO LinearTimeWarp).

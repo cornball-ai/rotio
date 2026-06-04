@@ -1,19 +1,10 @@
 % tinyrox says don't edit this manually, but it can't stop you!
 \name{clip_add}
 \alias{clip_add}
-\alias{clip_transform}
-\alias{clip_crop}
-\alias{clip_set}
 \title{Add a clip to a track}
 \usage{
 clip_add(timeline, track, tl_in, tl_out, asset, kind = NULL, source_in = 0L,
          source_out = NULL, speed = 1, label = NULL, id = NULL)
-
-clip_transform(timeline, clip, ...)
-
-clip_crop(timeline, clip, ...)
-
-clip_set(timeline, clip, ...)
 }
 \arguments{
 \item{timeline}{An \code{nle_timeline}.}
@@ -29,8 +20,6 @@ clip_set(timeline, clip, ...)
 \item{source_out}{Source media out-point; default keeps clip duration.}
 
 \item{speed}{Must be 1 in this release; time-remap arrives in PR 4.}
-
-\item{...}{Deferred-verb arguments.}
 
 \item{tl_in,tl_out}{Timeline in/out points.}
 

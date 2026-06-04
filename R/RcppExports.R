@@ -5,12 +5,32 @@ otio_timeline_clips_df <- function(tl) {
     .Call(`_nle_api_otio_timeline_clips_df`, tl)
 }
 
-otio_build_timeline <- function(name, fps_num, fps_den, canvas_w, canvas_h, sample_rate, track_ids, track_kinds, clip_track, clip_id, clip_asset, clip_tl_in, clip_tl_out, clip_src_in, clip_rate, clip_speed) {
-    .Call(`_nle_api_otio_build_timeline`, name, fps_num, fps_den, canvas_w, canvas_h, sample_rate, track_ids, track_kinds, clip_track, clip_id, clip_asset, clip_tl_in, clip_tl_out, clip_src_in, clip_rate, clip_speed)
+otio_build_timeline <- function(name, fps_num, fps_den, canvas_w, canvas_h, sample_rate, track_ids, track_kinds, clip_track, clip_id, clip_asset, clip_tl_in, clip_tl_out, clip_src_in, clip_rate, clip_speed, prev) {
+    .Call(`_nle_api_otio_build_timeline`, name, fps_num, fps_den, canvas_w, canvas_h, sample_rate, track_ids, track_kinds, clip_track, clip_id, clip_asset, clip_tl_in, clip_tl_out, clip_src_in, clip_rate, clip_speed, prev)
 }
 
 otio_timeline_config <- function(tl) {
     .Call(`_nle_api_otio_timeline_config`, tl)
+}
+
+otio_timeline_clone <- function(tl) {
+    .Call(`_nle_api_otio_timeline_clone`, tl)
+}
+
+otio_clip_effect_add <- function(tl, clip_id, effect_name, params, enabled) {
+    .Call(`_nle_api_otio_clip_effect_add`, tl, clip_id, effect_name, params, enabled)
+}
+
+otio_clip_effects_df <- function(tl, clip_id) {
+    .Call(`_nle_api_otio_clip_effects_df`, tl, clip_id)
+}
+
+otio_clip_effect_params <- function(tl, clip_id, index) {
+    .Call(`_nle_api_otio_clip_effect_params`, tl, clip_id, index)
+}
+
+otio_clip_effect_remove <- function(tl, clip_id, index) {
+    .Call(`_nle_api_otio_clip_effect_remove`, tl, clip_id, index)
 }
 
 otio_timeline_create <- function(name) {

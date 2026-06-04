@@ -48,6 +48,35 @@ static double child_duration(otio::Composable* comp) {
     return d.value();
 }
 
+// Find a clip by name across a timeline's tracks (nullptr if absent).
+static otio::Clip* find_clip_named(otio::Timeline* t, std::string const& id) {
+    for (auto const& tc : t->tracks()->children()) {
+        otio::Track* tr = dynamic_cast<otio::Track*>((otio::Composable*) tc);
+        if (!tr) continue;
+        for (auto const& ch : tr->children()) {
+            otio::Clip* c = dynamic_cast<otio::Clip*>((otio::Composable*) ch);
+            if (c && c->name() == id) return c;
+        }
+    }
+    return nullptr;
+}
+
+// Copy a source clip's non-time effects (everything except LinearTimeWarp,
+// which the speed column re-creates) onto a freshly built clip, by deep-cloning
+// each effect. This is what lets generic effects survive the structural rebuild.
+static void clone_effects_forward(otio::Clip* from, otio::Clip* to) {
+    for (auto const& e : from->effects()) {
+        otio::Effect* eff = e;
+        if (dynamic_cast<otio::LinearTimeWarp*>(eff)) continue;
+        otio::ErrorStatus err;
+        otio::SerializableObject* cl = eff->clone(&err);
+        if (otio::is_error(err)) continue;
+        if (auto ce = dynamic_cast<otio::Effect*>(cl)) {
+            to->effects().push_back(Ret<otio::Effect>(ce));
+        }
+    }
+}
+
 // A clip's playback speed, read from its first LinearTimeWarp effect
 // (time_scalar). 1.0 if the clip has no time warp. Modelled on OTIO: the warp
 // is an annotation; per OTIO it does not change the clip's track footprint.
@@ -129,7 +158,10 @@ SEXP otio_build_timeline(std::string name,
                          Rcpp::NumericVector clip_tl_out,
                          Rcpp::NumericVector clip_src_in,
                          Rcpp::NumericVector clip_rate,
-                         Rcpp::NumericVector clip_speed) {
+                         Rcpp::NumericVector clip_speed,
+                         SEXP prev) {
+    otio::Timeline* prev_tl =
+        Rf_isNull(prev) ? nullptr : unwrap_otio<otio::Timeline>(prev);
     otio::Timeline* timeline = new otio::Timeline(name);
     otio::AnyDictionary& meta = timeline->metadata();
     meta["nle_fps_num"] = fps_num;
@@ -182,6 +214,13 @@ SEXP otio_build_timeline(std::string name,
                 clip->effects().push_back(
                     Ret<otio::Effect>(new otio::LinearTimeWarp(
                         "", "LinearTimeWarp", sp)));
+            }
+            if (prev_tl) {
+                if (otio::Clip* old =
+                        find_clip_named(prev_tl,
+                                        Rcpp::as<std::string>(clip_id[i]))) {
+                    clone_effects_forward(old, clip);
+                }
             }
             otio::ErrorStatus cerr;
             tr->append_child(clip, &cerr);

@@ -22,8 +22,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // otio_build_timeline
-SEXP otio_build_timeline(std::string name, double fps_num, double fps_den, double canvas_w, double canvas_h, double sample_rate, Rcpp::CharacterVector track_ids, Rcpp::CharacterVector track_kinds, Rcpp::CharacterVector clip_track, Rcpp::CharacterVector clip_id, Rcpp::CharacterVector clip_asset, Rcpp::NumericVector clip_tl_in, Rcpp::NumericVector clip_tl_out, Rcpp::NumericVector clip_src_in, Rcpp::NumericVector clip_rate, Rcpp::NumericVector clip_speed);
-RcppExport SEXP _nle_api_otio_build_timeline(SEXP nameSEXP, SEXP fps_numSEXP, SEXP fps_denSEXP, SEXP canvas_wSEXP, SEXP canvas_hSEXP, SEXP sample_rateSEXP, SEXP track_idsSEXP, SEXP track_kindsSEXP, SEXP clip_trackSEXP, SEXP clip_idSEXP, SEXP clip_assetSEXP, SEXP clip_tl_inSEXP, SEXP clip_tl_outSEXP, SEXP clip_src_inSEXP, SEXP clip_rateSEXP, SEXP clip_speedSEXP) {
+SEXP otio_build_timeline(std::string name, double fps_num, double fps_den, double canvas_w, double canvas_h, double sample_rate, Rcpp::CharacterVector track_ids, Rcpp::CharacterVector track_kinds, Rcpp::CharacterVector clip_track, Rcpp::CharacterVector clip_id, Rcpp::CharacterVector clip_asset, Rcpp::NumericVector clip_tl_in, Rcpp::NumericVector clip_tl_out, Rcpp::NumericVector clip_src_in, Rcpp::NumericVector clip_rate, Rcpp::NumericVector clip_speed, SEXP prev);
+RcppExport SEXP _nle_api_otio_build_timeline(SEXP nameSEXP, SEXP fps_numSEXP, SEXP fps_denSEXP, SEXP canvas_wSEXP, SEXP canvas_hSEXP, SEXP sample_rateSEXP, SEXP track_idsSEXP, SEXP track_kindsSEXP, SEXP clip_trackSEXP, SEXP clip_idSEXP, SEXP clip_assetSEXP, SEXP clip_tl_inSEXP, SEXP clip_tl_outSEXP, SEXP clip_src_inSEXP, SEXP clip_rateSEXP, SEXP clip_speedSEXP, SEXP prevSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -43,7 +43,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type clip_src_in(clip_src_inSEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type clip_rate(clip_rateSEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type clip_speed(clip_speedSEXP);
-    rcpp_result_gen = Rcpp::wrap(otio_build_timeline(name, fps_num, fps_den, canvas_w, canvas_h, sample_rate, track_ids, track_kinds, clip_track, clip_id, clip_asset, clip_tl_in, clip_tl_out, clip_src_in, clip_rate, clip_speed));
+    Rcpp::traits::input_parameter< SEXP >::type prev(prevSEXP);
+    rcpp_result_gen = Rcpp::wrap(otio_build_timeline(name, fps_num, fps_den, canvas_w, canvas_h, sample_rate, track_ids, track_kinds, clip_track, clip_id, clip_asset, clip_tl_in, clip_tl_out, clip_src_in, clip_rate, clip_speed, prev));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -55,6 +56,70 @@ BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< SEXP >::type tl(tlSEXP);
     rcpp_result_gen = Rcpp::wrap(otio_timeline_config(tl));
+    return rcpp_result_gen;
+END_RCPP
+}
+// otio_timeline_clone
+SEXP otio_timeline_clone(SEXP tl);
+RcppExport SEXP _nle_api_otio_timeline_clone(SEXP tlSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type tl(tlSEXP);
+    rcpp_result_gen = Rcpp::wrap(otio_timeline_clone(tl));
+    return rcpp_result_gen;
+END_RCPP
+}
+// otio_clip_effect_add
+SEXP otio_clip_effect_add(SEXP tl, std::string clip_id, std::string effect_name, Rcpp::List params, bool enabled);
+RcppExport SEXP _nle_api_otio_clip_effect_add(SEXP tlSEXP, SEXP clip_idSEXP, SEXP effect_nameSEXP, SEXP paramsSEXP, SEXP enabledSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type tl(tlSEXP);
+    Rcpp::traits::input_parameter< std::string >::type clip_id(clip_idSEXP);
+    Rcpp::traits::input_parameter< std::string >::type effect_name(effect_nameSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type params(paramsSEXP);
+    Rcpp::traits::input_parameter< bool >::type enabled(enabledSEXP);
+    rcpp_result_gen = Rcpp::wrap(otio_clip_effect_add(tl, clip_id, effect_name, params, enabled));
+    return rcpp_result_gen;
+END_RCPP
+}
+// otio_clip_effects_df
+Rcpp::DataFrame otio_clip_effects_df(SEXP tl, std::string clip_id);
+RcppExport SEXP _nle_api_otio_clip_effects_df(SEXP tlSEXP, SEXP clip_idSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type tl(tlSEXP);
+    Rcpp::traits::input_parameter< std::string >::type clip_id(clip_idSEXP);
+    rcpp_result_gen = Rcpp::wrap(otio_clip_effects_df(tl, clip_id));
+    return rcpp_result_gen;
+END_RCPP
+}
+// otio_clip_effect_params
+Rcpp::List otio_clip_effect_params(SEXP tl, std::string clip_id, int index);
+RcppExport SEXP _nle_api_otio_clip_effect_params(SEXP tlSEXP, SEXP clip_idSEXP, SEXP indexSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type tl(tlSEXP);
+    Rcpp::traits::input_parameter< std::string >::type clip_id(clip_idSEXP);
+    Rcpp::traits::input_parameter< int >::type index(indexSEXP);
+    rcpp_result_gen = Rcpp::wrap(otio_clip_effect_params(tl, clip_id, index));
+    return rcpp_result_gen;
+END_RCPP
+}
+// otio_clip_effect_remove
+SEXP otio_clip_effect_remove(SEXP tl, std::string clip_id, int index);
+RcppExport SEXP _nle_api_otio_clip_effect_remove(SEXP tlSEXP, SEXP clip_idSEXP, SEXP indexSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type tl(tlSEXP);
+    Rcpp::traits::input_parameter< std::string >::type clip_id(clip_idSEXP);
+    Rcpp::traits::input_parameter< int >::type index(indexSEXP);
+    rcpp_result_gen = Rcpp::wrap(otio_clip_effect_remove(tl, clip_id, index));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -392,8 +457,13 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_nle_api_otio_timeline_clips_df", (DL_FUNC) &_nle_api_otio_timeline_clips_df, 1},
-    {"_nle_api_otio_build_timeline", (DL_FUNC) &_nle_api_otio_build_timeline, 16},
+    {"_nle_api_otio_build_timeline", (DL_FUNC) &_nle_api_otio_build_timeline, 17},
     {"_nle_api_otio_timeline_config", (DL_FUNC) &_nle_api_otio_timeline_config, 1},
+    {"_nle_api_otio_timeline_clone", (DL_FUNC) &_nle_api_otio_timeline_clone, 1},
+    {"_nle_api_otio_clip_effect_add", (DL_FUNC) &_nle_api_otio_clip_effect_add, 5},
+    {"_nle_api_otio_clip_effects_df", (DL_FUNC) &_nle_api_otio_clip_effects_df, 2},
+    {"_nle_api_otio_clip_effect_params", (DL_FUNC) &_nle_api_otio_clip_effect_params, 3},
+    {"_nle_api_otio_clip_effect_remove", (DL_FUNC) &_nle_api_otio_clip_effect_remove, 3},
     {"_nle_api_otio_timeline_create", (DL_FUNC) &_nle_api_otio_timeline_create, 1},
     {"_nle_api_otio_externalreference_create", (DL_FUNC) &_nle_api_otio_externalreference_create, 1},
     {"_nle_api_otio_get_timeline_name", (DL_FUNC) &_nle_api_otio_get_timeline_name, 1},

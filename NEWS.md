@@ -1,3 +1,19 @@
+# nle.api 0.0.2.5 (dev)
+
+## New verbs
+
+Structural edit verbs that round out the surface (no new C++; all expressible
+in the gap model):
+
+* `track_delete()` - remove a track and its clips.
+* `track_move()` - reorder a track in the compositing stack.
+* `ripple_delete()` - delete a clip and close the gap (vs `clip_delete`, which
+  leaves one).
+* `clip_slip()` - shift a clip's source in/out without moving its timeline
+  position.
+* `clip_duplicate()` - copy a clip to a new position (defaults to right after
+  the original).
+
 # nle.api 0.0.2.4 (dev)
 
 ## Changes

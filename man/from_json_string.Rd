@@ -9,7 +9,8 @@ from_json_string(input)
 \item{input}{An OTIO JSON string.}
 }
 \value{
-The reconstructed OTIO object (typically a \code{\link{Timeline}}).
+The reconstructed OTIO object (typically a \code{\link{Timeline}}),
+  with parent pointers wired.
 }
 \description{
 Parse an OTIO JSON string into the object model

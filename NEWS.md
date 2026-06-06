@@ -1,3 +1,19 @@
+# nle.api 0.0.2.10 (dev)
+
+## Phase 1 of full OTIO parity: environment-backed core
+
+* The object model is now environment-backed with reference semantics (internal
+  `.parent` pointers, never serialized), the foundation for full rotio parity
+  (see PLAN.md / OTIO_PARITY.md). Mutating tree ops mirror rotio: `append_child`,
+  `insert_child`, `set_child`, `set_children`, `remove_child`, `clear_children`
+  (attaching an already-parented child errors); plus `parent`, `children`,
+  `has_child`, `has_clips`, `is_parent_of`, `index_of_child`, `find_clips`,
+  `clone` (deep, parent-aware), `color`, `kind<-`, `media_reference<-`,
+  media-reference keys, and `SerializableCollection`.
+* The functional builders (`add_child`/`add_track`/`add_effect`) remain as
+  value-semantics sugar over the mutating core, so existing callers (licuadora)
+  are unaffected. Serialized OTIO JSON is unchanged (still rotio-equivalent).
+
 # nle.api 0.0.2.9 (dev)
 
 ## New: OTIO effects

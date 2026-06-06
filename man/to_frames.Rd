@@ -8,9 +8,9 @@ to_frames(x, rate = NULL)
 \arguments{
 \item{x}{A \code{RationalTime}.}
 
-\item{rate}{Optional target rate to rescale to before taking the frame number.}
+\item{rate}{Optional target rate to rescale to first.}
 }
 \description{
-Returns the integer frame number. With no \code{rate}, rounds the value at the
-time's own rate; with a \code{rate}, rescales first.
+Integer frame number. With no \code{rate}, rounds at the time's own rate; with
+a \code{rate}, rescales first.
 }

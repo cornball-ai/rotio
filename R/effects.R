@@ -1,35 +1,29 @@
-# OpenTimelineIO effects, pure R.
-#
-# Effects attach to items and compositions (the `effects` list on Clip, Gap,
-# Track, Stack). A generic Effect is an effect_name plus metadata; a
-# LinearTimeWarp adds a time_scalar (playback rate; >1 is faster). Field order
-# and defaults mirror rotio's serializer (effect_name defaults to "", enabled to
-# TRUE) so emitted JSON round-trips through real OTIO. Builders are functional:
-# add_effect() returns a new object.
+# OpenTimelineIO effects (environment-backed). A generic Effect is an
+# effect_name plus metadata; LinearTimeWarp adds a time_scalar. Effects attach to
+# an item/composition's `effects` list (they are not composition children, so
+# they carry no parent pointer). Field order/defaults mirror rotio.
 
 #' Construct an OTIO effect
 #'
-#' A generic \code{Effect} is an \code{effect_name} (the driver-facing label) plus
-#' a metadata dictionary of parameters. \code{LinearTimeWarp} is OTIO's linear
-#' speed change, carrying a \code{time_scalar} (>1 faster, <1 slower).
+#' \code{Effect} is a generic \code{effect_name} plus metadata parameters.
+#' \code{LinearTimeWarp} is OTIO's linear speed change (\code{time_scalar}).
 #'
 #' @param name Effect instance name (default empty).
-#' @param effect_name Effect kind label (default empty, matching OTIO). Callers
-#'   set this to a driver-recognized name (e.g. \code{"LinearTimeWarp"}).
+#' @param effect_name Effect kind label (default empty, matching OTIO).
 #' @param enabled Whether the effect is active (default \code{TRUE}).
-#' @param metadata Named list of parameters (serialized as a JSON object).
-#' @return An \code{Effect} object.
+#' @param metadata Named list of parameters.
+#' @return An \code{Effect}.
 #' @examples
 #' Effect("blur", "GaussianBlur", metadata = list(size = 4))
 #' @export
 Effect <- function(name = "", effect_name = "", enabled = TRUE,
                    metadata = NULL) {
-    structure(list(OTIO_SCHEMA = "Effect.1",
-                   metadata = .as_metadata(metadata),
+    .new_otio("Effect",
+              c("OTIO_SCHEMA", "metadata", "name", "effect_name", "enabled"),
+              list(OTIO_SCHEMA = "Effect.1", metadata = .as_metadata(metadata),
                    name = as.character(name),
                    effect_name = as.character(effect_name),
-                   enabled = isTRUE(enabled)),
-              class = c("Effect", "otio_object"))
+                   enabled = isTRUE(enabled)))
 }
 
 #' @rdname Effect
@@ -40,13 +34,13 @@ Effect <- function(name = "", effect_name = "", enabled = TRUE,
 #' @export
 LinearTimeWarp <- function(name = "", effect_name = "", time_scalar = 1,
                            enabled = TRUE, metadata = NULL) {
-    structure(list(OTIO_SCHEMA = "LinearTimeWarp.1",
-                   metadata = .as_metadata(metadata),
-                   name = as.character(name),
-                   effect_name = as.character(effect_name),
-                   enabled = isTRUE(enabled),
-                   time_scalar = as.numeric(time_scalar)),
-              class = c("LinearTimeWarp", "Effect", "otio_object"))
+    .new_otio(
+              c("LinearTimeWarp", "Effect"),
+              c("OTIO_SCHEMA", "metadata", "name", "effect_name", "enabled",
+                "time_scalar"),
+              list(OTIO_SCHEMA = "LinearTimeWarp.1", metadata = .as_metadata(metadata),
+                   name = as.character(name), effect_name = as.character(effect_name),
+                   enabled = isTRUE(enabled), time_scalar = as.numeric(time_scalar)))
 }
 
 #' Is x an Effect?
@@ -54,10 +48,10 @@ LinearTimeWarp <- function(name = "", effect_name = "", time_scalar = 1,
 #' @export
 is_effect <- function(x) inherits(x, "Effect")
 
-#' Append an effect to an item or composition
+#' Append an effect (functional: returns a new object)
 #'
-#' Returns a new object (clip, gap, track, or stack) with \code{effect} appended
-#' to its \code{effects} list. The input is unchanged.
+#' Returns a clone of \code{x} with \code{effect} appended to its \code{effects}
+#' list; the input is unchanged.
 #'
 #' @param x An item or composition (anything with an \code{effects} list).
 #' @param effect An \code{\link{Effect}}.
@@ -69,15 +63,16 @@ is_effect <- function(x) inherits(x, "Effect")
 #' length(effects(clip))
 #' @export
 add_effect <- function(x, effect) {
-    if (!("effects" %in% names(x))) {
-        stop("add_effect: x has no effects list (need an item or composition)",
+    if (!is_otio(x) || !("effects" %in% x$.keys)) {
+        stop("add_effect: x must have an effects list (item or composition)",
              call. = FALSE)
     }
     if (!is_effect(effect)) {
         stop("add_effect: effect must be an Effect", call. = FALSE)
     }
-    x$effects <- c(x$effects, list(effect))
-    x
+    out <- clone(x)
+    out$effects <- c(out$effects, list(clone(effect)))
+    out
 }
 
 #' Effects of an item or composition

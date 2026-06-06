@@ -1,7 +1,7 @@
 % tinyrox says don't edit this manually, but it can't stop you!
 \name{add_effect}
 \alias{add_effect}
-\title{Append an effect to an item or composition}
+\title{Append an effect (functional: returns a new object)}
 \usage{
 add_effect(x, effect)
 }
@@ -14,8 +14,8 @@ add_effect(x, effect)
 A new object of the same class.
 }
 \description{
-Returns a new object (clip, gap, track, or stack) with \code{effect} appended
-to its \code{effects} list. The input is unchanged.
+Returns a clone of \code{x} with \code{effect} appended to its \code{effects}
+list; the input is unchanged.
 }
 \examples{
 clip <- Clip("a", ExternalReference("a.mp4"))

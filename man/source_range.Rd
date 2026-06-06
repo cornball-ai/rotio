@@ -2,7 +2,7 @@
 \name{source_range}
 \alias{source_range}
 \alias{source_range<-}
-\title{Source range of an item}
+\title{Get or set an item's source range}
 \usage{
 source_range(x)
 
@@ -14,5 +14,5 @@ source_range(x) <- value
 \item{value}{A \code{\link{TimeRange}}.}
 }
 \description{
-Source range of an item
+Get or set an item's source range
 }

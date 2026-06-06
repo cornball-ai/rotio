@@ -9,11 +9,10 @@ enabled(x)
 enabled(x) <- value
 }
 \arguments{
-\item{x}{An object with an \code{enabled} field (item, composition, effect).}
+\item{x}{An object with an \code{enabled} field.}
 
 \item{value}{\code{TRUE} or \code{FALSE}.}
 }
 \description{
-A disabled clip/track is muted; a disabled effect is bypassed. Read with
-\code{enabled(x)}; set with \code{enabled(x) <- value} (value semantics).
+A disabled clip/track is muted; a disabled effect is bypassed.
 }

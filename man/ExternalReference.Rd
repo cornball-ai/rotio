@@ -13,7 +13,7 @@ MissingReference(name = "", available_range = NULL, metadata = NULL)
 
 \item{available_range}{Optional \code{\link{TimeRange}} of available media.}
 
-\item{metadata}{Named list of metadata (serialized as a JSON object).}
+\item{metadata}{Named list of metadata.}
 
 \item{name}{Reference name (default empty).}
 }
@@ -22,8 +22,7 @@ A media reference object.
 }
 \description{
 \code{ExternalReference} points a clip at media by URL.
-\code{MissingReference} is a placeholder for a clip with no resolvable media
-(e.g. a caption clip whose visible artifact is a burned subtitle).
+\code{MissingReference} is a placeholder for a clip with no resolvable media.
 }
 \examples{
 ExternalReference("media/clip01.mp4")

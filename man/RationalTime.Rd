@@ -6,18 +6,17 @@
 RationalTime(value, rate = 1)
 }
 \arguments{
-\item{value}{Time value (frame number for frame-based work). Coerced to double.}
+\item{value}{Time value. Coerced to double.}
 
 \item{rate}{Rate (fps); must be > 0. Default 1.}
 }
 \value{
-A \code{RationalTime} object.
+A \code{RationalTime}.
 }
 \description{
-An OpenTimelineIO \code{RationalTime} is a \code{value / rate} pair measured
-in the rate's units. For frame-based editing \code{value} is the frame number
-and \code{rate} is the frame rate.
+A \code{value / rate} pair measured in the rate's units (frame number / fps
+for frame-based work).
 }
 \examples{
-RationalTime(180, 30)   # frame 180 at 30 fps
+RationalTime(180, 30)
 }

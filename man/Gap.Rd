@@ -6,17 +6,17 @@
 Gap(duration, name = "", metadata = NULL)
 }
 \arguments{
-\item{duration}{A \code{\link{RationalTime}} for the gap length.}
+\item{duration}{A \code{\link{RationalTime}}.}
 
 \item{name}{Gap name.}
 
 \item{metadata}{Named list of metadata.}
 }
 \value{
-A \code{Gap} object.
+A \code{Gap}.
 }
 \description{
-A \code{Gap} is empty space on a track of a given duration.
+Empty space on a track of a given duration.
 }
 \examples{
 Gap(RationalTime(15, 30))

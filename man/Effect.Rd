@@ -12,22 +12,20 @@ LinearTimeWarp(name = "", effect_name = "", time_scalar = 1, enabled = TRUE,
 \arguments{
 \item{name}{Effect instance name (default empty).}
 
-\item{effect_name}{Effect kind label (default empty, matching OTIO). Callers
-set this to a driver-recognized name (e.g. \code{"LinearTimeWarp"}).}
+\item{effect_name}{Effect kind label (default empty, matching OTIO).}
 
 \item{enabled}{Whether the effect is active (default \code{TRUE}).}
 
-\item{metadata}{Named list of parameters (serialized as a JSON object).}
+\item{metadata}{Named list of parameters.}
 
 \item{time_scalar}{Linear time scale (playback rate multiplier).}
 }
 \value{
-An \code{Effect} object.
+An \code{Effect}.
 }
 \description{
-A generic \code{Effect} is an \code{effect_name} (the driver-facing label) plus
-a metadata dictionary of parameters. \code{LinearTimeWarp} is OTIO's linear
-speed change, carrying a \code{time_scalar} (>1 faster, <1 slower).
+\code{Effect} is a generic \code{effect_name} plus metadata parameters.
+\code{LinearTimeWarp} is OTIO's linear speed change (\code{time_scalar}).
 }
 \examples{
 Effect("blur", "GaussianBlur", metadata = list(size = 4))

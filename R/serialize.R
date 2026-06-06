@@ -1,16 +1,17 @@
 # Serialize the OTIO object model to canonical OTIO JSON via jsonlite.
 #
-# Objects carry their fields in OTIO key order already (see objects.R), so
-# serialization is: recursively strip S3 classes to plain lists, then hand the
-# tree to jsonlite. NULL fields become JSON null; empty metadata is a named
-# empty list so it emits {} (not []); effects/markers/children are plain lists
-# so they emit [].
-
-# Recursively drop S3 classes so jsonlite sees plain lists (it errors on unknown
-# S3 classes otherwise). NULL elements and names are preserved by lapply.
+# Each object env carries `.keys` (OTIO field order); we emit those keys in order
+# and recurse, ignoring the internal `.parent`/`.keys` bindings. NULL fields
+# become JSON null; empty metadata is a named empty list so it emits {} (not []);
+# effects/markers/children are plain lists so they emit [].
 .to_plain <- function(x) {
+    if (is_otio(x)) {
+        out <- lapply(x$.keys, function(k) .to_plain(x[[k]]))
+        names(out) <- x$.keys
+        return(out)
+    }
     if (is.list(x)) {
-        return(lapply(unclass(x), .to_plain))
+        return(lapply(x, .to_plain))
     }
     x
 }

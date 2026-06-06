@@ -1,66 +1,81 @@
-# Parse OTIO JSON back into the object model.
+# Parse OTIO JSON back into the environment-backed object model.
 #
-# jsonlite gives us plain nested lists; we walk the tree and re-attach the S3
-# class for every node that carries an OTIO_SCHEMA, keyed on the schema name.
-# Unknown schemas are preserved field-for-field and tagged generically, so
-# objects this package does not model structurally (effects, markers, ...) still
-# round-trip.
+# jsonlite gives plain nested lists; we rebuild an environment per node carrying
+# an OTIO_SCHEMA, in the parsed key order, then rewire `.parent` pointers
+# top-down so a parsed tree satisfies the same invariants as a built one.
+# Unknown schemas are preserved field-for-field and tagged generically.
 
 # Map an OTIO_SCHEMA string ("Clip.2") to this package's S3 class vector.
 .schema_class <- function(schema) {
     type <- sub("\\.[0-9]+$", "", schema)
     switch(type,
-           RationalTime = c("RationalTime", "otio_object"),
-           TimeRange = c("TimeRange", "otio_object"),
-           ExternalReference = c("ExternalReference", "MediaReference",
-                                 "otio_object"),
-           MissingReference = c("MissingReference", "MediaReference", "otio_object"),
-           GeneratorReference = c("GeneratorReference", "MediaReference", "otio_object"),
-           ImageSequenceReference = c("ImageSequenceReference", "MediaReference", "otio_object"),
-           Clip = c("Clip", "Item", "otio_object"),
-           Gap = c("Gap", "Item", "otio_object"),
-           Effect = c("Effect", "otio_object"),
-           LinearTimeWarp = c("LinearTimeWarp", "Effect", "otio_object"),
-           Track = c("Track", "Composition", "otio_object"),
-           Stack = c("Stack", "Composition", "otio_object"),
-           Timeline = c("Timeline", "otio_object"),
-           c(type, "otio_object"))
+           RationalTime = "RationalTime",
+           TimeRange = "TimeRange",
+           ExternalReference = c("ExternalReference", "MediaReference"),
+           MissingReference = c("MissingReference", "MediaReference"),
+           GeneratorReference = c("GeneratorReference", "MediaReference"),
+           ImageSequenceReference = c("ImageSequenceReference", "MediaReference"),
+           Clip = c("Clip", "Item"),
+           Gap = c("Gap", "Item"),
+           Effect = "Effect",
+           LinearTimeWarp = c("LinearTimeWarp", "Effect"),
+           Track = c("Track", "Composition"),
+           Stack = c("Stack", "Composition"),
+           Timeline = "Timeline",
+           SerializableCollection = "SerializableCollection",
+           type)
 }
 
-# Recursively rebuild classed objects from a parsed plain list.
+# Recursively rebuild objects from a parsed plain list (no parent wiring yet).
 .parse_node <- function(x) {
     if (!is.list(x)) {
         return(x)
     }
     schema <- x[["OTIO_SCHEMA"]]
-    out <- lapply(x, .parse_node)
-    if (!is.null(schema)) {
-        if ("metadata" %in% names(out)) {
-            out$metadata <- .as_metadata(out$metadata)
-        }
-        class(out) <- .schema_class(schema)
+    if (is.null(schema)) {
+        return(lapply(x, .parse_node))
     }
-    out
+    keys <- names(x)
+    e <- new.env(parent = emptyenv())
+    for (k in keys) {
+        assign(k, .parse_node(x[[k]]), envir = e)
+    }
+    if ("metadata" %in% keys) {
+        e$metadata <- .as_metadata(e$metadata)
+    }
+    e$.keys <- keys
+    e$.parent <- NULL
+    class(e) <- c(.schema_class(schema), "otio_object")
+    e
 }
 
 #' Parse an OTIO JSON string into the object model
 #'
 #' @param input An OTIO JSON string.
-#' @return The reconstructed OTIO object (typically a \code{\link{Timeline}}).
+#' @return The reconstructed OTIO object (typically a \code{\link{Timeline}}),
+#'   with parent pointers wired.
 #' @examples
 #' tl <- Timeline("demo")
 #' identical(name(from_json_string(to_json_string(tl))), "demo")
 #' @export
 from_json_string <- function(input) {
-    .parse_node(jsonlite::fromJSON(input, simplifyVector = FALSE))
+    obj <- .parse_node(jsonlite::fromJSON(input, simplifyVector = FALSE))
+    if (is_otio(obj)) {
+        .rewire_parents(obj)
+    }
+    obj
 }
 
 #' Read an OTIO JSON file into the object model
 #'
 #' @param file_name Path to a \code{.otio} JSON file.
-#' @return The reconstructed OTIO object.
+#' @return The reconstructed OTIO object, with parent pointers wired.
 #' @export
 from_json_file <- function(file_name) {
-    .parse_node(jsonlite::fromJSON(file_name, simplifyVector = FALSE))
+    obj <- .parse_node(jsonlite::fromJSON(file_name, simplifyVector = FALSE))
+    if (is_otio(obj)) {
+        .rewire_parents(obj)
+    }
+    obj
 }
 

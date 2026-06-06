@@ -318,27 +318,36 @@ number_of_images_in_sequence <- function(x) {
 #' @param x An \code{\link{ImageSequenceReference}}.
 #' @export
 end_frame <- function(x) {
-    x$start_frame + max(number_of_images_in_sequence(x) * x$frame_step - 1L, 0L)
+    if (is.null(x$available_range)) {
+        df <- 0L
+    } else {
+        df <- to_frames(duration(x$available_range), x$rate)
+    }
+
+    x$start_frame + max(df - 1L, 0L)
 }
 
 #' Frame for a time in an ImageSequenceReference
+#'
+#' Errors if \code{time} falls outside the available range (matching OTIO).
+#'
 #' @param x An \code{\link{ImageSequenceReference}}.
 #' @param time A \code{\link{RationalTime}}.
 #' @export
 frame_for_time <- function(x, time) {
-    if (is.null(x$available_range)) {
-        base <- 0
-    } else {
-        base <- .value_rescaled(x$available_range$start_time, x$rate)
+    if (is.null(x$available_range) || !contains(x$available_range, time)) {
+        stop("frame_for_time: time is outside the available range",
+             call. = FALSE)
     }
-
+    base <- .value_rescaled(x$available_range$start_time, x$rate)
     off <- .value_rescaled(time, x$rate) - base
     x$start_frame + as.integer(floor(off / x$frame_step)) * x$frame_step
 }
 
-# Error like OTIO when an image number is outside [0, number_of_images].
+# Error like OTIO only when an image number exceeds the sequence (negative
+# numbers are allowed and produce extrapolated URLs/times, matching rotio).
 .check_image_number <- function(x, image_number) {
-    if (image_number < 0L || image_number > number_of_images_in_sequence(x)) {
+    if (image_number > number_of_images_in_sequence(x)) {
         stop("illegal index", call. = FALSE)
     }
 }
@@ -361,7 +370,9 @@ target_url_for_image_number <- function(x, image_number) {
     .check_image_number(x, image_number)
     frame <- x$start_frame + (image_number - 1L) * x$frame_step
     num <- if (x$frame_zero_padding > 0L) {
-        formatC(frame, width = x$frame_zero_padding, flag = "0", format = "d")
+        # Pad the digits to the given width, then prepend the sign (matches OTIO).
+        sgn <- if (frame < 0L) "-" else ""
+        paste0(sgn, formatC(abs(frame), width = x$frame_zero_padding, flag = "0", format = "d"))
     } else {
         as.character(frame)
     }

@@ -107,10 +107,22 @@ if (requireNamespace("rotio", quietly = TRUE)) {
     expect_equal(target_url_for_image_number(misr(ImageSequenceReference, 5L, 1L, 0L, 3), 1),
                  rotio::target_url_for_image_number(misr(rotio::ImageSequenceReference, 5L, 1L, 0L, 3), 1))
 
-    # frame_for_time parity
+    # frame_for_time parity (in range) + out-of-range errors
     for (tv in c(0, 2, 10, 24, 47)) {
         expect_equal(frame_for_time(isr, RationalTime(tv, 24)),
                      rotio::frame_for_time(risr, rotio::RationalTime(tv, 24)),
                      info = paste("fft", tv))
     }
+    expect_error(frame_for_time(isr, RationalTime(-1, 24)))
+    expect_error(frame_for_time(isr, RationalTime(48, 24)))
+
+    # end_frame when duration is not divisible by frame_step
+    expect_equal(end_frame(misr(ImageSequenceReference, 100L, 3L, 4L, 10)),
+                 rotio::end_frame(misr(rotio::ImageSequenceReference, 100L, 3L, 4L, 10)))   # 109
+
+    # negative image numbers extrapolate (no error), matching rotio
+    expect_equal(target_url_for_image_number(isr, -1),
+                 rotio::target_url_for_image_number(risr, -1))
+    expect_equal(value(presentation_time_for_image_number(isr, -1)),
+                 unname(rotio::presentation_time_for_image_number(risr, -1)[["value"]]))
 }

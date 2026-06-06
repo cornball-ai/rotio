@@ -1,3 +1,13 @@
+# nle.api 0.0.2.13 (dev)
+
+## Fixes: time-model rate fidelity
+
+* `range_from_start_end_time`/`extended_by` keep the start rate; `clamped` uses
+  opentime operator- rate; `end_time_inclusive` returns the start for spans <= 1
+  frame; `almost_equal` rescales to the second arg; `to_timecode`/`from_timecode`
+  are faithful for non-integer and drop-frame rates; `from_time_string` keeps the
+  fractional value. Validated against rotio (value AND rate).
+
 # nle.api 0.0.2.12 (dev)
 
 ## Phase 3 of full OTIO parity: object surface

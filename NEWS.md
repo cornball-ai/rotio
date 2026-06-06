@@ -1,3 +1,12 @@
+# nle.api 0.0.2.15 (dev)
+
+## Fixes: ImageSequenceReference parity
+
+* `end_frame` (correct for frame_step>1 and no available_range), out-of-range
+  errors for `target_url_for_image_number`/`presentation_time_for_image_number`,
+  no zero-padding when `frame_zero_padding == 0`, and `frame_for_time` (the
+  ImageSequenceReference method). Validated against rotio.
+
 # nle.api 0.0.2.14 (dev)
 
 ## Phase 4 of full OTIO parity: composition coordinate model

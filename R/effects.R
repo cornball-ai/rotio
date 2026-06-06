@@ -35,12 +35,36 @@ Effect <- function(name = "", effect_name = "", enabled = TRUE,
 LinearTimeWarp <- function(name = "", effect_name = "", time_scalar = 1,
                            enabled = TRUE, metadata = NULL) {
     .new_otio(
-              c("LinearTimeWarp", "Effect"),
+              c("LinearTimeWarp", "TimeEffect", "Effect"),
               c("OTIO_SCHEMA", "metadata", "name", "effect_name", "enabled",
                 "time_scalar"),
               list(OTIO_SCHEMA = "LinearTimeWarp.1", metadata = .as_metadata(metadata),
                    name = as.character(name), effect_name = as.character(effect_name),
                    enabled = isTRUE(enabled), time_scalar = as.numeric(time_scalar)))
+}
+
+#' @rdname Effect
+#' @return \code{TimeEffect}: a generic time effect.
+#' @export
+TimeEffect <- function(name = "", effect_name = "", metadata = NULL) {
+    .new_otio(c("TimeEffect", "Effect"),
+              c("OTIO_SCHEMA", "metadata", "name", "effect_name", "enabled"),
+              list(OTIO_SCHEMA = "TimeEffect.1", metadata = .as_metadata(metadata),
+                   name = as.character(name),
+                   effect_name = as.character(effect_name), enabled = TRUE))
+}
+
+#' @rdname Effect
+#' @return \code{FreezeFrame}: a \code{LinearTimeWarp} with \code{time_scalar = 0}.
+#' @export
+FreezeFrame <- function(name = "", metadata = NULL) {
+    .new_otio(
+              c("FreezeFrame", "LinearTimeWarp", "TimeEffect", "Effect"),
+              c("OTIO_SCHEMA", "metadata", "name", "effect_name", "enabled",
+                "time_scalar"),
+              list(OTIO_SCHEMA = "FreezeFrame.1", metadata = .as_metadata(metadata),
+                   name = as.character(name), effect_name = "FreezeFrame",
+                   enabled = TRUE, time_scalar = 0))
 }
 
 #' Is x an Effect?

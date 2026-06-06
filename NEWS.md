@@ -1,3 +1,12 @@
+# nle.api 0.0.2.12 (dev)
+
+## Phase 3 of full OTIO parity: object surface
+
+* Media-reference subtypes (`MediaReference`, `GeneratorReference`,
+  `ImageSequenceReference` with its computed frame/url methods), `Marker`,
+  `Transition` (composable), and `TimeEffect`/`FreezeFrame` -- JSON-shape and
+  behavior matched to rotio.
+
 # nle.api 0.0.2.11 (dev)
 
 ## Phase 2 of full OTIO parity: time model

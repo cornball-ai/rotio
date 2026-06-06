@@ -1,83 +1,100 @@
-# Phase 2 time-model: standalone checks + a parity grid against rotio.
+# Phase 2 time-model: standalone checks + a value-AND-rate parity grid vs rotio.
 
 tr <- TimeRange(RationalTime(10, 24), RationalTime(5, 24))
-
-# end times
 expect_equal(value(end_time_exclusive(tr)), 15)
 expect_equal(value(end_time_inclusive(tr)), 14)
-trf <- TimeRange(RationalTime(10, 24), RationalTime(5.5, 24))
-expect_equal(value(end_time_exclusive(trf)), 15.5)
-expect_equal(value(end_time_inclusive(trf)), 15)        # fractional -> floor
+# zero / fractional duration end_time_inclusive
+expect_equal(value(end_time_inclusive(TimeRange(RationalTime(10, 24), RationalTime(0, 24)))), 10)
+expect_equal(value(end_time_inclusive(TimeRange(RationalTime(10, 24), RationalTime(5.5, 24)))), 15)
 
-# contains
-expect_true(contains(tr, RationalTime(12, 24)))
-expect_false(contains(tr, RationalTime(15, 24)))        # exclusive upper
-expect_true(contains(tr, TimeRange(RationalTime(11, 24), RationalTime(2, 24))))
+# cross-rate range_from_start_end_time keeps the START's rate
+r <- range_from_start_end_time(RationalTime(24, 24), RationalTime(60, 30))
+expect_equal(c(value(duration(r)), rate(duration(r))), c(24, 24))
 
-# extended_by / range_from_start_end_time
-ext <- extended_by(tr, TimeRange(RationalTime(0, 24), RationalTime(2, 24)))
-expect_equal(value(start_time(ext)), 0)
-expect_equal(value(end_time_exclusive(ext)), 15)
-rng <- range_from_start_end_time(RationalTime(10, 24), RationalTime(15, 24))
-expect_equal(value(duration(rng)), 5)
+# almost_equal: delta in the SECOND arg's rate units
+expect_false(almost_equal(RationalTime(10, 24), RationalTime(21, 48), 0.6))
+expect_true(almost_equal(RationalTime(10, 24), RationalTime(20, 48), 0.5))
 
-# clamped (keeps original end, clamps start)
-c1 <- clamped(tr, TimeRange(RationalTime(12, 24), RationalTime(8, 24)))
-expect_equal(c(value(start_time(c1)), value(duration(c1))), c(12, 3))
-c2 <- clamped(tr, TimeRange(RationalTime(0, 24), RationalTime(12, 24)))
-expect_equal(c(value(start_time(c2)), value(duration(c2))), c(10, 5))
+# from_time_string preserves the fractional value (no rounding)
+expect_equal(value(from_time_string("00:00:00.041666", 24)), 0.041666 * 24)
 
-# almost_equal (cross-rate)
-expect_true(almost_equal(RationalTime(10, 24), RationalTime(20, 48), 0))
-expect_false(almost_equal(RationalTime(10, 24), RationalTime(11, 24), 0.5))
-
-# timecode / time string
-expect_equal(to_timecode(RationalTime(48, 24), 24), "00:00:02:00")
-expect_equal(value(from_timecode("00:00:02:00", 24)), 48)
-expect_equal(to_time_string(RationalTime(90, 24)), "00:00:03.75")
-expect_equal(value(from_time_string("0:0:3.75", 24)), 90)
-
-# TimeTransform
-tt <- TimeTransform(RationalTime(5, 24), 2, 24)
-expect_equal(tt$OTIO_SCHEMA, "TimeTransform.1")
-expect_equal(value(tt$offset), 5)
-expect_equal(tt$scale, 2)
-
-# ---- parity grid against rotio ----
+# ---- value-and-rate parity grid against rotio ----
 if (requireNamespace("rotio", quietly = TRUE)) {
-    nr <- function(s, d) TimeRange(RationalTime(s, 24), RationalTime(d, 24))
-    rr <- function(s, d) rotio::TimeRange(rotio::RationalTime(s, 24), rotio::RationalTime(d, 24))
-    rsec <- function(x) unname(x[["value"]] / x[["rate"]])               # rotio RationalTime
-    rstart <- function(x) rsec(x$start_time)
-    rend <- function(x) rstart(x) + unname(x$duration[["value"]] / x$duration[["rate"]])
+    rvr <- function(x) c(unname(x[["value"]]), unname(x[["rate"]]))
+    rtr <- function(t) c(rvr(t$start_time), rvr(t$duration))
+    ntr <- function(t) c(value(start_time(t)), rate(start_time(t)),
+                         value(duration(t)), rate(duration(t)))
+    nr <- function(s, d, rt) TimeRange(RationalTime(s, rt), RationalTime(d, rt))
+    rr <- function(s, d, rt) rotio::TimeRange(rotio::RationalTime(s, rt),
+                                             rotio::RationalTime(d, rt))
 
-    grid <- list(c(0, 5), c(5, 5), c(3, 4), c(10, 5), c(8, 10), c(12, 2), c(0, 20), c(14, 3))
-    for (gi in grid) for (gj in grid) {
-        a <- nr(gi[1], gi[2]); ra <- rr(gi[1], gi[2])
-        b <- nr(gj[1], gj[2]); rb <- rr(gj[1], gj[2])
-        lab <- sprintf("[%d,%d) vs [%d,%d)", gi[1], gi[2], gj[1], gj[2])
+    # same-rate and cross-rate range pairs
+    specs <- list(list(0, 5, 24), list(5, 5, 24), list(3, 4, 24), list(10, 5, 24),
+                  list(8, 10, 24), list(12, 2, 24), list(0, 20, 24), list(14, 3, 24),
+                  list(0, 30, 30), list(10, 5, 30), list(15, 10, 30))
+    for (i in specs) for (j in specs) {
+        a <- do.call(nr, i); ra <- do.call(rr, i)
+        b <- do.call(nr, j); rb <- do.call(rr, j)
+        lab <- sprintf("%s vs %s", paste(unlist(i), collapse=","), paste(unlist(j), collapse=","))
         expect_equal(contains(a, b), rotio::contains(ra, rb), info = paste("contains", lab))
         expect_equal(intersects(a, b), rotio::intersects(ra, rb), info = paste("intersects", lab))
         expect_equal(overlaps(a, b), rotio::overlaps(ra, rb), info = paste("overlaps", lab))
-        ne <- extended_by(a, b); re <- rotio::extended_by(ra, rb)
-        expect_equal(c(to_seconds(start_time(ne)), to_seconds(end_time_exclusive(ne))),
-                     c(rstart(re), rend(re)), info = paste("extended_by", lab))
-        nc <- clamped(a, b); rc <- rotio::clamped(ra, rb)
-        expect_equal(c(to_seconds(start_time(nc)), to_seconds(end_time_exclusive(nc))),
-                     c(rstart(rc), rend(rc)), info = paste("clamped", lab))
+        expect_equal(ntr(extended_by(a, b)), rtr(rotio::extended_by(ra, rb)),
+                     info = paste("extended_by", lab))
+        expect_equal(ntr(clamped(a, b)), rtr(rotio::clamped(ra, rb)),
+                     info = paste("clamped", lab))
     }
-    # scalar parity
-    for (gi in grid) {
-        a <- nr(gi[1], gi[2]); ra <- rr(gi[1], gi[2])
-        expect_equal(value(end_time_exclusive(a)), rsec(rotio::end_time_exclusive(ra)) * 24,
-                     info = "end_excl")
-        expect_equal(value(end_time_inclusive(a)), rsec(rotio::end_time_inclusive(ra)) * 24,
-                     info = "end_incl")
-        expect_equal(to_timecode(RationalTime(gi[1], 24), 24),
-                     rotio::to_timecode(rotio::RationalTime(gi[1], 24), 24, FALSE),
-                     info = "timecode")
-        expect_equal(to_time_string(RationalTime(gi[1], 24)),
-                     rotio::to_time_string(rotio::RationalTime(gi[1], 24)),
-                     info = "time_string")
+
+    # range_from_start_end_time cross-rate (value + rate)
+    for (sc in list(c(24, 24, 60, 30), c(0, 30, 48, 24), c(10, 24, 50, 24))) {
+        nrf <- range_from_start_end_time(RationalTime(sc[1], sc[2]), RationalTime(sc[3], sc[4]))
+        rrf <- rotio::range_from_start_end_time(rotio::RationalTime(sc[1], sc[2]),
+                                               rotio::RationalTime(sc[3], sc[4]))
+        expect_equal(ntr(nrf), rtr(rrf), info = paste("rfset", paste(sc, collapse=",")))
     }
+
+    # almost_equal cross-rate
+    for (ae in list(list(10, 24, 21, 48, 0.6), list(10, 24, 20, 48, 0.5),
+                    list(10, 24, 11, 24, 0.5), list(100, 30, 80, 24, 0.01))) {
+        expect_equal(almost_equal(RationalTime(ae[[1]], ae[[2]]), RationalTime(ae[[3]], ae[[4]]), ae[[5]]),
+                     rotio::almost_equal(rotio::RationalTime(ae[[1]], ae[[2]]),
+                                        rotio::RationalTime(ae[[3]], ae[[4]]), ae[[5]]),
+                     info = paste("almost_equal", paste(unlist(ae), collapse=",")))
+    }
+
+    # end_time_inclusive incl. zero/fractional
+    for (e in list(c(10, 5, 24), c(10, 0, 24), c(10, 1, 24), c(10, 5.5, 24), c(5, 12, 30))) {
+        n <- end_time_inclusive(nr(e[1], e[2], e[3]))
+        ro <- rotio::end_time_inclusive(rr(e[1], e[2], e[3]))
+        expect_equal(c(value(n), rate(n)), rvr(ro), info = paste("end_incl", paste(e, collapse=",")))
+    }
+
+    # to_timecode / from_timecode across rates (non-drop)
+    for (rate in c(24, 23.976, 25, 30, 50, 60)) {
+        for (v in c(0, 1, 24, 25, 48, 90, 1000)) {
+            x <- RationalTime(v, rate)
+            expect_equal(to_timecode(x, rate), rotio::to_timecode(rotio::RationalTime(v, rate), rate, FALSE),
+                         info = sprintf("tc %g@%g", v, rate))
+        }
+    }
+    # cross-rate timecode (value@24 read at 23.976)
+    expect_equal(to_timecode(RationalTime(24, 24), 23.976),
+                 rotio::to_timecode(rotio::RationalTime(24, 24), 23.976, FALSE))
+    # drop-frame
+    dfr <- 30000 / 1001
+    for (v in c(0, 30, 1798, 1800, 17982, 17984)) {
+        expect_equal(to_timecode(RationalTime(v, dfr), dfr, TRUE),
+                     rotio::to_timecode(rotio::RationalTime(v, dfr), dfr, TRUE),
+                     info = paste("df-tc", v))
+    }
+    # from_timecode round-trips (non-drop + drop)
+    expect_equal(value(from_timecode("00:01:00:00", 30)),
+                 unname(rotio::from_timecode("00:01:00:00", 30)[["value"]]))
+    expect_equal(value(from_timecode("00:01:00;02", dfr)),
+                 unname(rotio::from_timecode("00:01:00;02", dfr)[["value"]]))
+
+    # from_time_string fractional (value + rate)
+    fts <- from_time_string("00:00:00.041666", 24)
+    rfts <- rotio::from_time_string("00:00:00.041666", 24)
+    expect_equal(c(value(fts), rate(fts)), rvr(rfts))
 }

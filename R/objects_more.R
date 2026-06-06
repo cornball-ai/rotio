@@ -294,8 +294,8 @@ end_frame <- function(x) {
 #' @param image_number 1-based image index.
 #' @export
 presentation_time_for_image_number <- function(x, image_number) {
-    .rt_add(x$available_range$start_time,
-            RationalTime((image_number - 1L) * x$frame_step, x$rate))
+    .rt_plus(x$available_range$start_time,
+             RationalTime((image_number - 1L) * x$frame_step, x$rate))
 }
 
 #' Target URL of the nth image (1-based)

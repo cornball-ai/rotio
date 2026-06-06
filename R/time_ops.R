@@ -1,32 +1,62 @@
 # Time-model arithmetic and queries on RationalTime / TimeRange (Phase 2).
-# Pure R; validated against rotio (see inst/tinytest/test_time_ops.R). Comparisons
-# use seconds; the OTIO default epsilon is 1/384000 s.
+# Pure R; matched to libopentime and validated against rotio (test_time_ops.R).
+# Rate handling follows opentime exactly: operator +/- keep the higher rate;
+# duration_from_start_end_time keeps the start's rate; relations compare seconds.
 
 .EPS <- 1 / 384000
 
-# RationalTime arithmetic in a's rate (rates match in practice).
-.rt_add <- function(a, b) RationalTime(a$value + b$value * (a$rate / b$rate),
-                                       a$rate)
-.rt_sub <- function(a, b) RationalTime(a$value - b$value * (a$rate / b$rate),
-                                       a$rate)
+.value_rescaled <- function(rt, new_rate) {
+    if (new_rate == rt$rate) {
+        rt$value
+    } else {
+        rt$value * new_rate / rt$rate
+    }
+}
+
+# opentime operator+ / operator- : result takes the higher of the two rates.
+.rt_plus <- function(a, b) {
+    if (a$rate < b$rate) {
+        RationalTime(b$value + .value_rescaled(a, b$rate), b$rate)
+    } else {
+        RationalTime(a$value + .value_rescaled(b, a$rate), a$rate)
+    }
+}
+.rt_minus <- function(a, b) {
+    if (a$rate < b$rate) {
+        RationalTime(.value_rescaled(a, b$rate) - b$value, b$rate)
+    } else {
+        RationalTime(a$value - .value_rescaled(b, a$rate), a$rate)
+    }
+}
+# duration_from_start_end_time: always in the start's rate.
+.dur_from_se <- function(start, end) {
+    if (start$rate == end$rate) {
+        RationalTime(end$value - start$value, start$rate)
+    } else {
+        RationalTime(.value_rescaled(end, start$rate) - start$value, start$rate)
+    }
+}
+.rt_lt <- function(a, b) to_seconds(a) < to_seconds(b)
+.rt_min <- function(a, b) if (.rt_lt(b, a)) b else a
+.rt_max <- function(a, b) if (.rt_lt(a, b)) b else a
 
 #' Are two RationalTimes almost equal?
 #'
-#' Rescales \code{b} to \code{a}'s rate and compares values within \code{delta}
-#' (in \code{a}'s rate units), matching OTIO.
+#' Rescales \code{a} to \code{b}'s rate and compares to \code{b}'s value within
+#' \code{delta} (in \code{b}'s rate units), matching opentime.
 #'
 #' @param a,b \code{RationalTime}s.
-#' @param delta Tolerance in \code{a}'s rate units (default 0).
+#' @param delta Tolerance in \code{b}'s rate units (default 0).
 #' @export
 almost_equal <- function(a, b, delta = 0) {
-    abs(a$value - rescaled_to(b, a$rate)$value) <= delta
+    abs(.value_rescaled(a, b$rate) - b$value) <= delta
 }
 
 #' Exclusive / inclusive end of a TimeRange
 #'
 #' \code{end_time_exclusive} = start + duration. \code{end_time_inclusive} is the
-#' last whole frame: one frame before the exclusive end, or the floor of the
-#' exclusive value when the duration is fractional.
+#' last whole frame; for a span of one frame or less it is the start time
+#' (matching opentime).
 #'
 #' @param x A \code{TimeRange}.
 #' @return A \code{RationalTime}.
@@ -35,7 +65,7 @@ end_time_exclusive <- function(x) {
     if (!is_time_range(x)) {
         stop("end_time_exclusive: x must be a TimeRange", call. = FALSE)
     }
-    .rt_add(x$start_time, x$duration)
+    .rt_plus(x$start_time, x$duration)
 }
 
 #' @rdname end_time_exclusive
@@ -44,27 +74,36 @@ end_time_inclusive <- function(x) {
     if (!is_time_range(x)) {
         stop("end_time_inclusive: x must be a TimeRange", call. = FALSE)
     }
-    ex <- end_time_exclusive(x)
-    if (floor(ex$value) != ex$value) {
-        RationalTime(floor(ex$value), ex$rate)
+    et <- end_time_exclusive(x)
+    span <- .rt_minus(et, rescaled_to(x$start_time, x$duration$rate))
+    if (span$value > 1) {
+        if (x$duration$value != floor(x$duration$value)) {
+            RationalTime(floor(et$value), et$rate)
+        } else {
+            .rt_minus(et, RationalTime(1, x$duration$rate))
+        }
     } else {
-        .rt_sub(ex, RationalTime(1, ex$rate))
+        x$start_time
     }
 }
 
 #' Construct a TimeRange from start and exclusive end times
+#'
+#' Duration is computed in the start time's rate (opentime convention).
+#'
 #' @param start_time A \code{RationalTime}.
 #' @param end_time_exclusive A \code{RationalTime}.
 #' @return A \code{TimeRange}.
 #' @export
 range_from_start_end_time <- function(start_time, end_time_exclusive) {
-    TimeRange(start_time, .rt_sub(end_time_exclusive, start_time))
+    TimeRange(start_time, .dur_from_se(start_time, end_time_exclusive))
 }
 
 #' Does a TimeRange contain a time or range?
 #'
 #' For a \code{RationalTime}: \code{start <= t < end_exclusive}. For a
-#' \code{TimeRange}: the other range lies within (with tolerance \code{epsilon_s}).
+#' \code{TimeRange}: the other range lies strictly within on both ends (tolerance
+#' \code{epsilon_s}).
 #'
 #' @param tr A \code{TimeRange}.
 #' @param other A \code{RationalTime} or \code{TimeRange}.
@@ -79,7 +118,6 @@ contains <- function(tr, other, epsilon_s = .EPS) {
     }
     os <- to_seconds(other$start_time)
     oe <- to_seconds(end_time_exclusive(other))
-    # OTIO: other strictly inside on BOTH ends (by >= epsilon).
     (os - ts >= epsilon_s) && (te - oe >= epsilon_s)
 }
 
@@ -108,87 +146,94 @@ overlaps <- function(tr, other, epsilon_s = .EPS) {
 #' @return A \code{TimeRange}.
 #' @export
 extended_by <- function(tr, other) {
-    ts <- to_seconds(tr$start_time) ; te <- to_seconds(end_time_exclusive(tr))
-    os <- to_seconds(other$start_time) ; oe <- to_seconds(end_time_exclusive(other))
-    if (os < ts) {
-        new_start <- other$start_time
-    } else {
-        new_start <- tr$start_time
-    }
-    if (oe > te) {
-        new_end <- end_time_exclusive(other)
-    } else {
-        new_end <- end_time_exclusive(tr)
-    }
-    range_from_start_end_time(new_start, new_end)
+    new_start <- .rt_min(tr$start_time, other$start_time)
+    new_end <- .rt_max(end_time_exclusive(tr), end_time_exclusive(other))
+    TimeRange(new_start, .dur_from_se(new_start, new_end))
 }
 
 #' Clamp a time or range into a bounding TimeRange
 #'
-#' \code{tr} is the bounding range; \code{other} is clamped into it (matching
-#' OTIO's \code{TimeRange::clamped}). For a \code{RationalTime} \code{other}:
-#' clamp into \code{[tr.start, tr.end_inclusive]}. For a \code{TimeRange}
-#' \code{other}: \code{start = max(other.start, tr.start)},
-#' \code{duration = other.duration}, end capped to \code{tr}'s exclusive end.
+#' \code{tr} is the bounding range; \code{other} is clamped into it (opentime
+#' \code{TimeRange::clamped}).
 #'
 #' @param tr The bounding \code{TimeRange}.
 #' @param other A \code{RationalTime} or \code{TimeRange} to clamp.
 #' @export
 clamped <- function(tr, other) {
     if (!is_time_range(tr)) {
-        stop("clamped: tr must be a TimeRange (the bounding range)", call. = FALSE)
+        stop("clamped: tr must be a TimeRange (the bounding range)",
+             call. = FALSE)
     }
     if (is_rational_time(other)) {
-        lo <- tr$start_time
-        hi <- end_time_inclusive(tr)
-        if (to_seconds(other) < to_seconds(lo)) return(lo)
-        if (to_seconds(other) > to_seconds(hi)) return(hi)
-        return(other)
+        return(.rt_min(.rt_max(other, tr$start_time), end_time_inclusive(tr)))
     }
     if (is_time_range(other)) {
-        rs <- if (to_seconds(other$start_time) > to_seconds(tr$start_time)) {
-            other$start_time
-        } else {
-            tr$start_time
-        }
-        r_end <- .rt_add(rs, other$duration)
-        te <- end_time_exclusive(tr)
-        end <- if (to_seconds(r_end) < to_seconds(te)) r_end else te
-        return(range_from_start_end_time(rs, end))
+        rs <- .rt_max(other$start_time, tr$start_time)
+        r_end <- .rt_plus(rs, other$duration)
+        end <- .rt_min(r_end, end_time_exclusive(tr))
+        return(TimeRange(rs, .rt_minus(end, rs)))
     }
     stop("clamped: other must be a RationalTime or TimeRange", call. = FALSE)
 }
 
+# Frame number of a time at a timecode rate (truncated to a frame boundary).
+.tc_frames <- function(x, rate) floor(.value_rescaled(x, rate) + 1e-6)
+
 #' SMPTE timecode for a RationalTime
 #' @param x A \code{RationalTime}.
 #' @param rate Timecode rate (default \code{x}'s rate).
-#' @param drop_frame Logical; drop-frame timecode (default FALSE).
+#' @param drop_frame Drop-frame timecode (for 29.97 / 59.94). Default FALSE.
 #' @export
 to_timecode <- function(x, rate = NULL, drop_frame = FALSE) {
     if (is.null(rate)) {
         rate <- x$rate
     }
-    if (isTRUE(drop_frame)) {
-        stop("to_timecode: drop_frame not yet supported", call. = FALSE)
-    }
     fps <- as.integer(round(rate))
-    f <- as.integer(round(to_seconds(x) * rate))
-    hh <- f %/% (fps * 3600L)
-    mm <- (f %/% (fps * 60L)) %% 60L
-    ss <- (f %/% fps) %% 60L
-    ff <- f %% fps
-    sprintf("%02d:%02d:%02d:%02d", hh, mm, ss, ff)
+    total <- .tc_frames(x, rate)
+    if (isTRUE(drop_frame)) {
+        dropf <- round(rate * 0.066666)
+        per10 <- round(rate * 60 * 10)
+        per24 <- round(rate * 60 * 60) * 24
+        permin <- fps * 60 - dropf
+        fn <- total %% per24
+        d <- fn %/% per10
+        m <- fn %% per10
+        if (m > dropf) {
+            fn <- fn + dropf * 9 * d + dropf * ((m - dropf) %/% permin)
+        } else {
+            fn <- fn + dropf * 9 * d
+        }
+        sep <- ";"
+    } else {
+        fn <- total
+        sep <- ":"
+    }
+    ff <- fn %% fps
+    ss <- (fn %/% fps) %% 60
+    mm <- ((fn %/% fps) %/% 60) %% 60
+    hh <- (((fn %/% fps) %/% 60) %/% 60)
+    sprintf("%02d:%02d:%02d%s%02d", as.integer(hh), as.integer(mm),
+            as.integer(ss), sep, as.integer(ff))
 }
 
 #' RationalTime from a SMPTE timecode
-#' @param timecode A \code{"HH:MM:SS:FF"} string.
+#'
+#' A \code{;} frame separator is treated as drop-frame.
+#'
+#' @param timecode A \code{"HH:MM:SS:FF"} (or \code{";FF"} for drop-frame) string.
 #' @param rate Timecode rate.
 #' @export
 from_timecode <- function(timecode, rate) {
-    parts <- as.integer(strsplit(timecode, "[:;]")[[1]])
+    drop <- grepl(";", timecode)
+    p <- as.numeric(strsplit(timecode, "[:;]")[[1]])
     fps <- as.integer(round(rate))
-    frames <- ((parts[1] * 60L + parts[2]) * 60L + parts[3]) * fps + parts[4]
-    RationalTime(frames, rate)
+    fn <- ((p[1] * 60 + p[2]) * 60 + p[3]) * fps + p[4]
+    if (drop) {
+        dropf <- round(rate * 0.066666)
+        total_min <- 60 * p[1] + p[2]
+        fn <- fn - dropf * (total_min - total_min %/% 10)
+    }
+    RationalTime(fn, rate)
 }
 
 #' Time string ("HH:MM:SS.sss") for a RationalTime
@@ -201,14 +246,19 @@ to_time_string <- function(x) {
     mm <- floor(s2 / 60)
     s3 <- s2 - mm * 60
     ss <- floor(s3)
-    micros <- floor((s3 - ss) * 1e6)        # truncate to microseconds (OTIO)
+    micros <- floor((s3 - ss) * 1e6) # truncate to microseconds (opentime)
     fs <- sub("0+$", "", sprintf("%06d", as.integer(micros)))
-    if (!nzchar(fs)) fs <- "0"              # always at least one fractional digit
+    if (!nzchar(fs)) {
+        fs <- "0"
+    }
     sprintf("%02d:%02d:%02d.%s", as.integer(hh), as.integer(mm),
             as.integer(ss), fs)
 }
 
 #' RationalTime from a time string ("HH:MM:SS.sss") at a rate
+#'
+#' Preserves the fractional value (no rounding to a frame boundary).
+#'
 #' @param time_string A time string.
 #' @param rate Rate (fps).
 #' @export
@@ -218,12 +268,15 @@ from_time_string <- function(time_string, rate) {
     secs <- as.numeric(parts[n]) +
     (if (n >= 2) as.numeric(parts[n - 1]) * 60 else 0) +
     (if (n >= 3) as.numeric(parts[n - 2]) * 3600 else 0)
-    RationalTime(round(secs * rate), rate)
+    RationalTime(secs * rate, rate)
 }
 
 #' Construct a TimeTransform
 #'
-#' An offset/scale/rate transform applied to times (OTIO \code{TimeTransform}).
+#' An offset/scale/rate transform (OTIO \code{TimeTransform}). Note: in rotio
+#' \code{TimeTransform} is a plain opentime value type that does not serialize to
+#' JSON; nle.api gives it an \code{OTIO_SCHEMA} for its own (de)serialization,
+#' which is not verified against rotio JSON.
 #'
 #' @param offset A \code{RationalTime} offset (default 0).
 #' @param scale Time scale (default 1).

@@ -6,10 +6,10 @@
 from_timecode(timecode, rate)
 }
 \arguments{
-\item{timecode}{A \code{"HH:MM:SS:FF"} string.}
+\item{timecode}{A \code{"HH:MM:SS:FF"} (or \code{";FF"} for drop-frame) string.}
 
 \item{rate}{Timecode rate.}
 }
 \description{
-RationalTime from a SMPTE timecode
+A \code{;} frame separator is treated as drop-frame.
 }

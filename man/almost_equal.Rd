@@ -6,11 +6,11 @@
 almost_equal(a, b, delta = 0)
 }
 \arguments{
-\item{delta}{Tolerance in \code{a}'s rate units (default 0).}
+\item{delta}{Tolerance in \code{b}'s rate units (default 0).}
 
 \item{a,b}{\code{RationalTime}s.}
 }
 \description{
-Rescales \code{b} to \code{a}'s rate and compares values within \code{delta}
-(in \code{a}'s rate units), matching OTIO.
+Rescales \code{a} to \code{b}'s rate and compares to \code{b}'s value within
+\code{delta} (in \code{b}'s rate units), matching opentime.
 }

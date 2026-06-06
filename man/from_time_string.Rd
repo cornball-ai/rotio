@@ -11,5 +11,5 @@ from_time_string(time_string, rate)
 \item{rate}{Rate (fps).}
 }
 \description{
-RationalTime from a time string ("HH:MM:SS.sss") at a rate
+Preserves the fractional value (no rounding to a frame boundary).
 }

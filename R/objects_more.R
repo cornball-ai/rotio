@@ -136,11 +136,25 @@ is_missing_reference <- function(x) inherits(x, "MissingReference")
 
 # ---- accessors ------------------------------------------------------------
 
-#' Available range of a media reference
-#' @param x A media reference.
+#' Available range of a media reference or clip
+#'
+#' For a media reference, the stored available range. For a clip, the active
+#' media reference's available range (errors if none is set, matching OTIO).
+#'
+#' @param x A media reference or clip.
 #' @param value A \code{\link{TimeRange}} or \code{NULL}.
 #' @export
-available_range <- function(x) x$available_range
+available_range <- function(x) {
+    if (inherits(x, "Clip")) {
+        ar <- media_reference(x)$available_range
+        if (is.null(ar)) {
+            stop("available_range: no available_range set on the clip's media reference",
+                 call. = FALSE)
+        }
+        return(ar)
+    }
+    x$available_range
+}
 
 #' @rdname available_range
 #' @export

@@ -1,8 +1,9 @@
 # OTIO parity matrix (nle.api vs rotio)
 
 Target: nle.api exports everything `rotio` does, in pure R. ✅ done · ⬜ to build.
-Progress: Phases 1 (env core), 2 (time model), 3 (object surface) merged.
-Phases 4-6 remain (visible/frame_for_time/overlapping are track-level, Phase 4). Replacement functions (`x<-`) are grouped with their getter and flagged
+Progress: Phases 1-4 merged (env core, time model, object surface,
+composition coordinate model). Phases 5-6 remain. (frame_for_time unresolved --
+rotio itself errors on it.) Replacement functions (`x<-`) are grouped with their getter and flagged
 separately where the getter exists but the setter doesn't yet. Plus 14
 nle.api-only extras (sugar / OTIOD / predicates).
 
@@ -75,20 +76,20 @@ nle.api-only extras (sugar / OTIOD / predicates).
 
 | function | status |
 |---|---|
-| range_in_parent | ⬜ |
-| trimmed_range | ⬜ |
-| trimmed_range_in_parent | ⬜ |
-| visible_range | ⬜ |
-| available_range (item) | ⬜ |
-| find_clips | ⬜ |
-| flatten_stack | ⬜ |
-| video_tracks, audio_tracks | ⬜ |
-| frame_for_time (track-level) | ⬜ |
-| overlapping (track-level) | ⬜ |
-| visible (track-level) | ⬜ |
-| global_start_time/`<-` | ⬜ |
-| is_equivalent_to | ⬜ |
-| track_trimmed_to_range | ⬜ |
+| range_in_parent | ✅ |
+| trimmed_range | ✅ |
+| trimmed_range_in_parent | ✅ |
+| visible_range | ✅ |
+| available_range (item) | ✅ |
+| find_clips | ✅ |
+| flatten_stack | ✅ |
+| video_tracks, audio_tracks | ✅ |
+| frame_for_time (track-level) | ⬜ (rotio errors on it; deferred) |
+| overlapping (track-level) | ✅ |
+| visible (track-level) | ✅ |
+| global_start_time/`<-` | ✅ |
+| is_equivalent_to | ✅ |
+| track_trimmed_to_range | ✅ |
 
 ## Phase 5 — edit algorithms (highest test density vs rotio)
 

@@ -2,17 +2,18 @@
 \name{available_range}
 \alias{available_range}
 \alias{available_range<-}
-\title{Available range of a media reference}
+\title{Available range of a media reference or clip}
 \usage{
 available_range(x)
 
 available_range(x) <- value
 }
 \arguments{
-\item{x}{A media reference.}
+\item{x}{A media reference or clip.}
 
 \item{value}{A \code{\link{TimeRange}} or \code{NULL}.}
 }
 \description{
-Available range of a media reference
+For a media reference, the stored available range. For a clip, the active
+media reference's available range (errors if none is set, matching OTIO).
 }

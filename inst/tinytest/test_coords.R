@@ -142,3 +142,43 @@ if (requireNamespace("rotio", quietly = TRUE)) {
                      rtr(rotio::source_range(rotio::children(rf)[[k]])), info = paste("flatten-disabled", k))
     }
 }
+
+# ---- Stack parallel semantics + transitions in algorithms ----
+sv1 <- Track("V1"); append_child(sv1, mkclip("p", 0, 10))
+sv2 <- Track("V2"); append_child(sv2, mkclip("q", 0, 5))
+stk <- Stack(); append_child(stk, sv1); append_child(stk, sv2)
+expect_equal(c(value(start_time(range_in_parent(sv2))), value(duration(range_in_parent(sv2)))), c(0, 5))
+expect_equal(value(duration(available_range(stk))), 10)   # max, not sum
+
+# track_trimmed_to_range keeps transitions (no error)
+trx <- Track("V1")
+append_child(trx, mkclip("A", 0, 10))
+append_child(trx, Transition("T", "SMPTE_Dissolve", RationalTime(2, 24), RationalTime(3, 24)))
+append_child(trx, mkclip("B", 0, 10))
+ttx <- track_trimmed_to_range(trx, TimeRange(RationalTime(0, 24), RationalTime(20, 24)))
+expect_equal(vapply(children(ttx), function(c) class(c)[1], ""), c("Clip", "Transition", "Clip"))
+
+# flatten_stack with a transition in a track does not error
+ftx <- flatten_stack(list(trx))
+expect_true(inherits(ftx, "Track"))
+
+if (requireNamespace("rotio", quietly = TRUE)) {
+    rmk3 <- function(n, s, d) rotio::Clip(n, rotio::ExternalReference(paste0(n, ".mov")),
+        source_range = rotio::TimeRange(rotio::RationalTime(s, 24), rotio::RationalTime(d, 24)))
+    rtr <- function(t) c(unname(t$start_time[["value"]]), unname(t$start_time[["rate"]]),
+                         unname(t$duration[["value"]]), unname(t$duration[["rate"]]))
+    ntr <- function(t) c(value(start_time(t)), rate(start_time(t)), value(duration(t)), rate(duration(t)))
+
+    rsv1 <- rotio::Track("V1"); rotio::append_child(rsv1, rmk3("p", 0, 10))
+    rsv2 <- rotio::Track("V2"); rotio::append_child(rsv2, rmk3("q", 0, 5))
+    rstk <- rotio::Stack(); rotio::append_child(rstk, rsv1); rotio::append_child(rstk, rsv2)
+    expect_equal(ntr(range_in_parent(sv2)), rtr(rotio::range_in_parent(rsv2)))
+    expect_equal(ntr(available_range(stk)), rtr(rotio::available_range(rstk)))
+
+    rtx <- rotio::Track("V1")
+    rotio::append_child(rtx, rmk3("A", 0, 10))
+    rotio::append_child(rtx, rotio::Transition("T", "SMPTE_Dissolve", rotio::RationalTime(2, 24), rotio::RationalTime(3, 24)))
+    rotio::append_child(rtx, rmk3("B", 0, 10))
+    rttx <- rotio::track_trimmed_to_range(rtx, rotio::TimeRange(rotio::RationalTime(0, 24), rotio::RationalTime(20, 24)))
+    expect_equal(length(children(ttx)), length(rotio::children(rttx)))
+}

@@ -1,3 +1,13 @@
+# nle.api 0.0.2.11 (dev)
+
+## Phase 2 of full OTIO parity: time model
+
+* RationalTime/TimeRange arithmetic and queries matching libopentime exactly
+  (validated against rotio): `almost_equal`, `end_time_exclusive`/`inclusive`,
+  `range_from_start_end_time`, `contains`, `intersects`, `overlaps`, `extended_by`,
+  `clamped`, `to_timecode`/`from_timecode`, `to_time_string`/`from_time_string`,
+  and `TimeTransform`.
+
 # nle.api 0.0.2.10 (dev)
 
 ## Phase 1 of full OTIO parity: environment-backed core

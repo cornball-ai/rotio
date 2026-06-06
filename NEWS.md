@@ -1,3 +1,14 @@
+# nle.api 0.0.2.9 (dev)
+
+## New: OTIO effects
+
+* `Effect()` and `LinearTimeWarp()` constructors (mirroring rotio's JSON shapes
+  and defaults), plus functional `add_effect()` and the accessors `effects()`,
+  `effect_name()`/`<-`, `time_scalar()`/`<-`, and `enabled()`/`<-` (a disabled
+  clip is muted; a disabled effect is bypassed). Effects round-trip through JSON
+  and are accepted by the real OTIO library via `rotio`. This is the surface the
+  blendR bridge uses to carry speed (`LinearTimeWarp`) and Blender compositing.
+
 # nle.api 0.0.2.8 (dev)
 
 ## Rewrite: pure-R OpenTimelineIO ("rotiolite")

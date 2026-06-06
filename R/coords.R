@@ -43,13 +43,36 @@ range_in_parent <- function(x) {
     if (is.null(p) || !.is_container(p)) {
         stop("range_in_parent: item has no parent composition", call. = FALSE)
     }
-    dur <- trimmed_range(x)$duration
-    start <- RationalTime(0, dur$rate)
+    # Cumulative position at x: transitions do not advance the track timeline.
+    cum <- NULL
     for (ch in p$children) {
         if (identical(ch, x)) {
             break
         }
-        start <- .rt_plus(start, trimmed_range(ch)$duration)
+        if (inherits(ch, "Transition")) {
+            next
+        }
+        d <- trimmed_range(ch)$duration
+        if (is.null(cum)) {
+            cum <- RationalTime(0, d$rate)
+        }
+        cum <- .rt_plus(cum, d)
+    }
+    if (inherits(x, "Transition")) {
+        # Centred on the cut: [cut - in_offset, in_offset + out_offset).
+        if (is.null(cum)) {
+            cut <- RationalTime(0, x$in_offset$rate)
+        } else {
+            cut <- cum
+        }
+        return(TimeRange(.rt_minus(cut, x$in_offset),
+                         .rt_plus(x$in_offset, x$out_offset)))
+    }
+    dur <- trimmed_range(x)$duration
+    if (is.null(cum)) {
+        start <- RationalTime(0, dur$rate)
+    } else {
+        start <- cum
     }
     TimeRange(start, dur)
 }
@@ -85,11 +108,11 @@ visible_range <- function(x) {
     start <- vr$start_time
     dur <- vr$duration
     if (i > 1L && inherits(kids[[i - 1L]], "Transition")) {
-        start <- .rt_minus(start, kids[[i - 1L]]$out_offset)
-        dur <- .rt_plus(dur, kids[[i - 1L]]$out_offset)
+        start <- .rt_minus(start, kids[[i - 1L]]$in_offset)
+        dur <- .rt_plus(dur, kids[[i - 1L]]$in_offset)
     }
     if (i < length(kids) && inherits(kids[[i + 1L]], "Transition")) {
-        dur <- .rt_plus(dur, kids[[i + 1L]]$in_offset)
+        dur <- .rt_plus(dur, kids[[i + 1L]]$out_offset)
     }
     TimeRange(start, dur)
 }
@@ -131,36 +154,31 @@ is_equivalent_to <- function(x, other) {
     is_otio(other) && identical(to_json_string(x), to_json_string(other))
 }
 
-#' Is an item visible (enabled)?
+#' Is an item visible?
+#'
+#' A Gap is never visible; a Transition always is; any other item is visible
+#' when enabled (matching OTIO).
+#'
 #' @param x An item.
 #' @export
-visible <- function(x) isTRUE(x$enabled)
-
-#' Do any items in a composition overlap?
-#'
-#' Always \code{FALSE} for a Track (items are sequential).
-#'
-#' @param x A composition.
-#' @export
-overlapping <- function(x) {
-    if (!.is_container(x)) {
+visible <- function(x) {
+    if (inherits(x, "Gap")) {
         return(FALSE)
     }
-    rngs <- lapply(x$children,
-                   function(ch) tryCatch(range_in_parent(ch), error = function(e) NULL))
-    rngs <- Filter(Negate(is.null), rngs)
-    if (length(rngs) < 2L) {
-        return(FALSE)
+    if (inherits(x, "Transition")) {
+        return(TRUE)
     }
-    for (i in seq_len(length(rngs) - 1L)) {
-        for (j in (i + 1L):length(rngs)) {
-            if (intersects(rngs[[i]], rngs[[j]])) {
-                return(TRUE)
-            }
-        }
-    }
-    FALSE
+    isTRUE(x$enabled)
 }
+
+#' Does an item overlap its neighbours?
+#'
+#' Only transitions overlap (they span a cut); everything else returns
+#' \code{FALSE}.
+#'
+#' @param x An item.
+#' @export
+overlapping <- function(x) inherits(x, "Transition")
 
 #' Trim a track to a time range
 #'
@@ -173,24 +191,27 @@ overlapping <- function(x) {
 #' @return A new \code{\link{Track}}.
 #' @export
 track_trimmed_to_range <- function(in_track, trim_range) {
-    rate <- .first_rate(list(in_track))
-    ts <- to_frames(trim_range$start_time, rate)
-    te <- ts + to_frames(trim_range$duration, rate)
+    # Work in seconds so the child source rate is honoured (no truncation).
+    ts <- to_seconds(trim_range$start_time)
+    te <- to_seconds(end_time_exclusive(trim_range))
     out <- Track(in_track$name, kind = in_track$kind %||% "Video")
     for (ch in children(in_track)) {
         rip <- range_in_parent(ch)
-        cs <- to_frames(rip$start_time, rate)
-        ce <- cs + to_frames(rip$duration, rate)
+        cs <- to_seconds(rip$start_time)
+        ce <- to_seconds(end_time_exclusive(rip))
         if (ce <= ts || cs >= te) {
             next
         }
-        left <- max(0L, ts - cs)
-        new_dur <- min(ce, te) - max(cs, ts)
+        ostart <- max(cs, ts)
+        oend <- min(ce, te)
+        left_s <- ostart - cs # seconds trimmed off the front
+        dur_s <- oend - ostart
         sr <- trimmed_range(ch)
+        srate <- sr$start_time$rate
         nc <- clone(ch)
         source_range(nc) <- TimeRange(
-                                      .rt_plus(sr$start_time, RationalTime(left, sr$start_time$rate)),
-                                      RationalTime(new_dur, sr$duration$rate))
+                                      RationalTime(sr$start_time$value + left_s * srate, srate),
+                                      RationalTime(dur_s * sr$duration$rate, sr$duration$rate))
         append_child(out, nc)
     }
     out
@@ -244,7 +265,8 @@ flatten_stack <- function(x) {
         w <- NULL
         for (ti in seq_along(tracks)) { # bottom..top; later overrides
             for (sg in segs[[ti]]) {
-                if (fi >= sg$s && fi < sg$e && !sg$gap) {
+                if (fi >= sg$s && fi < sg$e && !sg$gap &&
+                    isTRUE(sg$ch$enabled)) {
                     w <- list(ch = sg$ch, off = fi - sg$s)
                 }
             }

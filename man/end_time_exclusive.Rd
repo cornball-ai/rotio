@@ -16,6 +16,6 @@ A \code{RationalTime}.
 }
 \description{
 \code{end_time_exclusive} = start + duration. \code{end_time_inclusive} is the
-last whole frame: one frame before the exclusive end, or the floor of the
-exclusive value when the duration is fractional.
+last whole frame; for a span of one frame or less it is the start time
+(matching opentime).
 }

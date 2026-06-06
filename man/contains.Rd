@@ -14,5 +14,6 @@ contains(tr, other, epsilon_s = .EPS)
 }
 \description{
 For a \code{RationalTime}: \code{start <= t < end_exclusive}. For a
-\code{TimeRange}: the other range lies within (with tolerance \code{epsilon_s}).
+\code{TimeRange}: the other range lies strictly within on both ends (tolerance
+\code{epsilon_s}).
 }

@@ -10,7 +10,7 @@ to_timecode(x, rate = NULL, drop_frame = FALSE)
 
 \item{rate}{Timecode rate (default \code{x}'s rate).}
 
-\item{drop_frame}{Logical; drop-frame timecode (default FALSE).}
+\item{drop_frame}{Drop-frame timecode (for 29.97 / 59.94). Default FALSE.}
 }
 \description{
 SMPTE timecode for a RationalTime

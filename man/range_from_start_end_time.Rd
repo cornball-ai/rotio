@@ -14,5 +14,5 @@ range_from_start_end_time(start_time, end_time_exclusive)
 A \code{TimeRange}.
 }
 \description{
-Construct a TimeRange from start and exclusive end times
+Duration is computed in the start time's rate (opentime convention).
 }

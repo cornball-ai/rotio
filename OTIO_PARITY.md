@@ -2,8 +2,7 @@
 
 Target: nle.api exports everything `rotio` does, in pure R. ✅ done · ⬜ to build.
 Progress: Phases 1-4 merged (env core, time model, object surface,
-composition coordinate model). Phases 5-6 remain. (frame_for_time unresolved --
-rotio itself errors on it.) Replacement functions (`x<-`) are grouped with their getter and flagged
+composition coordinate model). Phases 5-6 remain. (frame_for_time is an ImageSequenceReference method, now done.) Replacement functions (`x<-`) are grouped with their getter and flagged
 separately where the getter exists but the setter doesn't yet. Plus 14
 nle.api-only extras (sugar / OTIOD / predicates).
 
@@ -84,7 +83,7 @@ nle.api-only extras (sugar / OTIOD / predicates).
 | find_clips | ✅ |
 | flatten_stack | ✅ |
 | video_tracks, audio_tracks | ✅ |
-| frame_for_time (track-level) | ⬜ (rotio errors on it; deferred) |
+| frame_for_time | ✅ (ImageSequenceReference method) |
 | overlapping (track-level) | ✅ |
 | visible (track-level) | ✅ |
 | global_start_time/`<-` | ✅ |

@@ -300,7 +300,29 @@ number_of_images_in_sequence <- function(x) {
 #' @param x An \code{\link{ImageSequenceReference}}.
 #' @export
 end_frame <- function(x) {
-    x$start_frame + (number_of_images_in_sequence(x) - 1L) * x$frame_step
+    x$start_frame + max(number_of_images_in_sequence(x) * x$frame_step - 1L, 0L)
+}
+
+#' Frame for a time in an ImageSequenceReference
+#' @param x An \code{\link{ImageSequenceReference}}.
+#' @param time A \code{\link{RationalTime}}.
+#' @export
+frame_for_time <- function(x, time) {
+    if (is.null(x$available_range)) {
+        base <- 0
+    } else {
+        base <- .value_rescaled(x$available_range$start_time, x$rate)
+    }
+
+    off <- .value_rescaled(time, x$rate) - base
+    x$start_frame + as.integer(floor(off / x$frame_step)) * x$frame_step
+}
+
+# Error like OTIO when an image number is outside [0, number_of_images].
+.check_image_number <- function(x, image_number) {
+    if (image_number < 0L || image_number > number_of_images_in_sequence(x)) {
+        stop("illegal index", call. = FALSE)
+    }
 }
 
 #' Presentation time of the nth image (1-based)
@@ -308,6 +330,7 @@ end_frame <- function(x) {
 #' @param image_number 1-based image index.
 #' @export
 presentation_time_for_image_number <- function(x, image_number) {
+    .check_image_number(x, image_number)
     .rt_plus(x$available_range$start_time,
              RationalTime((image_number - 1L) * x$frame_step, x$rate))
 }
@@ -317,9 +340,13 @@ presentation_time_for_image_number <- function(x, image_number) {
 #' @param image_number 1-based image index.
 #' @export
 target_url_for_image_number <- function(x, image_number) {
+    .check_image_number(x, image_number)
     frame <- x$start_frame + (image_number - 1L) * x$frame_step
-    num <- formatC(frame, width = x$frame_zero_padding, flag = "0",
-                   format = "d")
+    num <- if (x$frame_zero_padding > 0L) {
+        formatC(frame, width = x$frame_zero_padding, flag = "0", format = "d")
+    } else {
+        as.character(frame)
+    }
     paste0(x$target_url_base, x$name_prefix, num, x$name_suffix)
 }
 

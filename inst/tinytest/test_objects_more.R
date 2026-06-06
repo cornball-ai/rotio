@@ -85,4 +85,32 @@ if (requireNamespace("rotio", quietly = TRUE)) {
                      unname(rotio::presentation_time_for_image_number(risr, n)[["value"]]),
                      info = paste("ptime", n))
     }
+
+    misr <- function(con, s, st, pad, dur) con(target_url_base = "b/", name_prefix = "f",
+        name_suffix = ".png", start_frame = s, frame_step = st, rate = 24,
+        frame_zero_padding = pad, available_range = if (is.null(dur)) NULL else
+            (if (identical(con, ImageSequenceReference))
+                TimeRange(RationalTime(0, 24), RationalTime(dur, 24))
+             else rotio::TimeRange(rotio::RationalTime(0, 24), rotio::RationalTime(dur, 24))))
+
+    # end_frame: step > 1 and no available_range
+    expect_equal(end_frame(misr(ImageSequenceReference, 100L, 2L, 4L, 10)),
+                 rotio::end_frame(misr(rotio::ImageSequenceReference, 100L, 2L, 4L, 10)))   # 109
+    expect_equal(end_frame(misr(ImageSequenceReference, 1L, 1L, 4L, NULL)),
+                 rotio::end_frame(misr(rotio::ImageSequenceReference, 1L, 1L, 4L, NULL)))   # 1
+
+    # out-of-range image numbers error
+    expect_error(target_url_for_image_number(isr, 49))
+    expect_error(presentation_time_for_image_number(isr, 49))
+
+    # frame_zero_padding = 0 -> no padding
+    expect_equal(target_url_for_image_number(misr(ImageSequenceReference, 5L, 1L, 0L, 3), 1),
+                 rotio::target_url_for_image_number(misr(rotio::ImageSequenceReference, 5L, 1L, 0L, 3), 1))
+
+    # frame_for_time parity
+    for (tv in c(0, 2, 10, 24, 47)) {
+        expect_equal(frame_for_time(isr, RationalTime(tv, 24)),
+                     rotio::frame_for_time(risr, rotio::RationalTime(tv, 24)),
+                     info = paste("fft", tv))
+    }
 }

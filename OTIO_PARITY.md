@@ -1,8 +1,8 @@
 # OTIO parity matrix (nle.api vs rotio)
 
 Target: nle.api exports everything `rotio` does, in pure R. ✅ done · ⬜ to build.
-Status at full-OTIO kickoff: ~35 of rotio's ~146 exports done; the bulk to
-build. Replacement functions (`x<-`) are grouped with their getter and flagged
+Progress: Phase 1 (env-backed core) and Phase 2 (time model) merged. Phases 3-6
+remain. Replacement functions (`x<-`) are grouped with their getter and flagged
 separately where the getter exists but the setter doesn't yet. Plus 14
 nle.api-only extras (sugar / OTIOD / predicates).
 
@@ -12,26 +12,26 @@ nle.api-only extras (sugar / OTIOD / predicates).
 |---|---|
 | Timeline, Stack, Track, Clip, Gap | ✅ (re-base on env core) |
 | ExternalReference, MissingReference | ✅ (re-base) |
-| metadata/`<-`, name/`<-`, kind/`<-`, source_range/`<-`, enabled/`<-` | ✅ getter; `kind<-` ⬜ |
-| children, tracks/`<-`, target_url/`<-`, media_reference/`<-` | ✅ getters; `media_reference<-` ⬜ |
-| append_child | ⬜ |
-| insert_child | ⬜ |
-| remove_child | ⬜ |
-| set_child | ⬜ |
-| set_children/`<-` | ⬜ |
-| clear_children | ⬜ |
-| clone | ⬜ |
-| parent | ⬜ |
-| has_child | ⬜ |
-| has_clips | ⬜ |
-| is_parent_of | ⬜ |
-| index_of_child | ⬜ |
-| color/`<-` | ⬜ |
-| media_references | ⬜ |
-| set_media_references | ⬜ |
-| active_media_reference_key/`<-` | ⬜ |
-| default_media_key | ⬜ |
-| SerializableCollection | ⬜ |
+| metadata/`<-`, name/`<-`, kind/`<-`, source_range/`<-`, enabled/`<-` | ✅ (incl. kind<-) |
+| children, tracks/`<-`, target_url/`<-`, media_reference/`<-` | ✅ getters; `media_reference<-` ✅ |
+| append_child | ✅ |
+| insert_child | ✅ |
+| remove_child | ✅ |
+| set_child | ✅ |
+| set_children/`<-` | ✅ |
+| clear_children | ✅ |
+| clone | ✅ |
+| parent | ✅ |
+| has_child | ✅ |
+| has_clips | ✅ |
+| is_parent_of | ✅ |
+| index_of_child | ✅ |
+| color/`<-` | ✅ |
+| media_references | ✅ |
+| set_media_references | ✅ |
+| active_media_reference_key/`<-` | ✅ |
+| default_media_key | ✅ |
+| SerializableCollection | ✅ |
 
 ## Phase 2 — time model
 
@@ -40,19 +40,18 @@ nle.api-only extras (sugar / OTIOD / predicates).
 | RationalTime, TimeRange | ✅ |
 | value, rate, start_time, duration | ✅ |
 | to_seconds, from_seconds, to_frames, from_frames, rescaled_to | ✅ |
-| almost_equal | ⬜ |
-| clamped | ⬜ |
-| contains | ⬜ |
-| intersects | ⬜ |
-| extended_by | ⬜ |
-| overlaps, overlapping | ⬜ |
-| end_time_inclusive | ⬜ |
-| end_time_exclusive | ⬜ |
-| to_timecode, from_timecode | ⬜ |
-| to_time_string, from_time_string | ⬜ |
-| frame_for_time | ⬜ |
-| range_from_start_end_time | ⬜ |
-| TimeTransform | ⬜ |
+| almost_equal | ✅ |
+| clamped | ✅ |
+| contains | ✅ |
+| intersects | ✅ |
+| extended_by | ✅ |
+| overlaps | ✅ |  (overlapping is track-level -> Phase 4) |
+| end_time_inclusive | ✅ |
+| end_time_exclusive | ✅ |
+| to_timecode, from_timecode | ✅ |
+| to_time_string, from_time_string | ✅ |
+| range_from_start_end_time | ✅ |
+| TimeTransform | ✅ |
 
 ## Phase 3 — full object surface
 
@@ -85,6 +84,8 @@ nle.api-only extras (sugar / OTIOD / predicates).
 | find_clips | ⬜ |
 | flatten_stack | ⬜ |
 | video_tracks, audio_tracks | ⬜ |
+| frame_for_time (track-level) | ⬜ |
+| overlapping (track-level) | ⬜ |
 | global_start_time/`<-` | ⬜ |
 | is_equivalent_to | ⬜ |
 | track_trimmed_to_range | ⬜ |

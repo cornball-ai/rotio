@@ -1,0 +1,21 @@
+% tinyrox says don't edit this manually, but it can't stop you!
+\name{end_time_exclusive}
+\alias{end_time_exclusive}
+\alias{end_time_inclusive}
+\title{Exclusive / inclusive end of a TimeRange}
+\usage{
+end_time_exclusive(x)
+
+end_time_inclusive(x)
+}
+\arguments{
+\item{x}{A \code{TimeRange}.}
+}
+\value{
+A \code{RationalTime}.
+}
+\description{
+\code{end_time_exclusive} = start + duration. \code{end_time_inclusive} is the
+last whole frame: one frame before the exclusive end, or the floor of the
+exclusive value when the duration is fractional.
+}

@@ -1,6 +1,0 @@
-# OTIO is built from source and installed to /usr/local (it is not packaged
-# for apt, and ships no pkg-config .pc file). Hard-code the include and link
-# paths. See PLAN.md and inst/schema for the build recipe.
-CXX_STD = CXX17
-PKG_CPPFLAGS = -I/usr/local/include
-PKG_LIBS = -L/usr/local/lib -lopentimelineio -lopentime

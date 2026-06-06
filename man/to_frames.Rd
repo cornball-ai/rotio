@@ -1,16 +1,16 @@
 % tinyrox says don't edit this manually, but it can't stop you!
 \name{to_frames}
 \alias{to_frames}
-\title{Convert a rational_time to an integer frame count at a given fps}
+\title{Frame number of a RationalTime}
 \usage{
-to_frames(x, fps)
+to_frames(x, rate = NULL)
 }
 \arguments{
-\item{x}{A rational_time.}
+\item{x}{A \code{RationalTime}.}
 
-\item{fps}{Integer frames per second.}
+\item{rate}{Optional target rate to rescale to before taking the frame number.}
 }
 \description{
-If \code{fps == x$den}, returns \code{x$num} exactly. Otherwise
-rescales: \code{round(x$num * fps / x$den)}.
+Returns the integer frame number. With no \code{rate}, rounds the value at the
+time's own rate; with a \code{rate}, rescales first.
 }

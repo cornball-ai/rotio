@@ -1,26 +1,22 @@
 Package: nle.api
 Type: Package
-Title: Neutral Sequence Model and Driver Dispatch for Non-Linear Editors
+Title: Pure-R OpenTimelineIO Document Model
 Version: 0.0.2.7
-Date: 2026-06-04
+Date: 2026-06-06
 Authors@R: c(
     person("Troy", "Hernandez", role = c("aut", "cre"),
            email = "troy.h@cball.ai",
            comment = c(ORCID = "0009-0005-4248-604X")),
     person("cornball.ai", role = "cph"))
-Description: A neutral sequence model and driver dispatch layer for
-    non-linear video editors. Defines a strict sequence schema, edit
-    verbs that operate as pure functions on the sequence, and a driver
-    registry so backend packages (e.g. blendR for Blender VSE, future
-    drivers for ffmpeg, OTIO, FCP XML) can register dump and apply
-    handlers. The canonical artifact is a Markdown file with a single
-    delimited state block; a JSON companion is a generated cache.
+Description: A dependency-light OpenTimelineIO ("OTIO") document layer in
+    pure R. Provides constructors for the OTIO object model (timelines,
+    tracks, clips, gaps, media references, rational times and time
+    ranges), functional builders that return new objects, and readers and
+    writers for canonical '.otio' files through 'jsonlite'. The optional
+    'rotio' package validates output against the real OpenTimelineIO C++
+    library. No compiled code.
 License: MIT + file LICENSE
-Imports: jsonlite, Rcpp
-LinkingTo: Rcpp
-Suggests: tinytest
-SystemRequirements: C++17, libopentimelineio (>= 0.17), built from source
-    and installed under /usr/local (not available via apt; ships no
-    pkg-config file). See PLAN.md for the build recipe.
+Imports: jsonlite
+Suggests: tinytest, rotio
 Encoding: UTF-8
 RoxygenNote: 7.3.2

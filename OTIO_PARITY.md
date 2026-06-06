@@ -1,8 +1,8 @@
 # OTIO parity matrix (nle.api vs rotio)
 
 Target: nle.api exports everything `rotio` does, in pure R. ✅ done · ⬜ to build.
-Progress: Phase 1 (env-backed core) and Phase 2 (time model) merged. Phases 3-6
-remain. Replacement functions (`x<-`) are grouped with their getter and flagged
+Progress: Phases 1 (env core), 2 (time model), 3 (object surface) merged.
+Phases 4-6 remain (visible/frame_for_time/overlapping are track-level, Phase 4). Replacement functions (`x<-`) are grouped with their getter and flagged
 separately where the getter exists but the setter doesn't yet. Plus 14
 nle.api-only extras (sugar / OTIOD / predicates).
 
@@ -58,19 +58,18 @@ nle.api-only extras (sugar / OTIOD / predicates).
 | function | status |
 |---|---|
 | Effect, LinearTimeWarp, effect_name/`<-`, time_scalar/`<-` | ✅ |
-| MediaReference | ⬜ |
-| GeneratorReference, generator_kind/`<-`, parameters/`<-` | ⬜ |
-| ImageSequenceReference | ⬜ |
-| target_url_base/`<-`, name_prefix, name_suffix | ⬜ |
-| start_frame, end_frame, frame_step, frame_zero_padding | ⬜ |
-| number_of_images_in_sequence | ⬜ |
-| presentation_time_for_image_number, target_url_for_image_number | ⬜ |
-| is_missing_reference | ⬜ |
-| available_range/`<-` (media ref) | ⬜ |
-| Marker, marked_range/`<-`, comment/`<-` | ⬜ |
-| Transition, transition_type/`<-`, in_offset/`<-`, out_offset/`<-` | ⬜ |
-| TimeEffect, FreezeFrame | ⬜ |
-| visible | ⬜ |
+| MediaReference | ✅ |
+| GeneratorReference, generator_kind/`<-`, parameters/`<-` | ✅ |
+| ImageSequenceReference | ✅ |
+| target_url_base/`<-`, name_prefix, name_suffix | ✅ |
+| start_frame, end_frame, frame_step, frame_zero_padding | ✅ |
+| number_of_images_in_sequence | ✅ |
+| presentation_time_for_image_number, target_url_for_image_number | ✅ |
+| is_missing_reference | ✅ |
+| available_range/`<-` (media ref) | ✅ |
+| Marker, marked_range/`<-`, comment/`<-` | ✅ |
+| Transition, transition_type/`<-`, in_offset/`<-`, out_offset/`<-` | ✅ |
+| TimeEffect, FreezeFrame | ✅ |
 
 ## Phase 4 — composition coordinate model
 
@@ -86,6 +85,7 @@ nle.api-only extras (sugar / OTIOD / predicates).
 | video_tracks, audio_tracks | ⬜ |
 | frame_for_time (track-level) | ⬜ |
 | overlapping (track-level) | ⬜ |
+| visible (track-level) | ⬜ |
 | global_start_time/`<-` | ⬜ |
 | is_equivalent_to | ⬜ |
 | track_trimmed_to_range | ⬜ |

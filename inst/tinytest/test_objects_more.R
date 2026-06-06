@@ -1,0 +1,88 @@
+# Phase 3: media-ref subtypes, Marker, Transition, TimeEffect/FreezeFrame.
+
+# construction + predicates
+expect_equal(MediaReference("m")$OTIO_SCHEMA, "MediaReference.1")
+expect_true(is_media_reference(GeneratorReference("g", "SMPTEBars")))
+expect_true(is_media_reference(ImageSequenceReference("file:///s/")))
+expect_true(is_missing_reference(MissingReference()))
+expect_false(is_missing_reference(ExternalReference("a.mp4")))
+expect_true(is_effect(FreezeFrame("f")))
+expect_true(inherits(FreezeFrame("f"), "LinearTimeWarp"))
+expect_equal(time_scalar(FreezeFrame("f")), 0)
+
+# accessors round-trip
+g <- GeneratorReference("g", "SMPTEBars")
+generator_kind(g) <- "SMPTEColorBars"
+expect_equal(generator_kind(g), "SMPTEColorBars")
+parameters(g) <- list(foo = "bar")
+expect_equal(parameters(g)$foo, "bar")
+
+mk <- Marker("m", TimeRange(RationalTime(0, 24), RationalTime(5, 24)), "RED", "note")
+expect_equal(color(mk), "RED")
+expect_equal(comment(mk), "note")
+expect_equal(value(duration(marked_range(mk))), 5)
+
+tn <- Transition("t", "SMPTE_Dissolve", RationalTime(5, 24), RationalTime(5, 24))
+expect_equal(transition_type(tn), "SMPTE_Dissolve")
+expect_equal(value(in_offset(tn)), 5)
+# Transition is composable (can be a track child)
+trk <- append_child(Track("V1"), tn)
+expect_equal(length(children(trk)), 1L)
+
+# ImageSequenceReference computed methods (1-based image numbers)
+isr <- ImageSequenceReference("file:///seq/", "frame.", ".exr", start_frame = 1L,
+                              frame_step = 1L, rate = 24, frame_zero_padding = 4L,
+                              available_range = TimeRange(RationalTime(0, 24),
+                                                          RationalTime(48, 24)))
+expect_equal(number_of_images_in_sequence(isr), 48L)
+expect_equal(end_frame(isr), 48L)
+expect_equal(target_url_for_image_number(isr, 0), "file:///seq/frame.0000.exr")
+expect_equal(target_url_for_image_number(isr, 2), "file:///seq/frame.0002.exr")
+expect_equal(value(presentation_time_for_image_number(isr, 2)), 1)
+
+# round-trip through our own parser
+expect_true(inherits(from_json_string(to_json_string(isr)), "ImageSequenceReference"))
+expect_equal(transition_type(from_json_string(to_json_string(tn))), "SMPTE_Dissolve")
+
+# ---- rotio JSON + behavior parity ----
+if (requireNamespace("rotio", quietly = TRUE)) {
+    norm <- function(x) rotio::to_json_string(rotio::from_json_string(to_json_string(x)))
+
+    expect_identical(norm(MediaReference("m")),
+                     rotio::to_json_string(rotio::MediaReference("m")))
+    expect_identical(
+        norm(Marker("m", TimeRange(RationalTime(0, 24), RationalTime(5, 24)), "RED", "note")),
+        rotio::to_json_string(rotio::Marker("m",
+            rotio::TimeRange(rotio::RationalTime(0, 24), rotio::RationalTime(5, 24)),
+            "RED", "note")))
+    expect_identical(
+        norm(Transition("t", "SMPTE_Dissolve", RationalTime(5, 24), RationalTime(5, 24))),
+        rotio::to_json_string(rotio::Transition("t", "SMPTE_Dissolve",
+            rotio::RationalTime(5, 24), rotio::RationalTime(5, 24))))
+    expect_identical(
+        norm(GeneratorReference("g", "SMPTEBars",
+            TimeRange(RationalTime(0, 24), RationalTime(10, 24)), list(foo = "bar"))),
+        rotio::to_json_string(rotio::GeneratorReference("g", "SMPTEBars",
+            rotio::TimeRange(rotio::RationalTime(0, 24), rotio::RationalTime(10, 24)),
+            list(foo = "bar"))))
+    expect_identical(norm(FreezeFrame("f")),
+                     rotio::to_json_string(rotio::FreezeFrame("f")))
+    expect_identical(norm(TimeEffect("te", "SomeWarp")),
+                     rotio::to_json_string(rotio::TimeEffect("te", "SomeWarp")))
+
+    risr <- rotio::ImageSequenceReference(target_url_base = "file:///seq/",
+        name_prefix = "frame.", name_suffix = ".exr", start_frame = 1L,
+        frame_step = 1L, rate = 24, frame_zero_padding = 4L,
+        available_range = rotio::TimeRange(rotio::RationalTime(0, 24),
+                                           rotio::RationalTime(48, 24)))
+    expect_identical(norm(isr), rotio::to_json_string(risr))
+    expect_equal(number_of_images_in_sequence(isr), rotio::number_of_images_in_sequence(risr))
+    expect_equal(end_frame(isr), rotio::end_frame(risr))
+    for (n in c(0, 1, 2, 5)) {
+        expect_equal(target_url_for_image_number(isr, n),
+                     rotio::target_url_for_image_number(risr, n), info = paste("url", n))
+        expect_equal(value(presentation_time_for_image_number(isr, n)),
+                     unname(rotio::presentation_time_for_image_number(risr, n)[["value"]]),
+                     info = paste("ptime", n))
+    }
+}

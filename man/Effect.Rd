@@ -2,12 +2,18 @@
 \name{Effect}
 \alias{Effect}
 \alias{LinearTimeWarp}
+\alias{TimeEffect}
+\alias{FreezeFrame}
 \title{Construct an OTIO effect}
 \usage{
 Effect(name = "", effect_name = "", enabled = TRUE, metadata = NULL)
 
 LinearTimeWarp(name = "", effect_name = "", time_scalar = 1, enabled = TRUE,
                metadata = NULL)
+
+TimeEffect(name = "", effect_name = "", metadata = NULL)
+
+FreezeFrame(name = "", metadata = NULL)
 }
 \arguments{
 \item{name}{Effect instance name (default empty).}

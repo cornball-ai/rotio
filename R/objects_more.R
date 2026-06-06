@@ -154,7 +154,21 @@ available_range <- function(x) {
         return(ar)
     }
     if (is_composition(x)) {
-        # Full span of the children (transitions do not advance the timeline).
+        if (inherits(x, "Stack")) {
+            # Parallel tracks: span is the longest child.
+            md <- NULL
+            for (ch in x$children) {
+                d <- trimmed_range(ch)$duration
+                if (is.null(md) || to_seconds(d) > to_seconds(md)) {
+                    md <- d
+                }
+            }
+            if (is.null(md)) {
+                md <- RationalTime(0, 24)
+            }
+            return(TimeRange(RationalTime(0, md$rate), md))
+        }
+        # Track: sequential span (transitions do not advance the timeline).
         cum <- NULL
         for (ch in x$children) {
             if (inherits(ch, "Transition")) {
@@ -371,8 +385,14 @@ target_url_for_image_number <- function(x, image_number) {
     frame <- x$start_frame + (image_number - 1L) * x$frame_step
     num <- if (x$frame_zero_padding > 0L) {
         # Pad the digits to the given width, then prepend the sign (matches OTIO).
-        sgn <- if (frame < 0L) "-" else ""
-        paste0(sgn, formatC(abs(frame), width = x$frame_zero_padding, flag = "0", format = "d"))
+        if (frame < 0L) {
+            sgn <- "-"
+        } else {
+            sgn <- ""
+        }
+        paste0(sgn,
+               formatC(abs(frame), width = x$frame_zero_padding, flag = "0",
+                       format = "d"))
     } else {
         as.character(frame)
     }

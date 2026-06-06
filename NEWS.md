@@ -1,3 +1,11 @@
+# nle.api 0.0.2.18 (dev)
+
+## Fixes: Stack parallel semantics + transitions in algorithms
+
+* Stack children are parallel (range_in_parent starts at 0; available_range is
+  the max child span); track_trimmed_to_range and flatten_stack handle tracks
+  with transitions. Validated against rotio.
+
 # nle.api 0.0.2.17 (dev)
 
 ## Fixes: ImageSequenceReference parity (round 2)

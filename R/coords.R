@@ -43,7 +43,12 @@ range_in_parent <- function(x) {
     if (is.null(p) || !.is_container(p)) {
         stop("range_in_parent: item has no parent composition", call. = FALSE)
     }
-    # Cumulative position at x: transitions do not advance the track timeline.
+    # Stack children are parallel: each starts at 0.
+    if (!inherits(p, "Track")) {
+        dur <- trimmed_range(x)$duration
+        return(TimeRange(RationalTime(0, dur$rate), dur))
+    }
+    # Track: cumulative position; transitions do not advance the timeline.
     cum <- NULL
     for (ch in p$children) {
         if (identical(ch, x)) {
@@ -196,6 +201,10 @@ track_trimmed_to_range <- function(in_track, trim_range) {
     te <- to_seconds(end_time_exclusive(trim_range))
     out <- Track(in_track$name, kind = in_track$kind %||% "Video")
     for (ch in children(in_track)) {
+        if (inherits(ch, "Transition")) {
+            append_child(out, clone(ch))
+            next
+        }
         rip <- range_in_parent(ch)
         cs <- to_seconds(rip$start_time)
         ce <- to_seconds(end_time_exclusive(rip))
@@ -239,15 +248,19 @@ flatten_stack <- function(x) {
     }
     rate <- .first_rate(tracks)
 
-    # Per track: segments (start, end frames, child, is_gap).
+    # Per track: segments (start, end frames, child, is_gap). Transitions occupy
+    # no timeline space and are skipped.
     segs <- lapply(tracks, function(trk) {
         pos <- 0L
-        lapply(children(trk), function(ch) {
+        out_segs <- list()
+        for (ch in children(trk)) {
+            if (inherits(ch, "Transition")) next
             d <- to_frames(trimmed_range(ch)$duration, rate)
-            s <- pos
-            pos <<- pos + d
-            list(s = s, e = s + d, ch = ch, gap = inherits(ch, "Gap"))
-        })
+            out_segs[[length(out_segs) + 1L]] <- list(s = pos, e = pos + d,
+                ch = ch, gap = inherits(ch, "Gap"))
+            pos <- pos + d
+        }
+        out_segs
     })
     total <- max(vapply(segs, function(ss) if (length(ss)) {
                 ss[[length(ss)]]$e

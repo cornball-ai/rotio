@@ -21,8 +21,9 @@ add_child <- function(parent, child) {
     if (!is_composition(parent)) {
         stop("add_child: parent must be a Track or Stack", call. = FALSE)
     }
-    if (!is_otio(child)) {
-        stop("add_child: child must be an OTIO object", call. = FALSE)
+    if (!(inherits(child, "Item") || is_composition(child))) {
+        stop("add_child: child must be a composable (clip, gap, track)",
+             call. = FALSE)
     }
     parent$children <- c(parent$children, list(child))
     parent
@@ -43,6 +44,9 @@ add_child <- function(parent, child) {
 add_track <- function(timeline, track) {
     if (!is_timeline(timeline)) {
         stop("add_track: timeline must be a Timeline", call. = FALSE)
+    }
+    if (!inherits(track, "Track")) {
+        stop("add_track: track must be a Track", call. = FALSE)
     }
     timeline$tracks <- add_child(timeline$tracks, track)
     timeline
@@ -146,13 +150,24 @@ target_url <- function(x) {
 #' @rdname target_url
 #' @export
 `target_url<-` <- function(x, value) {
+    value <- as.character(value)
     if (inherits(x, "ExternalReference")) {
-        x$target_url <- as.character(value)
+        x$target_url <- value
         return(x)
     }
     if (inherits(x, "Clip")) {
         key <- x$active_media_reference_key
-        x$media_references[[key]]$target_url <- as.character(value)
+        ref <- x$media_references[[key]]
+        if (inherits(ref, "ExternalReference")) {
+            ref$target_url <- value
+        } else {
+            # Active ref has no URL (e.g. a MissingReference): promote it to an
+            # ExternalReference, carrying over its name/range/metadata.
+            ref <- ExternalReference(value,
+                                     available_range = ref$available_range,
+                                     metadata = ref$metadata)
+        }
+        x$media_references[[key]] <- ref
         return(x)
     }
     stop("target_url<-: x must be a Clip or ExternalReference", call. = FALSE)

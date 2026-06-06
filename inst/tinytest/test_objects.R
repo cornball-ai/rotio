@@ -46,3 +46,20 @@ expect_equal(name(tl), "renamed")
 # add_child type checks.
 expect_error(add_child(clip, clip))        # clip is not a composition
 expect_error(add_track(v2, v2))            # v2 is not a timeline
+expect_error(add_child(v, RationalTime(0, 30)))  # not a composable child
+expect_error(add_track(tl, clip))          # track must be a Track
+
+# target_url<- on a default (Missing-ref) clip promotes the ref to External.
+cx <- Clip("x")
+expect_true(inherits(media_reference(cx), "MissingReference"))
+target_url(cx) <- "a.mp4"
+expect_equal(target_url(cx), "a.mp4")
+expect_true(inherits(media_reference(cx), "ExternalReference"))
+# and it serializes as a proper ExternalReference, not a Missing one with a url.
+js <- to_json_string(cx)
+expect_true(grepl("ExternalReference.1", js, fixed = TRUE))
+expect_false(grepl("MissingReference", js, fixed = TRUE))
+# setting url on an existing ExternalReference clip just updates it.
+ce <- Clip("y", ExternalReference("old.mp4"))
+target_url(ce) <- "new.mp4"
+expect_equal(target_url(ce), "new.mp4")

@@ -16,6 +16,10 @@ vignettes/*.pdf
 .positai
 .claude
 
+# Local working scratch (not package content)
+/plan.md
+/tasks/
+
 # Compiled C++ objects / shared libs
 src/*.o
 src/*.so

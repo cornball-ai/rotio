@@ -1,7 +1,7 @@
 % tinyrox says don't edit this manually, but it can't stop you!
 \name{visible}
 \alias{visible}
-\title{Is an item visible (enabled)?}
+\title{Is an item visible?}
 \usage{
 visible(x)
 }
@@ -9,5 +9,6 @@ visible(x)
 \item{x}{An item.}
 }
 \description{
-Is an item visible (enabled)?
+A Gap is never visible; a Transition always is; any other item is visible
+when enabled (matching OTIO).
 }

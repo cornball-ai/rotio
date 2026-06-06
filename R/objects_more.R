@@ -153,6 +153,24 @@ available_range <- function(x) {
         }
         return(ar)
     }
+    if (is_composition(x)) {
+        # Full span of the children (transitions do not advance the timeline).
+        cum <- NULL
+        for (ch in x$children) {
+            if (inherits(ch, "Transition")) {
+                next
+            }
+            d <- trimmed_range(ch)$duration
+            if (is.null(cum)) {
+                cum <- RationalTime(0, d$rate)
+            }
+            cum <- .rt_plus(cum, d)
+        }
+        if (is.null(cum)) {
+            cum <- RationalTime(0, 24)
+        }
+        return(TimeRange(RationalTime(0, cum$rate), cum))
+    }
     x$available_range
 }
 

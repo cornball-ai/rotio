@@ -1,13 +1,14 @@
 % tinyrox says don't edit this manually, but it can't stop you!
 \name{overlapping}
 \alias{overlapping}
-\title{Do any items in a composition overlap?}
+\title{Does an item overlap its neighbours?}
 \usage{
 overlapping(x)
 }
 \arguments{
-\item{x}{A composition.}
+\item{x}{An item.}
 }
 \description{
-Always \code{FALSE} for a Track (items are sequential).
+Only transitions overlap (they span a cut); everything else returns
+\code{FALSE}.
 }

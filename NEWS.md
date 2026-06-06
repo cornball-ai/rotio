@@ -1,3 +1,10 @@
+# nle.api 0.0.2.17 (dev)
+
+## Fixes: ImageSequenceReference parity (round 2)
+
+* `end_frame` correct for non-divisible durations; `frame_for_time` errors out of
+  range; negative image numbers extrapolate (no error); signed zero-padding.
+
 # nle.api 0.0.2.16 (dev)
 
 ## Fixes: coordinate model (transitions, tracks, rates)

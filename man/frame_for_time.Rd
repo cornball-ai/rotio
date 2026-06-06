@@ -11,5 +11,5 @@ frame_for_time(x, time)
 \item{time}{A \code{\link{RationalTime}}.}
 }
 \description{
-Frame for a time in an ImageSequenceReference
+Errors if \code{time} falls outside the available range (matching OTIO).
 }

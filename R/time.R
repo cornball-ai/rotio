@@ -1,37 +1,18 @@
-# Time value types: OpenTimelineIO RationalTime and TimeRange, pure R.
-#
-# A RationalTime is a value/rate pair (value in rate's units; for frame-based
-# editorial work value is the frame number and rate is the fps). A TimeRange is
-# a start_time plus a duration, both RationalTime. These mirror the OTIO names
-# and serialize to the canonical OTIO JSON shapes; all math is plain R, no
-# compiled code.
-
-# Empty JSON object (serializes as {}, not []).
-.empty_obj <- function() stats::setNames(list(), character())
-
-# Normalize a metadata argument to a named list (so it serializes as a JSON
-# object). NULL or an empty/unnamed list becomes an empty object.
-.as_metadata <- function(m) {
-    if (is.null(m) || length(m) == 0L) {
-        return(.empty_obj())
-    }
-    if (is.null(names(m))) {
-        stop("metadata must be a named list", call. = FALSE)
-    }
-    m
-}
+# Time value types: OpenTimelineIO RationalTime and TimeRange (environment-backed
+# like all OTIO objects, though they carry no parent/children). value/rate are in
+# the rate's units; for frame-based work value is the frame number. Math is plain
+# R. (.empty_obj / .as_metadata live in objects.R.)
 
 #' Construct a RationalTime
 #'
-#' An OpenTimelineIO \code{RationalTime} is a \code{value / rate} pair measured
-#' in the rate's units. For frame-based editing \code{value} is the frame number
-#' and \code{rate} is the frame rate.
+#' A \code{value / rate} pair measured in the rate's units (frame number / fps
+#' for frame-based work).
 #'
-#' @param value Time value (frame number for frame-based work). Coerced to double.
+#' @param value Time value. Coerced to double.
 #' @param rate Rate (fps); must be > 0. Default 1.
-#' @return A \code{RationalTime} object.
+#' @return A \code{RationalTime}.
 #' @examples
-#' RationalTime(180, 30)   # frame 180 at 30 fps
+#' RationalTime(180, 30)
 #' @export
 RationalTime <- function(value, rate = 1) {
     value <- as.numeric(value)
@@ -43,18 +24,17 @@ RationalTime <- function(value, rate = 1) {
     if (rate <= 0) {
         stop("RationalTime: rate must be > 0; got ", rate, call. = FALSE)
     }
-    structure(list(OTIO_SCHEMA = "RationalTime.1", rate = rate, value = value),
-              class = c("RationalTime", "otio_object"))
+    .new_otio("RationalTime", c("OTIO_SCHEMA", "rate", "value"),
+              list(OTIO_SCHEMA = "RationalTime.1", rate = rate, value = value))
 }
 
 #' Construct a TimeRange
 #'
-#' An OpenTimelineIO \code{TimeRange} is a \code{start_time} plus a
-#' \code{duration}, both \code{\link{RationalTime}}.
+#' A \code{start_time} plus a \code{duration}, both \code{\link{RationalTime}}.
 #'
-#' @param start_time A \code{RationalTime} for the range start.
-#' @param duration A \code{RationalTime} for the range length.
-#' @return A \code{TimeRange} object.
+#' @param start_time A \code{RationalTime}.
+#' @param duration A \code{RationalTime}.
+#' @return A \code{TimeRange}.
 #' @examples
 #' TimeRange(RationalTime(0, 30), RationalTime(180, 30))
 #' @export
@@ -63,9 +43,9 @@ TimeRange <- function(start_time, duration) {
         stop("TimeRange: start_time and duration must be RationalTime",
              call. = FALSE)
     }
-    structure(list(OTIO_SCHEMA = "TimeRange.1", duration = duration,
-                   start_time = start_time),
-              class = c("TimeRange", "otio_object"))
+    .new_otio("TimeRange", c("OTIO_SCHEMA", "duration", "start_time"),
+              list(OTIO_SCHEMA = "TimeRange.1", duration = duration,
+                   start_time = start_time))
 }
 
 #' Is x a RationalTime / TimeRange?
@@ -135,11 +115,11 @@ from_seconds <- function(seconds, rate = 1) {
 
 #' Frame number of a RationalTime
 #'
-#' Returns the integer frame number. With no \code{rate}, rounds the value at the
-#' time's own rate; with a \code{rate}, rescales first.
+#' Integer frame number. With no \code{rate}, rounds at the time's own rate; with
+#' a \code{rate}, rescales first.
 #'
 #' @param x A \code{RationalTime}.
-#' @param rate Optional target rate to rescale to before taking the frame number.
+#' @param rate Optional target rate to rescale to first.
 #' @export
 to_frames <- function(x, rate = NULL) {
     if (!is_rational_time(x)) {

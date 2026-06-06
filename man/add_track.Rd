@@ -1,7 +1,7 @@
 % tinyrox says don't edit this manually, but it can't stop you!
 \name{add_track}
 \alias{add_track}
-\title{Append a track to a timeline}
+\title{Append a track to a timeline, functionally}
 \usage{
 add_track(timeline, track)
 }
@@ -14,10 +14,9 @@ add_track(timeline, track)
 A new timeline.
 }
 \description{
-Returns a new timeline with \code{track} appended to its track stack. The
-input is unchanged.
+Returns a new timeline (clone) with a clone of \code{track} appended to its
+stack. Neither input is mutated.
 }
 \examples{
-tl <- Timeline("demo")
-tl <- add_track(tl, Track("V1", kind = "Video"))
+tl <- add_track(Timeline("demo"), Track("V1", kind = "Video"))
 }

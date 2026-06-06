@@ -1,45 +1,39 @@
-# Functional builders and accessors for the OTIO object model.
+# Accessors/setters and the functional builders.
 #
-# Everything here is value-semantics: builders return a NEW object with the
-# change applied; the input is untouched. Compose timelines bottom-up (build
-# clips, add them to a track, add tracks to a timeline) so nothing ever needs
-# to reach into a sub-node and mutate it.
+# Setters mutate the object's environment in place (reference semantics) and
+# return it, so the replacement forms (metadata(x) <- v) work. The functional
+# builders add_child()/add_track() are value-semantics sugar over the mutating
+# tree ops: they clone, append, and return a new object, leaving inputs
+# untouched (the contract licuadora and other callers rely on).
 
-#' Append a child to a composition
+#' Append a child, functionally (clone + append)
 #'
-#' Returns a new composition (Track or Stack) with \code{child} appended. The
-#' input is unchanged.
+#' Returns a new composition: a clone of \code{parent} with a clone of
+#' \code{child} appended. Neither input is mutated (cf. \code{\link{append_child}},
+#' which mutates in place).
 #'
-#' @param parent A \code{\link{Track}} or \code{\link{Stack}}.
-#' @param child An item to append (clip, gap, or track for a stack).
+#' @param parent A composition (Track/Stack) or collection.
+#' @param child An OTIO object.
 #' @return A new composition.
 #' @examples
-#' v <- Track("V1", kind = "Video")
-#' v <- add_child(v, Clip("a", ExternalReference("a.mp4")))
+#' v <- add_child(Track("V1"), Clip("a", ExternalReference("a.mp4")))
 #' @export
 add_child <- function(parent, child) {
-    if (!is_composition(parent)) {
-        stop("add_child: parent must be a Track or Stack", call. = FALSE)
-    }
-    if (!(inherits(child, "Item") || is_composition(child))) {
-        stop("add_child: child must be a composable (clip, gap, track)",
-             call. = FALSE)
-    }
-    parent$children <- c(parent$children, list(child))
-    parent
+    out <- clone(parent)
+    append_child(out, clone(child))
+    out
 }
 
-#' Append a track to a timeline
+#' Append a track to a timeline, functionally
 #'
-#' Returns a new timeline with \code{track} appended to its track stack. The
-#' input is unchanged.
+#' Returns a new timeline (clone) with a clone of \code{track} appended to its
+#' stack. Neither input is mutated.
 #'
 #' @param timeline A \code{\link{Timeline}}.
 #' @param track A \code{\link{Track}}.
 #' @return A new timeline.
 #' @examples
-#' tl <- Timeline("demo")
-#' tl <- add_track(tl, Track("V1", kind = "Video"))
+#' tl <- add_track(Timeline("demo"), Track("V1", kind = "Video"))
 #' @export
 add_track <- function(timeline, track) {
     if (!is_timeline(timeline)) {
@@ -48,13 +42,15 @@ add_track <- function(timeline, track) {
     if (!inherits(track, "Track")) {
         stop("add_track: track must be a Track", call. = FALSE)
     }
-    timeline$tracks <- add_child(timeline$tracks, track)
-    timeline
+    out <- clone(timeline)
+    append_child(out$tracks, clone(track))
+    out
 }
 
 #' The track stack of a timeline
 #' @param x A \code{\link{Timeline}}.
-#' @return The timeline's \code{\link{Stack}} of tracks.
+#' @param value A \code{\link{Stack}}.
+#' @return The timeline's \code{\link{Stack}}.
 #' @export
 tracks <- function(x) {
     if (!is_timeline(x)) {
@@ -63,22 +59,14 @@ tracks <- function(x) {
     x$tracks
 }
 
-#' Children of a composition
-#' @param x A \code{\link{Track}} or \code{\link{Stack}}.
+#' @rdname tracks
 #' @export
-children <- function(x) {
-    if (!is_composition(x)) {
-        stop("children: x must be a composition", call. = FALSE)
-    }
-    x$children
+`tracks<-` <- function(x, value) {
+    x$tracks <- value
+    x
 }
 
 #' Get or set object metadata
-#'
-#' \code{metadata(x)} reads the metadata object; \code{metadata(x) <- value}
-#' returns a copy of \code{x} with metadata replaced (value semantics, so it
-#' rebinds \code{x} in the caller).
-#'
 #' @param x An OTIO object.
 #' @param value A named list.
 #' @export
@@ -104,29 +92,20 @@ name <- function(x) x$name
     x
 }
 
-#' Track kind
+#' Get or set a track's kind
 #' @param x A \code{\link{Track}}.
+#' @param value \code{"Video"} or \code{"Audio"}.
 #' @export
 kind <- function(x) x$kind
 
-#' Whether an item, composition, or effect is enabled
-#'
-#' A disabled clip/track is muted; a disabled effect is bypassed. Read with
-#' \code{enabled(x)}; set with \code{enabled(x) <- value} (value semantics).
-#'
-#' @param x An object with an \code{enabled} field (item, composition, effect).
-#' @param value \code{TRUE} or \code{FALSE}.
+#' @rdname kind
 #' @export
-enabled <- function(x) x$enabled
-
-#' @rdname enabled
-#' @export
-`enabled<-` <- function(x, value) {
-    x$enabled <- isTRUE(value)
+`kind<-` <- function(x, value) {
+    x$kind <- as.character(value)
     x
 }
 
-#' Source range of an item
+#' Get or set an item's source range
 #' @param x An item (clip, gap, track).
 #' @param value A \code{\link{TimeRange}}.
 #' @export
@@ -139,14 +118,58 @@ source_range <- function(x) x$source_range
     x
 }
 
+#' Whether an item, composition, or effect is enabled
+#'
+#' A disabled clip/track is muted; a disabled effect is bypassed.
+#'
+#' @param x An object with an \code{enabled} field.
+#' @param value \code{TRUE} or \code{FALSE}.
+#' @export
+enabled <- function(x) x$enabled
+
+#' @rdname enabled
+#' @export
+`enabled<-` <- function(x, value) {
+    x$enabled <- isTRUE(value)
+    x
+}
+
+#' Get or set an item's display color
+#' @param x An item or composition.
+#' @param value A color value (or \code{NULL}).
+#' @export
+color <- function(x) x$color
+
+#' @rdname color
+#' @export
+`color<-` <- function(x, value) {
+    x$color <- value
+    x
+}
+
 #' Active media reference of a clip
 #' @param x A \code{\link{Clip}}.
+#' @param value A media reference.
 #' @export
 media_reference <- function(x) {
     if (!inherits(x, "Clip")) {
         stop("media_reference: x must be a Clip", call. = FALSE)
     }
     x$media_references[[x$active_media_reference_key]]
+}
+
+#' @rdname media_reference
+#' @export
+`media_reference<-` <- function(x, value) {
+    if (!inherits(x, "Clip")) {
+        stop("media_reference<-: x must be a Clip", call. = FALSE)
+    }
+    if (!is_media_reference(value)) {
+        stop("media_reference<-: value must be a media reference",
+             call. = FALSE)
+    }
+    x$media_references[[x$active_media_reference_key]] <- value
+    x
 }
 
 #' Target URL of a clip or external reference
@@ -178,13 +201,10 @@ target_url <- function(x) {
         if (inherits(ref, "ExternalReference")) {
             ref$target_url <- value
         } else {
-            # Active ref has no URL (e.g. a MissingReference): promote it to an
-            # ExternalReference, carrying over its name/range/metadata.
-            ref <- ExternalReference(value,
-                                     available_range = ref$available_range,
-                                     metadata = ref$metadata)
+            # Promote a non-URL ref (e.g. MissingReference) to an ExternalReference.
+            x$media_references[[key]] <- ExternalReference(value,
+                available_range = ref$available_range, metadata = ref$metadata)
         }
-        x$media_references[[key]] <- ref
         return(x)
     }
     stop("target_url<-: x must be a Clip or ExternalReference", call. = FALSE)

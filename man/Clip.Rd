@@ -9,20 +9,18 @@ Clip(name, media_reference = MissingReference(), source_range = NULL,
 \arguments{
 \item{name}{Clip name.}
 
-\item{media_reference}{A media reference (see \code{\link{ExternalReference}});
-defaults to a \code{MissingReference}.}
+\item{media_reference}{A media reference (default \code{MissingReference}).}
 
-\item{source_range}{Optional \code{\link{TimeRange}} into the media.}
+\item{source_range}{Optional \code{\link{TimeRange}}.}
 
 \item{metadata}{Named list of metadata.}
 }
 \value{
-A \code{Clip} object.
+A \code{Clip}.
 }
 \description{
-An OTIO \code{Clip} is a media reference plus a \code{source_range} (the
-portion of the media used). The reference is stored under the
-\code{DEFAULT_MEDIA} key, matching OTIO's multi-reference model.
+A media reference plus a \code{source_range}. The reference is stored under
+the \code{DEFAULT_MEDIA} key (OTIO's multi-reference model).
 }
 \examples{
 Clip("a", ExternalReference("a.mp4"),

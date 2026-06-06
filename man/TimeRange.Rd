@@ -6,16 +6,15 @@
 TimeRange(start_time, duration)
 }
 \arguments{
-\item{start_time}{A \code{RationalTime} for the range start.}
+\item{start_time}{A \code{RationalTime}.}
 
-\item{duration}{A \code{RationalTime} for the range length.}
+\item{duration}{A \code{RationalTime}.}
 }
 \value{
-A \code{TimeRange} object.
+A \code{TimeRange}.
 }
 \description{
-An OpenTimelineIO \code{TimeRange} is a \code{start_time} plus a
-\code{duration}, both \code{\link{RationalTime}}.
+A \code{start_time} plus a \code{duration}, both \code{\link{RationalTime}}.
 }
 \examples{
 TimeRange(RationalTime(0, 30), RationalTime(180, 30))

@@ -9,7 +9,7 @@ from_json_file(file_name)
 \item{file_name}{Path to a \code{.otio} JSON file.}
 }
 \value{
-The reconstructed OTIO object.
+The reconstructed OTIO object, with parent pointers wired.
 }
 \description{
 Read an OTIO JSON file into the object model

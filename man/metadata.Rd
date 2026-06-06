@@ -14,7 +14,5 @@ metadata(x) <- value
 \item{value}{A named list.}
 }
 \description{
-\code{metadata(x)} reads the metadata object; \code{metadata(x) <- value}
-returns a copy of \code{x} with metadata replaced (value semantics, so it
-rebinds \code{x} in the caller).
+Get or set object metadata
 }

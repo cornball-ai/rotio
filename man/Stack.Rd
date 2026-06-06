@@ -13,9 +13,8 @@ Stack(name = "tracks", source_range = NULL, metadata = NULL)
 \item{metadata}{Named list of metadata.}
 }
 \value{
-A \code{Stack} object.
+A \code{Stack}.
 }
 \description{
-An OTIO \code{Stack} holds parallel tracks (the timeline's \code{tracks} is a
-Stack). Add tracks with \code{\link{add_child}}.
+Parallel tracks (a Timeline's \code{tracks} is a Stack).
 }

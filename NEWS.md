@@ -1,3 +1,12 @@
+# nle.api 0.0.2.16 (dev)
+
+## Fixes: coordinate model (transitions, tracks, rates)
+
+* `range_in_parent`/`visible_range` handle Transitions; `available_range`/
+  `trimmed_range` work for tracks; `track_trimmed_to_range` is rate-faithful;
+  `flatten_stack` honours `enabled`; `visible`/`overlapping` corrected. Validated
+  against rotio.
+
 # nle.api 0.0.2.15 (dev)
 
 ## Fixes: ImageSequenceReference parity

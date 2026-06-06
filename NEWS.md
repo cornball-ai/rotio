@@ -1,3 +1,12 @@
+# nle.api 0.0.2.14 (dev)
+
+## Phase 4 of full OTIO parity: composition coordinate model
+
+* `range_in_parent`, `trimmed_range`, `trimmed_range_in_parent`, `visible_range`,
+  item `available_range`, `video_tracks`/`audio_tracks`, `global_start_time`,
+  `is_equivalent_to`, `visible`, `overlapping`, `track_trimmed_to_range`, and
+  `flatten_stack` -- positions from gaps + child order, validated against rotio.
+
 # nle.api 0.0.2.13 (dev)
 
 ## Fixes: time-model rate fidelity

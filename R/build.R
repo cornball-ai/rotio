@@ -109,6 +109,23 @@ name <- function(x) x$name
 #' @export
 kind <- function(x) x$kind
 
+#' Whether an item, composition, or effect is enabled
+#'
+#' A disabled clip/track is muted; a disabled effect is bypassed. Read with
+#' \code{enabled(x)}; set with \code{enabled(x) <- value} (value semantics).
+#'
+#' @param x An object with an \code{enabled} field (item, composition, effect).
+#' @param value \code{TRUE} or \code{FALSE}.
+#' @export
+enabled <- function(x) x$enabled
+
+#' @rdname enabled
+#' @export
+`enabled<-` <- function(x, value) {
+    x$enabled <- isTRUE(value)
+    x
+}
+
 #' Source range of an item
 #' @param x An item (clip, gap, track).
 #' @param value A \code{\link{TimeRange}}.

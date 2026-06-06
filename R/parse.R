@@ -19,6 +19,8 @@
            ImageSequenceReference = c("ImageSequenceReference", "MediaReference", "otio_object"),
            Clip = c("Clip", "Item", "otio_object"),
            Gap = c("Gap", "Item", "otio_object"),
+           Effect = c("Effect", "otio_object"),
+           LinearTimeWarp = c("LinearTimeWarp", "Effect", "otio_object"),
            Track = c("Track", "Composition", "otio_object"),
            Stack = c("Stack", "Composition", "otio_object"),
            Timeline = c("Timeline", "otio_object"),

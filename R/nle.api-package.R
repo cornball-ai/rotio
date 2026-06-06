@@ -1,9 +1,12 @@
-#' nle.api: neutral timeline model and OTIO wrap
+#' nle.api: pure-R OpenTimelineIO document model
 #'
-#' Provides the R verb surface, Markdown carrier, and driver registry over an
-#' OpenTimelineIO core bound through Rcpp. See PLAN.md for the migration.
+#' A dependency-light ("rotiolite") OTIO document layer: pure-R constructors for
+#' the OpenTimelineIO object model (Timeline, Track, Clip, Gap, media
+#' references, RationalTime, TimeRange), functional builders that return new
+#' objects, and JSON (de)serialization through \pkg{jsonlite} that emits
+#' canonical \code{.otio}. The optional \pkg{rotio} package validates emitted
+#' JSON against the real libopentimelineio. No compiled code.
 #'
-#' @useDynLib nle.api, .registration = TRUE
-#' @importFrom Rcpp evalCpp
 #' @keywords internal
 "_PACKAGE"
+

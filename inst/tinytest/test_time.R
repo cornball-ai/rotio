@@ -1,22 +1,22 @@
-# Rational time basics.
+# RationalTime / TimeRange construction and conversion.
 
-r <- rational_time(4918, 30)
-expect_true(is_rational_time(r))
-expect_equal(r$num, 4918L)
-expect_equal(r$den, 30L)
-expect_equal(to_seconds(r), 4918 / 30)
+rt <- RationalTime(180, 30)
+expect_true(is_rational_time(rt))
+expect_equal(value(rt), 180)
+expect_equal(rate(rt), 30)
+expect_equal(to_seconds(rt), 6)
+expect_equal(to_frames(rt), 180L)
+expect_equal(to_frames(rescaled_to(rt, 60)), 360L)
+expect_equal(to_frames(rt, rate = 60), 360L)
 
-# Conversion preserves exactness when den matches fps
-expect_equal(to_frames(r, 30L), 4918L)
+expect_equal(value(from_seconds(6, 30)), 180)
+expect_equal(value(from_frames(180, 30)), 180)
 
-# Cross-fps rescale
-r2 <- rational_time(48, 24)         # 2 seconds at 24 fps
-expect_equal(to_seconds(r2), 2)
-expect_equal(to_frames(r2, 30L), 60L)   # 2 seconds at 30 fps
+expect_error(RationalTime(1, 0))
+expect_error(RationalTime(1, -5))
 
-# Constructor validation
-expect_error(rational_time(1, 0))
-expect_error(rational_time(1, -1))
-
-# Round-trip seconds <-> rational
-expect_equal(to_seconds(to_rational(1.5, 30L)), 1.5)
+tr <- TimeRange(RationalTime(0, 30), RationalTime(180, 30))
+expect_true(is_time_range(tr))
+expect_equal(value(start_time(tr)), 0)
+expect_equal(value(duration(tr)), 180)
+expect_error(TimeRange(1, 2))

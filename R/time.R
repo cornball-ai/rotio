@@ -1,101 +1,187 @@
-#' Construct a rational time value
-#'
-#' nle.api stores every time value as a rational \code{num/den} in
-#' seconds so that frame-exact round-trips are possible without
-#' floating-point drift. Both components must be integers; \code{den}
-#' must be positive.
-#'
-#' @param num Integer numerator.
-#' @param den Integer denominator (default 1; must be > 0).
-#'
-#' @return A list with class \code{rational_time}.
-#' @examples
-#' rational_time(4918, 30)             # frame 4918 at 30 fps -> 163.93s
-#' rational_time(60, 1)                # one minute
-#' @export
-rational_time <- function(num, den = 1L) {
-    num <- as.integer(num)
-    den <- as.integer(den)
-    if (length(num) != 1L || length(den) != 1L || is.na(num) || is.na(den)) {
-        stop("rational_time: num and den must be length-1 integers", call. = FALSE)
+# Time value types: OpenTimelineIO RationalTime and TimeRange, pure R.
+#
+# A RationalTime is a value/rate pair (value in rate's units; for frame-based
+# editorial work value is the frame number and rate is the fps). A TimeRange is
+# a start_time plus a duration, both RationalTime. These mirror the OTIO names
+# and serialize to the canonical OTIO JSON shapes; all math is plain R, no
+# compiled code.
+
+# Empty JSON object (serializes as {}, not []).
+.empty_obj <- function() stats::setNames(list(), character())
+
+# Normalize a metadata argument to a named list (so it serializes as a JSON
+# object). NULL or an empty/unnamed list becomes an empty object.
+.as_metadata <- function(m) {
+    if (is.null(m) || length(m) == 0L) {
+        return(.empty_obj())
     }
-    if (den <= 0L) {
-        stop("rational_time: den must be > 0; got ", den, call. = FALSE)
+    if (is.null(names(m))) {
+        stop("metadata must be a named list", call. = FALSE)
     }
-    structure(list(num = num, den = den), class = "rational_time")
+    m
 }
 
-#' Is x a rational_time?
+#' Construct a RationalTime
+#'
+#' An OpenTimelineIO \code{RationalTime} is a \code{value / rate} pair measured
+#' in the rate's units. For frame-based editing \code{value} is the frame number
+#' and \code{rate} is the frame rate.
+#'
+#' @param value Time value (frame number for frame-based work). Coerced to double.
+#' @param rate Rate (fps); must be > 0. Default 1.
+#' @return A \code{RationalTime} object.
+#' @examples
+#' RationalTime(180, 30)   # frame 180 at 30 fps
+#' @export
+RationalTime <- function(value, rate = 1) {
+    value <- as.numeric(value)
+    rate <- as.numeric(rate)
+    if (length(value) != 1L || length(rate) != 1L || anyNA(c(value, rate))) {
+        stop("RationalTime: value and rate must be length-1 numbers",
+             call. = FALSE)
+    }
+    if (rate <= 0) {
+        stop("RationalTime: rate must be > 0; got ", rate, call. = FALSE)
+    }
+    structure(list(OTIO_SCHEMA = "RationalTime.1", rate = rate, value = value),
+              class = c("RationalTime", "otio_object"))
+}
+
+#' Construct a TimeRange
+#'
+#' An OpenTimelineIO \code{TimeRange} is a \code{start_time} plus a
+#' \code{duration}, both \code{\link{RationalTime}}.
+#'
+#' @param start_time A \code{RationalTime} for the range start.
+#' @param duration A \code{RationalTime} for the range length.
+#' @return A \code{TimeRange} object.
+#' @examples
+#' TimeRange(RationalTime(0, 30), RationalTime(180, 30))
+#' @export
+TimeRange <- function(start_time, duration) {
+    if (!is_rational_time(start_time) || !is_rational_time(duration)) {
+        stop("TimeRange: start_time and duration must be RationalTime",
+             call. = FALSE)
+    }
+    structure(list(OTIO_SCHEMA = "TimeRange.1", duration = duration,
+                   start_time = start_time),
+              class = c("TimeRange", "otio_object"))
+}
+
+#' Is x a RationalTime / TimeRange?
 #' @param x Object to test.
 #' @export
-is_rational_time <- function(x) inherits(x, "rational_time")
+is_rational_time <- function(x) inherits(x, "RationalTime")
 
-#' Convert rational_time to seconds (double)
-#' @param x A rational_time.
+#' @rdname is_rational_time
+#' @export
+is_time_range <- function(x) inherits(x, "TimeRange")
+
+#' RationalTime value and rate
+#' @param x A \code{RationalTime}.
+#' @export
+value <- function(x) {
+    if (!is_rational_time(x)) {
+        stop("value: x must be a RationalTime", call. = FALSE)
+    }
+    x$value
+}
+
+#' @rdname value
+#' @export
+rate <- function(x) {
+    if (!is_rational_time(x)) {
+        stop("rate: x must be a RationalTime", call. = FALSE)
+    }
+    x$rate
+}
+
+#' TimeRange start_time and duration
+#' @param x A \code{TimeRange}.
+#' @export
+start_time <- function(x) {
+    if (!is_time_range(x)) {
+        stop("start_time: x must be a TimeRange", call. = FALSE)
+    }
+    x$start_time
+}
+
+#' @rdname start_time
+#' @export
+duration <- function(x) {
+    if (!is_time_range(x)) {
+        stop("duration: x must be a TimeRange", call. = FALSE)
+    }
+    x$duration
+}
+
+#' Convert a RationalTime to seconds
+#' @param x A \code{RationalTime}.
 #' @export
 to_seconds <- function(x) {
     if (!is_rational_time(x)) {
-        stop("to_seconds: x must be a rational_time", call. = FALSE)
+        stop("to_seconds: x must be a RationalTime", call. = FALSE)
     }
-    x$num / x$den
+    x$value / x$rate
 }
 
-#' Convert a seconds value to a rational_time at a given denominator
-#'
-#' Useful for converting a frame count or wall-clock seconds to the
-#' canonical rational form. Rounds to the nearest \code{num}.
-#'
+#' Construct a RationalTime from seconds at a rate
 #' @param seconds Numeric seconds.
-#' @param den Integer denominator (typically the project fps).
+#' @param rate Rate (fps).
 #' @export
-to_rational <- function(seconds, den) {
-    den <- as.integer(den)
-    if (den <= 0L) {
-        stop("to_rational: den must be > 0", call. = FALSE)
-    }
-    rational_time(as.integer(round(seconds * den)), den)
+from_seconds <- function(seconds, rate = 1) {
+    RationalTime(as.numeric(seconds) * as.numeric(rate), rate)
 }
 
-#' Convert a rational_time to an integer frame count at a given fps
+#' Frame number of a RationalTime
 #'
-#' If \code{fps == x$den}, returns \code{x$num} exactly. Otherwise
-#' rescales: \code{round(x$num * fps / x$den)}.
+#' Returns the integer frame number. With no \code{rate}, rounds the value at the
+#' time's own rate; with a \code{rate}, rescales first.
 #'
-#' @param x A rational_time.
-#' @param fps Integer frames per second.
+#' @param x A \code{RationalTime}.
+#' @param rate Optional target rate to rescale to before taking the frame number.
 #' @export
-to_frames <- function(x, fps) {
+to_frames <- function(x, rate = NULL) {
     if (!is_rational_time(x)) {
-        stop("to_frames: x must be a rational_time", call. = FALSE)
+        stop("to_frames: x must be a RationalTime", call. = FALSE)
     }
-    fps <- as.integer(fps)
-    if (fps <= 0L) {
-        stop("to_frames: fps must be > 0", call. = FALSE)
+    if (!is.null(rate)) {
+        x <- rescaled_to(x, rate)
     }
-    if (fps == x$den) {
-        return(as.integer(x$num))
+    as.integer(round(x$value))
+}
+
+#' Construct a RationalTime from a frame number at a rate
+#' @param frame Integer frame number.
+#' @param rate Rate (fps).
+#' @export
+from_frames <- function(frame, rate) {
+    RationalTime(round(as.numeric(frame)), rate)
+}
+
+#' Rescale a RationalTime to a new rate
+#' @param x A \code{RationalTime}.
+#' @param new_rate Target rate (fps).
+#' @export
+rescaled_to <- function(x, new_rate) {
+    if (!is_rational_time(x)) {
+        stop("rescaled_to: x must be a RationalTime", call. = FALSE)
     }
-    as.integer(round(x$num * fps / x$den))
+    new_rate <- as.numeric(new_rate)
+    RationalTime(x$value * new_rate / x$rate, new_rate)
 }
 
 #' @export
-print.rational_time <- function(x, ...) {
-    cat(sprintf("<rational_time %d/%d = %.6fs>\n", x$num, x$den, to_seconds(x)))
+print.RationalTime <- function(x, ...) {
+    cat(sprintf("<RationalTime %g/%g = %.6fs>\n", x$value, x$rate,
+                to_seconds(x)))
     invisible(x)
 }
 
 #' @export
-format.rational_time <- function(x, ...) {
-    sprintf("%d/%d", x$num, x$den)
+print.TimeRange <- function(x, ...) {
+    cat(sprintf("<TimeRange start %g/%g, dur %g/%g>\n", x$start_time$value,
+                x$start_time$rate, x$duration$value, x$duration$rate))
+    invisible(x)
 }
 
-# Internal: parse a JSON-decoded value into a rational_time. Accepts
-# either a list/dict with $num/$den or a length-2 named vector.
-.parse_rational <- function(x) {
-    if (is_rational_time(x)) return(x)
-    if (is.list(x) && all(c("num", "den") %in% names(x))) {
-        return(rational_time(x$num, x$den))
-    }
-    stop(".parse_rational: cannot interpret value as rational_time",
-         call. = FALSE)
-}

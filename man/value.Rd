@@ -1,13 +1,16 @@
 % tinyrox says don't edit this manually, but it can't stop you!
-\name{to_seconds}
-\alias{to_seconds}
-\title{Convert a RationalTime to seconds}
+\name{value}
+\alias{value}
+\alias{rate}
+\title{RationalTime value and rate}
 \usage{
-to_seconds(x)
+value(x)
+
+rate(x)
 }
 \arguments{
 \item{x}{A \code{RationalTime}.}
 }
 \description{
-Convert a RationalTime to seconds
+RationalTime value and rate
 }

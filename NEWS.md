@@ -1,3 +1,34 @@
+# nle.api 0.0.2.8 (dev)
+
+## Rewrite: pure-R OpenTimelineIO ("rotiolite")
+
+* nle.api is now a dependency-light, pure-R OTIO document layer. **All compiled
+  code is gone** — no `Rcpp`, no `LinkingTo`, no `SystemRequirements`,
+  no libopentimelineio. `Imports: jsonlite` only; `rotio` moves to `Suggests`.
+  (Reason: `rotio`'s OTIO C++ is hard to get on CRAN; nle.api becomes the
+  CRAN-clean layer the cornyverse can depend on.)
+* New object model: list-based constructors `Timeline()`, `Track()`, `Stack()`,
+  `Clip()`, `Gap()`, `ExternalReference()`, `MissingReference()`,
+  `RationalTime()`, `TimeRange()` — names and JSON shapes match `rotio` so output
+  is interchangeable.
+* Functional, value-semantics builders: `add_child()` and `add_track()` return a
+  new object rather than mutating in place. Accessors `metadata()`/`metadata<-`,
+  `name()`/`name<-`, `kind()`, `children()`, `tracks()`, `source_range()`,
+  `media_reference()`, `target_url()`, plus time helpers `value()`, `rate()`,
+  `start_time()`, `duration()`, `to_seconds()`/`from_seconds()`,
+  `to_frames()`/`from_frames()`, `rescaled_to()`.
+* Serialization: `to_json_string()` / `to_json_file()` emit canonical OTIO JSON
+  via `jsonlite`; `from_json_string()` / `from_json_file()` parse it back.
+  Verified byte-equivalent against `rotio` (and thus real libopentimelineio).
+* OTIOD bundles: `read_otiod()` / `write_otiod()` for `content.otio` + `media/`
+  directory bundles.
+* Optional `validate_with_rotio()` round-trips emitted JSON through the real OTIO
+  library when `rotio` is installed; unverified otherwise.
+* **Removed** (return in a later pass, re-backed on the new objects): the
+  `nle_timeline` verb layer (`clip_*`/`track_*`/`ripple_delete`/`shift_after`),
+  the driver registry, the `timeline.md` Markdown carrier, and the old `otio_*`
+  Rcpp object/ time wrappers.
+
 # nle.api 0.0.2.7 (dev)
 
 ## New: generic clip effects (clone-based)

@@ -96,3 +96,32 @@ if (requireNamespace("rotio", quietly = TRUE)) {
         expect_equal(nsnap(nt), rsnap(rt), info = paste("roll", din, dout))
     }
 }
+
+if (requireNamespace("rotio", quietly = TRUE)) {
+    # ---- slice ----
+    for (tv in c(3, 5, 10, 12, 0, 16)) {
+        nt <- ntrack(list(nclip("A", 0, 8), nclip("B", 0, 8)))
+        rt <- rtrack(list(rclip("A", 0, 8), rclip("B", 0, 8)))
+        tryCatch(slice(nt, RT(tv)), error = function(e) NULL)
+        tryCatch(rotio::slice(rt, rRT(tv)), error = function(e) NULL)
+        expect_equal(nsnap(nt), rsnap(rt), info = paste("slice", tv))
+    }
+
+    # ---- remove (fill + no-fill) ----
+    for (tv in c(2, 9, 14)) for (fl in c(TRUE, FALSE)) {
+        nt <- ntrack(list(nclip("A", 5, 6), nclip("B", 3, 7), nclip("C", 0, 5)))
+        rt <- rtrack(list(rclip("A", 5, 6), rclip("B", 3, 7), rclip("C", 0, 5)))
+        remove(nt, RT(tv), fill = fl)
+        rotio::remove(rt, rRT(tv), fill = fl)
+        expect_equal(nsnap(nt), rsnap(rt), info = paste("remove", tv, fl))
+    }
+
+    # ---- insert (mid-clip split, at boundary, before start, past end) ----
+    for (tv in c(4, 8, 0, 100)) {
+        nt <- ntrack(list(nclip("A", 0, 8), nclip("B", 0, 8)))
+        rt <- rtrack(list(rclip("A", 0, 8), rclip("B", 0, 8)))
+        insert(nclip("X", 0, 5), nt, RT(tv))
+        rotio::insert(rclip("X", 0, 5), rt, rRT(tv))
+        expect_equal(nsnap(nt), rsnap(rt), info = paste("insert", tv))
+    }
+}

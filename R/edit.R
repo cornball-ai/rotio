@@ -258,3 +258,198 @@ roll <- function(item, delta_in, delta_out) {
     invisible(item)
 }
 
+# --- composition helpers (ported from composition.cpp / track.cpp) ---
+
+# First child whose range_in_parent contains `time` (start <= t < end_exclusive),
+# matching Composition::child_at_time over range_of_all_children.
+.child_at_time <- function(comp, time) {
+    for (ch in children(comp)) {
+        r <- tryCatch(range_in_parent(ch), error = function(e) NULL)
+        if (!is.null(r) && contains(r, time)) {
+            return(ch)
+        }
+    }
+    NULL
+}
+
+# Previous / next siblings (Track::neighbors_of, default NeighborGapPolicy).
+.neighbors_of <- function(comp, item) {
+    idx <- index_of_child(comp, item)
+    kids <- children(comp)
+    list(first = if (idx > 1L) kids[[idx - 1L]] else NULL,
+         second = if (idx < length(kids)) kids[[idx + 1L]] else NULL)
+}
+
+# Direct-child transitions whose range_in_parent intersects `range`
+# (find_children<Transition>(range, shallow = TRUE)).
+.transitions_in_range <- function(comp, range) {
+    out <- list()
+    for (ch in children(comp)) {
+        if (inherits(ch, "Transition")) {
+            r <- tryCatch(range_in_parent(ch), error = function(e) NULL)
+            if (!is.null(r) && intersects(range, r)) {
+                out <- c(out, list(ch))
+            }
+        }
+    }
+    out
+}
+
+#' Slice an item in two at a time
+#'
+#' Splits the item covering \code{time} into two adjacent items at that point.
+#' Mutates \code{composition} in place. A slice exactly at an item boundary is a
+#' no-op; slicing through a transition removes it (or errors if
+#' \code{remove_transitions} is \code{FALSE}).
+#'
+#' @param composition A \code{\link{Track}} (or composition).
+#' @param time A \code{\link{RationalTime}} to slice at.
+#' @param remove_transitions Remove transitions at \code{time} (default TRUE).
+#' @return \code{composition}, invisibly.
+#' @export
+slice <- function(composition, time, remove_transitions = TRUE) {
+    item <- .child_at_time(composition, time)
+    if (is.null(item) || !inherits(item, "Item")) {
+        stop("slice: no item at the given time", call. = FALSE)
+    }
+    index <- index_of_child(composition, item)
+    range <- trimmed_range_in_parent(item)
+    duration <- .rt_minus(time, range$start_time)
+    if (.is_zero(duration)) {
+        return(invisible(composition)) # slice at a clip boundary
+    }
+    transitions <- list()
+    if (inherits(composition, "Track")) {
+        nb <- .neighbors_of(composition, item)
+        for (tn in list(nb$second, nb$first)) {
+            if (!is.null(tn) && inherits(tn, "Transition")) {
+                if (contains(trimmed_range_in_parent(tn), time)) {
+                    transitions <- c(transitions, list(tn))
+                }
+            }
+        }
+    }
+    if (length(transitions)) {
+        if (remove_transitions) {
+            for (tn in transitions) {
+                remove_child(composition, index_of_child(composition, tn))
+            }
+        } else {
+            stop("slice: cannot slice in the middle of a transition",
+                 call. = FALSE)
+        }
+    }
+    first_src <- TimeRange(trimmed_range(item)$start_time, duration)
+    source_range(item) <- first_src
+    second_item <- clone(item)
+    second_src <- TimeRange(.rt_plus(first_src$start_time, first_src$duration),
+                            .rt_minus(range$duration, first_src$duration))
+    if (!.is_zero(second_src$duration)) {
+        source_range(second_item) <- second_src
+        insert_child(composition, index + 1L, second_item)
+    }
+    invisible(composition)
+}
+
+#' Remove the item at a time, optionally leaving a gap
+#'
+#' Removes the item covering \code{time}; if \code{fill}, replaces it with a gap
+#' (or \code{fill_template}) of the same range, otherwise the neighbours
+#' concatenate. Mutates \code{composition} in place.
+#'
+#' @param composition A \code{\link{Track}} (or composition).
+#' @param time A \code{\link{RationalTime}} within the item to remove.
+#' @param fill Fill the hole with a gap/template (default TRUE).
+#' @param fill_template Optional item to fill with (default a gap).
+#' @return \code{composition}, invisibly.
+#' @export
+remove <- function(composition, time, fill = TRUE, fill_template = NULL) {
+    item <- .child_at_time(composition, time)
+    if (is.null(item) || !inherits(item, "Item")) {
+        stop("remove: no item at the given time", call. = FALSE)
+    }
+    index <- index_of_child(composition, item)
+    item_range <- trimmed_range(item)
+    remove_child(composition, index)
+    if (fill) {
+        if (is.null(fill_template)) {
+            fill_template <- Gap(item_range$duration) # OTIO: Gap(item_range)
+            source_range(fill_template) <- item_range
+        }
+        insert_child(composition, index, fill_template)
+    }
+    invisible(composition)
+}
+
+#' Insert an item at a time, splitting the item it lands in
+#'
+#' Inserts \code{item} at \code{time}, splitting whatever item spans that point;
+#' before the start it prepends, past the end it appends (filling any gap).
+#' Mutates \code{composition} in place.
+#'
+#' @param item The item to insert (usually a clip).
+#' @param composition A \code{\link{Track}} (or composition).
+#' @param time A \code{\link{RationalTime}} to insert at.
+#' @param remove_transitions Remove transitions at \code{time} (default TRUE).
+#' @param fill_template Optional gap template when appending past the end.
+#' @return \code{composition}, invisibly.
+#' @export
+insert <- function(item, composition, time, remove_transitions = TRUE,
+                   fill_template = NULL) {
+    if (remove_transitions) {
+        rng <- TimeRange(time, RationalTime(1, time$rate))
+        for (tn in .transitions_in_range(composition, rng)) {
+            remove_child(composition, index_of_child(composition, tn))
+        }
+    }
+    comp_range <- trimmed_range(composition)
+    target <- .child_at_time(composition, time)
+    if (!is.null(target) && !inherits(target, "Item")) {
+        target <- NULL
+    }
+    if (is.null(target)) {
+        if (!.rt_lt(time, end_time_exclusive(comp_range))) {
+            # time >= end_exclusive: append with optional fill gap
+            fill_duration <- .rt_minus(time, end_time_exclusive(comp_range))
+            if (!.is_zero(fill_duration)) {
+                if (is.null(fill_template)) {
+                    fill_template <- Gap(fill_duration)
+                }
+                append_child(composition, fill_template)
+            }
+            append_child(composition, item)
+        } else if (.rt_lt(time, comp_range$start_time)) {
+            insert_child(composition, 1L, item)
+        } else {
+            stop("insert: internal error locating insertion point",
+                 call. = FALSE)
+        }
+        return(invisible(composition))
+    }
+    index <- index_of_child(composition, target)
+    range <- range_in_parent(target)
+    ins <- index
+    split <- FALSE
+    first_src <- TimeRange(trimmed_range(target)$start_time,
+                           .rt_minus(time, range$start_time))
+    if (!.is_zero(first_src$duration)) {
+        split <- TRUE
+        source_range(target) <- first_src
+        ins <- ins + 1L
+    }
+    insert_child(composition, ins, item)
+    insert_range <- range_in_parent(item)
+    if (split) {
+        second_src <- TimeRange(
+                                .rt_plus(.rt_plus(first_src$start_time, insert_range$start_time),
+                insert_range$duration),
+                                .rt_minus(end_time_exclusive(range), time))
+        if (!.is_zero(second_src$duration)) {
+            second_item <- clone(target)
+            source_range(second_item) <- second_src
+            insert_child(composition, ins + 1L, second_item)
+        }
+    }
+    invisible(composition)
+}
+

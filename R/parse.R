@@ -42,6 +42,10 @@
         return(lapply(x, .parse_node))
     }
     x <- .apply_upgrades(x) # migrate older schema versions (Phase 6)
+    type <- .schema_type(x[["OTIO_SCHEMA"]])
+    if (type %in% names(.TYPE_VERSION_MAP)) {
+        x <- .fill_schema_defaults(x, type) # materialize current-schema defaults
+    }
     schema <- x[["OTIO_SCHEMA"]]
     keys <- names(x)
     e <- new.env(parent = emptyenv())

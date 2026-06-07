@@ -1,3 +1,10 @@
+# nle.api 0.0.2.27 (dev)
+
+## Phase 6: schema machinery
+
+* `schema_name`, `schema_version`, `is_unknown_schema`, `type_version_map`,
+  `register_upgrade_function`, `register_downgrade_function`. Completes phases 1-6.
+
 # nle.api 0.0.2.26 (dev)
 
 ## Fix: overwrite/insert remove the correct item

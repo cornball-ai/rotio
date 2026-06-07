@@ -125,3 +125,44 @@ if (requireNamespace("rotio", quietly = TRUE)) {
         expect_equal(nsnap(nt), rsnap(rt), info = paste("insert", tv))
     }
 }
+
+if (requireNamespace("rotio", quietly = TRUE)) {
+    # ---- overwrite: inside one clip, spanning clips, whole-clip, past end, before start ----
+    for (spec in list(c(3, 4), c(6, 8), c(0, 5), c(8, 8), c(0, 16), c(2, 10), c(20, 4), c(-5, 3))) {
+        s <- spec[1]; d <- spec[2]
+        nt <- ntrack(list(nclip("A", 0, 8), nclip("B", 0, 8)))
+        rt <- rtrack(list(rclip("A", 0, 8), rclip("B", 0, 8)))
+        tryCatch(overwrite(nclip("X", 0, 100), nt, TimeRange(RT(s), RT(d))), error = function(e) NULL)
+        tryCatch(rotio::overwrite(rclip("X", 0, 100), rt, rotio::TimeRange(rRT(s), rRT(d))), error = function(e) NULL)
+        expect_equal(nsnap(nt), rsnap(rt), info = paste("overwrite", s, d))
+    }
+}
+
+if (requireNamespace("rotio", quietly = TRUE)) {
+    # ---- fill: Source + Sequence reference points (strict parity) ----
+    for (rp in c("Source", "Sequence")) {
+        for (cd in c(6, 10, 4)) {
+            nt <- ntrack(list(nclip("A", 0, 5), ngap(8), nclip("B", 0, 5)))
+            rt <- rtrack(list(rclip("A", 0, 5), rgap(8), rclip("B", 0, 5)))
+            tryCatch(fill(nclip("X", 2, cd), nt, RT(8), reference_point = rp), error = function(e) NULL)
+            tryCatch(rotio::fill(rclip("X", 2, cd), rt, rRT(8), reference_point = rp), error = function(e) NULL)
+            expect_equal(nsnap(nt), rsnap(rt), info = paste("fill", rp, cd))
+        }
+    }
+    # ---- fill Fit: applies a LinearTimeWarp somewhere in the track ----
+    nt <- ntrack(list(nclip("A", 0, 5), ngap(8), nclip("B", 0, 5)))
+    fill(nclip("X", 0, 4), nt, RT(8), reference_point = "Fit")
+    has_tw <- any(vapply(children(nt), function(c)
+        any(vapply(effects(c), function(e) inherits(e, "LinearTimeWarp"), logical(1))), logical(1)))
+    expect_true(has_tw)
+
+    # ---- overwrite over a 3-item span (exercises the index-1 removal path) ----
+    for (spec in list(c(8, 10), c(6, 4), c(3, 8), c(5, 13), c(2, 16), c(0, 18), c(10, 8))) {
+        s <- spec[1]; d <- spec[2]
+        nt <- ntrack(list(nclip("A", 0, 5), nclip("M", 10, 8), nclip("B", 20, 5)))
+        rt <- rtrack(list(rclip("A", 0, 5), rclip("M", 10, 8), rclip("B", 20, 5)))
+        tryCatch(overwrite(nclip("X", 2, 100), nt, TimeRange(RT(s), RT(d))), error = function(e) NULL)
+        tryCatch(rotio::overwrite(rclip("X", 2, 100), rt, rotio::TimeRange(rRT(s), rRT(d))), error = function(e) NULL)
+        expect_equal(nsnap(nt), rsnap(rt), info = paste("overwrite3", s, d))
+    }
+}

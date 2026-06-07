@@ -96,12 +96,12 @@ nle.api-only extras (sugar / OTIOD / predicates).
 |---|---|
 | overwrite | ⬜ |
 | insert | ⬜ |
-| trim | ⬜ |
+| trim | ✅ |
 | slice | ⬜ |
-| slip | ⬜ |
-| slide | ⬜ |
-| ripple | ⬜ |
-| roll | ⬜ |
+| slip | ✅ |
+| slide | ✅ |
+| ripple | ✅ |
+| roll | ✅ |
 | fill | ⬜ |
 | remove | ⬜ |
 

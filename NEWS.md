@@ -1,3 +1,10 @@
+# nle.api 0.0.2.23 (dev)
+
+## Phase 5 edit algorithms (part 1)
+
+* `slip`, `ripple`, `slide`, `trim`, `roll` ported from the OTIO source and
+  validated against rotio (confirmed via treesitR to delegate 1:1 to upstream).
+
 # nle.api 0.0.2.22 (dev)
 
 ## Fixes

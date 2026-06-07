@@ -1,5 +1,5 @@
 # Time-model arithmetic and queries on RationalTime / TimeRange (Phase 2).
-# Pure R; matched to libopentime and validated against rotio (test_time_ops.R).
+# Pure R; matched to libopentime and validated against RcppOTIO (test_time_ops.R).
 # Rate handling follows opentime exactly: operator +/- keep the higher rate;
 # duration_from_start_end_time keeps the start's rate; relations compare seconds.
 
@@ -284,10 +284,10 @@ from_time_string <- function(time_string, rate) {
 
 #' Construct a TimeTransform
 #'
-#' An offset/scale/rate transform (OTIO \code{TimeTransform}). Note: in rotio
+#' An offset/scale/rate transform (OTIO \code{TimeTransform}). Note: in RcppOTIO
 #' \code{TimeTransform} is a plain opentime value type that does not serialize to
-#' JSON; nle.api gives it an \code{OTIO_SCHEMA} for its own (de)serialization,
-#' which is not verified against rotio JSON.
+#' JSON; rotio gives it an \code{OTIO_SCHEMA} for its own (de)serialization,
+#' which is not verified against RcppOTIO JSON.
 #'
 #' @param offset A \code{RationalTime} offset (default 0).
 #' @param scale Time scale (default 1).

@@ -1,8 +1,8 @@
 # Phase 6: schema machinery. Schema name/version introspection, the current
-# type->version map (matching OpenTimelineIO 0.18.1 / rotio), unknown-schema
+# type->version map (matching OpenTimelineIO 0.18.1 / RcppOTIO), unknown-schema
 # detection, and an upgrade/downgrade registry consulted when parsing JSON.
 
-# Current schema versions, matching rotio's type_version_map(). Everything is at
+# Current schema versions, matching RcppOTIO's type_version_map(). Everything is at
 # version 1 except Clip and Marker (version 2).
 .TYPE_VERSION_MAP <- c(UnknownSchema = 1L, Timeline = 1L, Transition = 1L,
                        TimeEffect = 1L, Stack = 1L,
@@ -95,7 +95,7 @@ is_unknown_schema <- function(x) {
 #' @param version_to_upgrade_to Target version (integer).
 #' @param fn Function of one argument (the field list) returning a field list.
 #' @return \code{TRUE} if registered; \code{FALSE} for an unknown schema or a
-#'   duplicate \code{(schema, version)} pair (matching rotio).
+#'   duplicate \code{(schema, version)} pair (matching RcppOTIO).
 #' @export
 register_upgrade_function <- function(schema_name, version_to_upgrade_to, fn) {
     if (!is.function(fn)) {
@@ -106,7 +106,7 @@ register_upgrade_function <- function(schema_name, version_to_upgrade_to, fn) {
 }
 
 # Shared registration: TRUE on a fresh registration; FALSE for an unknown schema
-# or a duplicate (schema, version) pair (matching rotio).
+# or a duplicate (schema, version) pair (matching RcppOTIO).
 .register_migration <- function(reg, schema_name, version, fn) {
     key <- as.character(schema_name)
     if (!(key %in% names(.TYPE_VERSION_MAP))) {
@@ -135,7 +135,7 @@ register_upgrade_function <- function(schema_name, version_to_upgrade_to, fn) {
 #' @param version_to_downgrade_from Source version (integer).
 #' @param fn Function of one argument (the field list) returning a field list.
 #' @return \code{TRUE} if registered; \code{FALSE} for an unknown schema or a
-#'   duplicate \code{(schema, version)} pair (matching rotio).
+#'   duplicate \code{(schema, version)} pair (matching RcppOTIO).
 #' @export
 register_downgrade_function <- function(schema_name,
                                         version_to_downgrade_from, fn) {
@@ -181,7 +181,7 @@ register_downgrade_function <- function(schema_name,
 
 # Validate and coerce target_schema_versions (a named whole-number vector) to a
 # named list for lookup. Rejects unnamed, duplicate, NA, non-numeric, and
-# non-whole versions (matching rotio's guard).
+# non-whole versions (matching RcppOTIO's guard).
 .normalize_targets <- function(targets) {
     if (is.null(targets)) {
         return(NULL)

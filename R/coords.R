@@ -1,6 +1,6 @@
 # Phase 4: the composition coordinate model. Positions are computed from child
 # order + durations (gaps included); ranges, track filters, flatten, and trims.
-# Validated against rotio. Frame math assumes a uniform rate (the common case).
+# Validated against RcppOTIO. Frame math assumes a uniform rate (the common case).
 
 # Rate of the first clip/gap duration found in a list of tracks (else 24).
 .first_rate <- function(tracks) {

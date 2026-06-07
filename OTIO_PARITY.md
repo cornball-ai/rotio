@@ -1,11 +1,11 @@
-# OTIO parity matrix (nle.api vs rotio)
+# OTIO parity matrix (rotio vs RcppOTIO)
 
-Target: nle.api exports everything `rotio` does, in pure R. ✅ done · ⬜ to build.
+Target: rotio exports everything `RcppOTIO` does, in pure R. ✅ done · ⬜ to build.
 Progress: Phases 1-6 complete and merged (env core, time model, object surface,
 composition coordinate model, edit algorithms, schema machinery). Validated
-against rotio; schema migrations mirror OTIO's typeRegistry. Replacement
+against RcppOTIO; schema migrations mirror OTIO's typeRegistry. Replacement
 functions (`x<-`) are grouped with their getter and flagged separately where the
-getter exists but the setter doesn't yet. Plus nle.api-only extras (sugar /
+getter exists but the setter doesn't yet. Plus rotio-only extras (sugar /
 OTIOD / predicates).
 
 ## Phase 1 — environment-backed object core + tree ops
@@ -92,7 +92,7 @@ OTIOD / predicates).
 | is_equivalent_to | ✅ |
 | track_trimmed_to_range | ✅ |
 
-## Phase 5 — edit algorithms (highest test density vs rotio)
+## Phase 5 — edit algorithms (highest test density vs RcppOTIO)
 
 | function | status |
 |---|---|
@@ -125,7 +125,7 @@ OTIOD / predicates).
 | to_json_string, to_json_file | ✅ |
 | from_json_string, from_json_file | ✅ (becomes parent-aware in Phase 1) |
 
-## nle.api-only extras (not in rotio; keep)
+## rotio-only extras (not in RcppOTIO; keep)
 
 `add_child`, `add_track`, `add_effect`, `effects` (functional sugar) ·
 `read_otiod`, `write_otiod` (OTIOD bundles) · `validate_with_rotio` (oracle) ·

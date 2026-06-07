@@ -57,7 +57,7 @@ expect_equal(target_url(media_reference(from_json_string(dn))), "c.mov")
 # a third-party schema cannot have migrations registered
 expect_false(is.null(register_upgrade_function))   # function exists
 
-# target_schema_versions validation (matches rotio's guard)
+# target_schema_versions validation (matches RcppOTIO's guard)
 cl2 <- Clip("c", ExternalReference("c.mov"))
 expect_error(to_json_string(cl2, target_schema_versions = c(1L)))                # unnamed
 expect_error(to_json_string(cl2, target_schema_versions = c(Clip = NA_integer_)))  # NA
@@ -77,18 +77,18 @@ expect_true("color" %in% mc$.keys)
 expect_true(visible(mc))            # enabled clip is visible
 expect_equal(target_url(media_reference(mc)), "c.mov")
 
-if (requireNamespace("rotio", quietly = TRUE)) {
-    rcl <- rotio::Clip("a", rotio::ExternalReference("a.mov"))
-    expect_equal(schema_name(cl), rotio::schema_name(rcl))
-    expect_equal(schema_version(cl), rotio::schema_version(rcl))
-    expect_equal(is_unknown_schema(cl), rotio::is_unknown_schema(rcl))
-    rtv <- rotio::type_version_map()
+if (requireNamespace("RcppOTIO", quietly = TRUE)) {
+    rcl <- RcppOTIO::Clip("a", RcppOTIO::ExternalReference("a.mov"))
+    expect_equal(schema_name(cl), RcppOTIO::schema_name(rcl))
+    expect_equal(schema_version(cl), RcppOTIO::schema_version(rcl))
+    expect_equal(is_unknown_schema(cl), RcppOTIO::is_unknown_schema(rcl))
+    rtv <- RcppOTIO::type_version_map()
     expect_equal(type_version_map(), rtv[names(type_version_map())])
-    # downgrade output matches rotio (compared via canonical round-trip)
+    # downgrade output matches RcppOTIO (compared via canonical round-trip)
     ncl <- Clip("c", ExternalReference("c.mov"))
     njs <- to_json_string(ncl, target_schema_versions = c(Clip = 1L))
-    rjs <- rotio::to_json_string(rotio::Clip("c", rotio::ExternalReference("c.mov")),
+    rjs <- RcppOTIO::to_json_string(RcppOTIO::Clip("c", RcppOTIO::ExternalReference("c.mov")),
                                  target_schema_versions = c(Clip = 1L))
-    expect_equal(rotio::to_json_string(rotio::from_json_string(njs)),
-                 rotio::to_json_string(rotio::from_json_string(rjs)))
+    expect_equal(RcppOTIO::to_json_string(RcppOTIO::from_json_string(njs)),
+                 RcppOTIO::to_json_string(RcppOTIO::from_json_string(rjs)))
 }

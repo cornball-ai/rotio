@@ -1,7 +1,7 @@
 # OpenTimelineIO effects (environment-backed). A generic Effect is an
 # effect_name plus metadata; LinearTimeWarp adds a time_scalar. Effects attach to
 # an item/composition's `effects` list (they are not composition children, so
-# they carry no parent pointer). Field order/defaults mirror rotio.
+# they carry no parent pointer). Field order/defaults mirror RcppOTIO.
 
 #' Construct an OTIO effect
 #'

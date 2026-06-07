@@ -41,6 +41,8 @@
     if (is.null(schema)) {
         return(lapply(x, .parse_node))
     }
+    x <- .apply_upgrades(x) # migrate older schema versions (Phase 6)
+    schema <- x[["OTIO_SCHEMA"]]
     keys <- names(x)
     e <- new.env(parent = emptyenv())
     for (k in keys) {

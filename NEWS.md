@@ -1,3 +1,10 @@
+# nle.api 0.0.2.19 (dev)
+
+## Fixes: transition parity in trim and flatten
+
+* `track_trimmed_to_range` keeps/drops/errors transitions correctly; `flatten_stack`
+  is gap-filling and preserves transitions. Validated against rotio.
+
 # nle.api 0.0.2.18 (dev)
 
 ## Fixes: Stack parallel semantics + transitions in algorithms

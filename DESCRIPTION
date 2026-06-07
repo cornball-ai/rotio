@@ -1,7 +1,7 @@
 Package: nle.api
 Type: Package
 Title: Pure-R OpenTimelineIO Document Model
-Version: 0.0.2.18
+Version: 0.0.2.19
 Date: 2026-06-06
 Authors@R: c(
     person("Troy", "Hernandez", role = c("aut", "cre"),

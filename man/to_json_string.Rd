@@ -10,7 +10,7 @@ to_json_string(x, indent = 2, target_schema_versions = NULL)
 
 \item{indent}{Indent width for pretty-printing (default 2). Use 0 for compact.}
 
-\item{target_schema_versions}{Optional named integer vector/list mapping schema
+\item{target_schema_versions}{Optional named integer vector mapping schema
 type to a target version; objects above that version are downgraded using
 the registered downgrade functions (e.g. \code{c(Clip = 1L)}).}
 }

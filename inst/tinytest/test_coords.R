@@ -241,6 +241,13 @@ append_child(ptrk2, pgap)
 append_child(ptrk2, pcl2)
 source_range(ptrk2) <- TimeRange(RationalTime(0, 24), RationalTime(3, 24))
 expect_error(trimmed_range_in_parent(pcl2))   # child fully outside parent source range
+# exact boundary contact (child starts at parent source-range end) is no overlap -> error
+ptrk3 <- Track("V")
+append_child(ptrk3, mkclip("A", 0, 5))
+pcl3 <- mkclip("B", 0, 5)
+append_child(ptrk3, pcl3)            # B's range_in_parent starts at 5
+source_range(ptrk3) <- TimeRange(RationalTime(0, 24), RationalTime(5, 24))   # parent ends at 5
+expect_error(trimmed_range_in_parent(pcl3))
 
 # flatten list overload does NOT filter disabled tracks (only the Stack overload does)
 dbot <- Track("V0"); append_child(dbot, mkclip("B", 0, 20))

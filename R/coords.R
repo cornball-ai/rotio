@@ -93,15 +93,19 @@ trimmed_range_in_parent <- function(x) {
     if (is.null(psr)) {
         return(ri)
     }
-    # opentime trimmed_range_of_child: clamp to the parent source range, keep
-    # parent coordinates (no translation); no overlap is an error.
-    new_start <- .rt_max(psr$start_time, ri$start_time)
-    new_end <- .rt_min(end_time_exclusive(ri), end_time_exclusive(psr))
-    if (.rt_lt(new_end, new_start)) {
+    # opentime trim_child_range: no overlap (error) when the parent source range
+    # is entirely past or before the child, using >= / <= so exact boundary
+    # contact also counts as no overlap. Otherwise clamp, keeping parent coords.
+    ri_end <- end_time_exclusive(ri)
+    psr_end <- end_time_exclusive(psr)
+    past_end <- !.rt_lt(psr$start_time, ri_end) # psr.start >= ri.end_exclusive
+    before_start <- !.rt_lt(ri$start_time, psr_end) # psr.end_exclusive <= ri.start
+    if (past_end || before_start) {
         stop("trimmed_range_in_parent: child falls outside the parent source range",
              call. = FALSE)
     }
-    range_from_start_end_time(new_start, new_end)
+    range_from_start_end_time(.rt_max(psr$start_time, ri$start_time),
+                              .rt_min(ri_end, psr_end))
 }
 
 #' Visible range of an item (including adjacent transitions)

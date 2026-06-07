@@ -200,23 +200,22 @@ track_trimmed_to_range <- function(in_track, trim_range) {
     ts <- to_seconds(trim_range$start_time)
     te <- to_seconds(end_time_exclusive(trim_range))
     out <- Track(in_track$name, kind = in_track$kind %||% "Video")
-    eps <- 1e-9
     for (ch in children(in_track)) {
         rip <- range_in_parent(ch)
+        if (inherits(ch, "Transition")) {
+            # Mirror OTIO trackAlgorithm.cpp: drop when clear, keep when fully
+            # contained, error when the window cuts the transition.
+            if (!intersects(trim_range, rip)) {
+                next
+            }
+            if (contains(trim_range, rip)) {
+                append_child(out, clone(ch))
+                next
+            }
+            stop("Cannot trim in the middle of a transition", call. = FALSE)
+        }
         cs <- to_seconds(rip$start_time)
         ce <- to_seconds(end_time_exclusive(rip))
-        if (inherits(ch, "Transition")) {
-            # Keep only if the window strictly contains the transition; drop if
-            # fully clear; otherwise the window cuts it (OTIO forbids this).
-            if (ts < cs - eps && te > ce + eps) {
-                append_child(out, clone(ch))
-            } else if (te <= cs + eps || ts >= ce - eps) {
-                NULL
-            } else {
-                stop("Cannot trim in the middle of a transition", call. = FALSE)
-            }
-            next
-        }
         if (ce <= ts || cs >= te) {
             next
         }
@@ -297,13 +296,25 @@ flatten_stack <- function(x) {
     } else {
         tracks <- x
     }
+    tracks <- Filter(function(t) isTRUE(t$enabled), tracks) # disabled tracks dropped
     out <- Track("Flattened")
     if (length(tracks) == 0L) {
         return(out)
     }
     rate <- .first_rate(tracks)
+    # Normalize lengths (OTIO _normalize_tracks_lengths): a shorter top track is
+    # padded so the longer tracks below show through past its end.
+    maxf <- max(vapply(tracks,
+                       function(t) to_frames(available_range(t)$duration, rate), 0))
     ordered <- rev(tracks) # topmost first
     flat <- lapply(children(ordered[[1L]]), clone)
+    flatf <- sum(vapply(flat, function(c) {
+        if (inherits(c, "Transition")) 0L else to_frames(trimmed_range(c)$duration,
+            rate)
+    }, 0L))
+    if (flatf < maxf) {
+        flat <- c(flat, list(Gap(RationalTime(maxf - flatf, rate))))
+    }
     for (k in seq_along(ordered)[-1L]) {
         flat <- .fill_holes(flat, ordered[[k]], rate)
     }

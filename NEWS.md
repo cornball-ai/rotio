@@ -1,3 +1,11 @@
+# nle.api 0.0.2.20 (dev)
+
+## Fixes: flatten length-normalization
+
+* `flatten_stack` pads a shorter top track so longer tracks below show through;
+  filters disabled tracks. `track_trimmed_to_range` mirrors the OTIO source. Found
+  by reading OpenTimelineIO C++ source directly.
+
 # nle.api 0.0.2.19 (dev)
 
 ## Fixes: transition parity in trim and flatten

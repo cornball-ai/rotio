@@ -205,6 +205,20 @@ if (requireNamespace("rotio", quietly = TRUE)) {
 
     # flatten parity: single track + bottom-fill both preserve the transition
     expect_equal(cls(flatten_stack(list(trx))), rcls(rotio::flatten_stack(list(rtx))))
+
+    # flatten parity: a shorter top track lets the longer bottom show through
+    srng <- function(t) lapply(children(t), function(c) {
+        sr <- source_range(c); c(value(start_time(sr)), value(duration(sr)))
+    })
+    rsrng <- function(t) lapply(rotio::children(t), function(c) {
+        sr <- rotio::source_range(c); c(unname(sr$start_time[["value"]]), unname(sr$duration[["value"]]))
+    })
+    ntop <- Track("V2"); append_child(ntop, mkclip("A", 0, 10))
+    nbot <- Track("V1"); append_child(nbot, mkclip("B", 0, 20))
+    rtop <- rotio::Track("V2"); rotio::append_child(rtop, rmk3("A", 0, 10))
+    rbot <- rotio::Track("V1"); rotio::append_child(rbot, rmk3("B", 0, 20))
+    expect_equal(srng(flatten_stack(list(nbot, ntop))),
+                 rsrng(rotio::flatten_stack(list(rbot, rtop))))   # A[0+10], B[10+10]
     botf <- Track("V0"); append_child(botf, mkclip("Z", 0, 20))
     rbotf <- rotio::Track("V0"); rotio::append_child(rbotf, rmk3("Z", 0, 20))
     topgap <- Track("V1"); append_child(topgap, Gap(RationalTime(20, 24)))

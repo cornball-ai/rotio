@@ -23,7 +23,7 @@
 #'
 #' Emits canonical OpenTimelineIO JSON. Each object carries its own
 #' \code{OTIO_SCHEMA}, so the output is the standard \code{.otio} format and
-#' parses in any OTIO reader (verify with \code{\link{validate_with_rotio}}).
+#' parses in any OTIO reader (verify with \code{\link{validate_with_RcppOTIO}}).
 #'
 #' @param x An OTIO object (typically a \code{\link{Timeline}}).
 #' @param indent Indent width for pretty-printing (default 2). Use 0 for compact.

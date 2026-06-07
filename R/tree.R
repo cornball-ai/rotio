@@ -1,5 +1,5 @@
 # Composition tree operations (reference semantics). These MUTATE in place and
-# return the parent invisibly, mirroring rotio: append/insert/set/remove update
+# return the parent invisibly, mirroring RcppOTIO: append/insert/set/remove update
 # `.parent` pointers, and attaching an already-parented child errors. Indices are
 # 1-based. The functional builders add_child()/add_track() (build.R) wrap these
 # with clone() for value-semantics callers.

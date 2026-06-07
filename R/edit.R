@@ -1,6 +1,6 @@
 # Phase 5: OTIO edit algorithms, ported from
 # OpenTimelineIO/src/opentimelineio/algo/editAlgorithm.cpp and validated against
-# rotio. These mutate the composition/item in place (reference semantics) like
+# RcppOTIO. These mutate the composition/item in place (reference semantics) like
 # the C++ void functions. Indices here are 1-based (R) vs the source's 0-based.
 
 # opentime's epsilon for "is this duration effectively zero" checks.
@@ -456,7 +456,7 @@ insert <- function(item, composition, time, remove_transitions = TRUE,
 # Remove a specific child (by its current index). NOTE: OTIO 0.18.1's
 # overwrite()/insert() call remove_child(<Composable*>) here, but Composition only
 # defines remove_child(int), so the pointer converts to bool(TRUE)->int(1) and the
-# WRONG child (index 1, or the last when size==1) is removed. nle.api removes the
+# WRONG child (index 1, or the last when size==1) is removed. rotio removes the
 # intended child instead (the correct behaviour); see OpenTimelineIO upstream fix.
 .remove_child_obj <- function(comp, child) {
     idx <- index_of_child(comp, child)

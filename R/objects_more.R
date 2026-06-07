@@ -1,5 +1,5 @@
 # Phase 3: the rest of the OTIO object surface (media-reference subtypes,
-# Marker, Transition) and their accessors. Field order/defaults mirror rotio.
+# Marker, Transition) and their accessors. Field order/defaults mirror RcppOTIO.
 # (TimeEffect/FreezeFrame are in effects.R.)
 
 #' Construct a generic MediaReference
@@ -370,7 +370,7 @@ frame_for_time <- function(x, time) {
 }
 
 # Error like OTIO only when an image number exceeds the sequence (negative
-# numbers are allowed and produce extrapolated URLs/times, matching rotio).
+# numbers are allowed and produce extrapolated URLs/times, matching RcppOTIO).
 .check_image_number <- function(x, image_number) {
     if (image_number > number_of_images_in_sequence(x)) {
         stop("illegal index", call. = FALSE)

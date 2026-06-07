@@ -1,4 +1,4 @@
-# Effects: construction, attachment, accessors, JSON shape, rotio equivalence.
+# Effects: construction, attachment, accessors, JSON shape, RcppOTIO equivalence.
 
 eff <- Effect("blur", "GaussianBlur", metadata = list(size = 4))
 expect_true(is_effect(eff))
@@ -43,17 +43,17 @@ expect_true(is_effect(effects(back)[[1]]))
 expect_equal(time_scalar(effects(back)[[2]]), 2)
 expect_identical(to_json_string(back), js)
 
-# rotio accepts our effect JSON and re-emits it equivalently to its own.
+# RcppOTIO accepts our effect JSON and re-emits it equivalently to its own.
 # (Metadata numerics are left out here: jsonlite emits a whole double as `4`
-# while rotio re-emits `4.0`. Both parse fine and our own round-trip is stable;
-# the divergence is only rotio's typed re-serialization of untyped metadata.)
-if (requireNamespace("rotio", quietly = TRUE)) {
+# while RcppOTIO re-emits `4.0`. Both parse fine and our own round-trip is stable;
+# the divergence is only RcppOTIO's typed re-serialization of untyped metadata.)
+if (requireNamespace("RcppOTIO", quietly = TRUE)) {
     expect_identical(
-        rotio::to_json_string(rotio::from_json_string(to_json_string(
+        RcppOTIO::to_json_string(RcppOTIO::from_json_string(to_json_string(
             Effect("blur", "GaussianBlur")))),
-        rotio::to_json_string(rotio::Effect("blur", "GaussianBlur")))
+        RcppOTIO::to_json_string(RcppOTIO::Effect("blur", "GaussianBlur")))
     expect_identical(
-        rotio::to_json_string(rotio::from_json_string(to_json_string(
+        RcppOTIO::to_json_string(RcppOTIO::from_json_string(to_json_string(
             LinearTimeWarp("speed", time_scalar = 2)))),
-        rotio::to_json_string(rotio::LinearTimeWarp("speed", time_scalar = 2)))
+        RcppOTIO::to_json_string(RcppOTIO::LinearTimeWarp("speed", time_scalar = 2)))
 }

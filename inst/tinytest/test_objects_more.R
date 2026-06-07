@@ -44,45 +44,45 @@ expect_equal(value(presentation_time_for_image_number(isr, 2)), 1)
 expect_true(inherits(from_json_string(to_json_string(isr)), "ImageSequenceReference"))
 expect_equal(transition_type(from_json_string(to_json_string(tn))), "SMPTE_Dissolve")
 
-# ---- rotio JSON + behavior parity ----
-if (requireNamespace("rotio", quietly = TRUE)) {
-    norm <- function(x) rotio::to_json_string(rotio::from_json_string(to_json_string(x)))
+# ---- RcppOTIO JSON + behavior parity ----
+if (requireNamespace("RcppOTIO", quietly = TRUE)) {
+    norm <- function(x) RcppOTIO::to_json_string(RcppOTIO::from_json_string(to_json_string(x)))
 
     expect_identical(norm(MediaReference("m")),
-                     rotio::to_json_string(rotio::MediaReference("m")))
+                     RcppOTIO::to_json_string(RcppOTIO::MediaReference("m")))
     expect_identical(
         norm(Marker("m", TimeRange(RationalTime(0, 24), RationalTime(5, 24)), "RED", "note")),
-        rotio::to_json_string(rotio::Marker("m",
-            rotio::TimeRange(rotio::RationalTime(0, 24), rotio::RationalTime(5, 24)),
+        RcppOTIO::to_json_string(RcppOTIO::Marker("m",
+            RcppOTIO::TimeRange(RcppOTIO::RationalTime(0, 24), RcppOTIO::RationalTime(5, 24)),
             "RED", "note")))
     expect_identical(
         norm(Transition("t", "SMPTE_Dissolve", RationalTime(5, 24), RationalTime(5, 24))),
-        rotio::to_json_string(rotio::Transition("t", "SMPTE_Dissolve",
-            rotio::RationalTime(5, 24), rotio::RationalTime(5, 24))))
+        RcppOTIO::to_json_string(RcppOTIO::Transition("t", "SMPTE_Dissolve",
+            RcppOTIO::RationalTime(5, 24), RcppOTIO::RationalTime(5, 24))))
     expect_identical(
         norm(GeneratorReference("g", "SMPTEBars",
             TimeRange(RationalTime(0, 24), RationalTime(10, 24)), list(foo = "bar"))),
-        rotio::to_json_string(rotio::GeneratorReference("g", "SMPTEBars",
-            rotio::TimeRange(rotio::RationalTime(0, 24), rotio::RationalTime(10, 24)),
+        RcppOTIO::to_json_string(RcppOTIO::GeneratorReference("g", "SMPTEBars",
+            RcppOTIO::TimeRange(RcppOTIO::RationalTime(0, 24), RcppOTIO::RationalTime(10, 24)),
             list(foo = "bar"))))
     expect_identical(norm(FreezeFrame("f")),
-                     rotio::to_json_string(rotio::FreezeFrame("f")))
+                     RcppOTIO::to_json_string(RcppOTIO::FreezeFrame("f")))
     expect_identical(norm(TimeEffect("te", "SomeWarp")),
-                     rotio::to_json_string(rotio::TimeEffect("te", "SomeWarp")))
+                     RcppOTIO::to_json_string(RcppOTIO::TimeEffect("te", "SomeWarp")))
 
-    risr <- rotio::ImageSequenceReference(target_url_base = "file:///seq/",
+    risr <- RcppOTIO::ImageSequenceReference(target_url_base = "file:///seq/",
         name_prefix = "frame.", name_suffix = ".exr", start_frame = 1L,
         frame_step = 1L, rate = 24, frame_zero_padding = 4L,
-        available_range = rotio::TimeRange(rotio::RationalTime(0, 24),
-                                           rotio::RationalTime(48, 24)))
-    expect_identical(norm(isr), rotio::to_json_string(risr))
-    expect_equal(number_of_images_in_sequence(isr), rotio::number_of_images_in_sequence(risr))
-    expect_equal(end_frame(isr), rotio::end_frame(risr))
+        available_range = RcppOTIO::TimeRange(RcppOTIO::RationalTime(0, 24),
+                                           RcppOTIO::RationalTime(48, 24)))
+    expect_identical(norm(isr), RcppOTIO::to_json_string(risr))
+    expect_equal(number_of_images_in_sequence(isr), RcppOTIO::number_of_images_in_sequence(risr))
+    expect_equal(end_frame(isr), RcppOTIO::end_frame(risr))
     for (n in c(0, 1, 2, 5)) {
         expect_equal(target_url_for_image_number(isr, n),
-                     rotio::target_url_for_image_number(risr, n), info = paste("url", n))
+                     RcppOTIO::target_url_for_image_number(risr, n), info = paste("url", n))
         expect_equal(value(presentation_time_for_image_number(isr, n)),
-                     unname(rotio::presentation_time_for_image_number(risr, n)[["value"]]),
+                     unname(RcppOTIO::presentation_time_for_image_number(risr, n)[["value"]]),
                      info = paste("ptime", n))
     }
 
@@ -91,13 +91,13 @@ if (requireNamespace("rotio", quietly = TRUE)) {
         frame_zero_padding = pad, available_range = if (is.null(dur)) NULL else
             (if (identical(con, ImageSequenceReference))
                 TimeRange(RationalTime(0, 24), RationalTime(dur, 24))
-             else rotio::TimeRange(rotio::RationalTime(0, 24), rotio::RationalTime(dur, 24))))
+             else RcppOTIO::TimeRange(RcppOTIO::RationalTime(0, 24), RcppOTIO::RationalTime(dur, 24))))
 
     # end_frame: step > 1 and no available_range
     expect_equal(end_frame(misr(ImageSequenceReference, 100L, 2L, 4L, 10)),
-                 rotio::end_frame(misr(rotio::ImageSequenceReference, 100L, 2L, 4L, 10)))   # 109
+                 RcppOTIO::end_frame(misr(RcppOTIO::ImageSequenceReference, 100L, 2L, 4L, 10)))   # 109
     expect_equal(end_frame(misr(ImageSequenceReference, 1L, 1L, 4L, NULL)),
-                 rotio::end_frame(misr(rotio::ImageSequenceReference, 1L, 1L, 4L, NULL)))   # 1
+                 RcppOTIO::end_frame(misr(RcppOTIO::ImageSequenceReference, 1L, 1L, 4L, NULL)))   # 1
 
     # out-of-range image numbers error
     expect_error(target_url_for_image_number(isr, 49))
@@ -105,12 +105,12 @@ if (requireNamespace("rotio", quietly = TRUE)) {
 
     # frame_zero_padding = 0 -> no padding
     expect_equal(target_url_for_image_number(misr(ImageSequenceReference, 5L, 1L, 0L, 3), 1),
-                 rotio::target_url_for_image_number(misr(rotio::ImageSequenceReference, 5L, 1L, 0L, 3), 1))
+                 RcppOTIO::target_url_for_image_number(misr(RcppOTIO::ImageSequenceReference, 5L, 1L, 0L, 3), 1))
 
     # frame_for_time parity (in range) + out-of-range errors
     for (tv in c(0, 2, 10, 24, 47)) {
         expect_equal(frame_for_time(isr, RationalTime(tv, 24)),
-                     rotio::frame_for_time(risr, rotio::RationalTime(tv, 24)),
+                     RcppOTIO::frame_for_time(risr, RcppOTIO::RationalTime(tv, 24)),
                      info = paste("fft", tv))
     }
     expect_error(frame_for_time(isr, RationalTime(-1, 24)))
@@ -118,13 +118,13 @@ if (requireNamespace("rotio", quietly = TRUE)) {
 
     # end_frame when duration is not divisible by frame_step
     expect_equal(end_frame(misr(ImageSequenceReference, 100L, 3L, 4L, 10)),
-                 rotio::end_frame(misr(rotio::ImageSequenceReference, 100L, 3L, 4L, 10)))   # 109
+                 RcppOTIO::end_frame(misr(RcppOTIO::ImageSequenceReference, 100L, 3L, 4L, 10)))   # 109
 
-    # negative image numbers extrapolate (no error), matching rotio
+    # negative image numbers extrapolate (no error), matching RcppOTIO
     expect_equal(target_url_for_image_number(isr, -1),
-                 rotio::target_url_for_image_number(risr, -1))
+                 RcppOTIO::target_url_for_image_number(risr, -1))
     expect_equal(value(presentation_time_for_image_number(isr, -1)),
-                 unname(rotio::presentation_time_for_image_number(risr, -1)[["value"]]))
+                 unname(RcppOTIO::presentation_time_for_image_number(risr, -1)[["value"]]))
 }
 
 # ---- phase 3 source review fixes ----
@@ -142,13 +142,13 @@ append_child(trk_lt, Transition("T", "SMPTE_Dissolve", RationalTime(2, 24), Rati
 append_child(trk_lt, Clip("B", ExternalReference("b.mov"), source_range = TimeRange(RationalTime(0, 24), RationalTime(10, 24))))
 expect_equal(value(duration(available_range(trk_lt))), 12)   # leading transition in_offset
 expect_equal(value(duration(Transition("T", "SMPTE_Dissolve", RationalTime(2, 24), RationalTime(3, 24)))), 5)
-if (requireNamespace("rotio", quietly = TRUE)) {
-    risr_s2 <- rotio::ImageSequenceReference("file:///b/", "f", ".png", start_frame = 1L,
+if (requireNamespace("RcppOTIO", quietly = TRUE)) {
+    risr_s2 <- RcppOTIO::ImageSequenceReference("file:///b/", "f", ".png", start_frame = 1L,
         frame_step = 2L, rate = 24, frame_zero_padding = 4L,
-        available_range = rotio::TimeRange(rotio::RationalTime(0, 24), rotio::RationalTime(20, 24)))
-    expect_equal(frame_for_time(isr_s2, RationalTime(3, 24)), rotio::frame_for_time(risr_s2, rotio::RationalTime(3, 24)))
-    rtrk_lt <- rotio::Track("V")
-    rotio::append_child(rtrk_lt, rotio::Transition("T", "SMPTE_Dissolve", rotio::RationalTime(2, 24), rotio::RationalTime(3, 24)))
-    rotio::append_child(rtrk_lt, rotio::Clip("B", rotio::ExternalReference("b.mov"), source_range = rotio::TimeRange(rotio::RationalTime(0, 24), rotio::RationalTime(10, 24))))
-    expect_equal(value(duration(available_range(trk_lt))), unname(rotio::available_range(rtrk_lt)$duration[["value"]]))
+        available_range = RcppOTIO::TimeRange(RcppOTIO::RationalTime(0, 24), RcppOTIO::RationalTime(20, 24)))
+    expect_equal(frame_for_time(isr_s2, RationalTime(3, 24)), RcppOTIO::frame_for_time(risr_s2, RcppOTIO::RationalTime(3, 24)))
+    rtrk_lt <- RcppOTIO::Track("V")
+    RcppOTIO::append_child(rtrk_lt, RcppOTIO::Transition("T", "SMPTE_Dissolve", RcppOTIO::RationalTime(2, 24), RcppOTIO::RationalTime(3, 24)))
+    RcppOTIO::append_child(rtrk_lt, RcppOTIO::Clip("B", RcppOTIO::ExternalReference("b.mov"), source_range = RcppOTIO::TimeRange(RcppOTIO::RationalTime(0, 24), RcppOTIO::RationalTime(10, 24))))
+    expect_equal(value(duration(available_range(trk_lt))), unname(RcppOTIO::available_range(rtrk_lt)$duration[["value"]]))
 }

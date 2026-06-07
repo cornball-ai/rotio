@@ -1,62 +1,68 @@
-# nle.api 0.0.2.29 (dev)
+# rotio 0.0.2.31
+
+* Renamed the package from nle.api to rotio. This pure-R OpenTimelineIO
+  package takes the rotio name; the Rcpp/C++ binding is now RcppOTIO, which
+  this package validates against (Suggests: RcppOTIO).
+
+# rotio 0.0.2.29 (dev)
 
 ## Fixes
 
-* `target_schema_versions` is validated (named, unique, whole numbers) like rotio.
+* `target_schema_versions` is validated (named, unique, whole numbers) like RcppOTIO.
 * Parsed known-schema objects materialize current-schema default fields
   (effects/markers/enabled/color), fixing `enabled` becoming NULL.
 
-# nle.api 0.0.2.28 (dev)
+# rotio 0.0.2.28 (dev)
 
 ## Phase 6 completion: schema migrations + downgrade
 
 * Built-in Clip/Marker upgrades + Clip downgrade; `target_schema_versions` on
   `to_json_string`/`to_json_file`; TRUE/FALSE registration semantics; `fill`
-  Fit emits a base `Item`. Validated against rotio.
+  Fit emits a base `Item`. Validated against RcppOTIO.
 
-# nle.api 0.0.2.27 (dev)
+# rotio 0.0.2.27 (dev)
 
 ## Phase 6: schema machinery
 
 * `schema_name`, `schema_version`, `is_unknown_schema`, `type_version_map`,
   `register_upgrade_function`, `register_downgrade_function`. Completes phases 1-6.
 
-# nle.api 0.0.2.26 (dev)
+# rotio 0.0.2.26 (dev)
 
 ## Fix: overwrite/insert remove the correct item
 
 * No longer replicate OTIO 0.18.1's remove_child-by-pointer bug; remove the
-  intended child instead. Correct where rotio is buggy.
+  intended child instead. Correct where RcppOTIO is buggy.
 
-# nle.api 0.0.2.25 (dev)
+# rotio 0.0.2.25 (dev)
 
 ## Phase 5 edit algorithms (complete)
 
-* `overwrite` and `fill` added; all 10 edit algorithms validated against rotio,
+* `overwrite` and `fill` added; all 10 edit algorithms validated against RcppOTIO,
   including replicating OTIO 0.18.1's remove_child-by-pointer behaviour.
 
-# nle.api 0.0.2.24 (dev)
+# rotio 0.0.2.24 (dev)
 
 ## Phase 5 edit algorithms (part 2)
 
 * `slice`, `insert`, `remove` ported from the OTIO source and validated against
-  rotio.
+  RcppOTIO.
 
-# nle.api 0.0.2.23 (dev)
+# rotio 0.0.2.23 (dev)
 
 ## Phase 5 edit algorithms (part 1)
 
 * `slip`, `ripple`, `slide`, `trim`, `roll` ported from the OTIO source and
-  validated against rotio (confirmed via treesitR to delegate 1:1 to upstream).
+  validated against RcppOTIO (confirmed via treesitR to delegate 1:1 to upstream).
 
-# nle.api 0.0.2.22 (dev)
+# rotio 0.0.2.22 (dev)
 
 ## Fixes
 
 * `trimmed_range_in_parent` errors on exact boundary contact with the parent
-  source range (no overlap), matching opentime. Validated against rotio.
+  source range (no overlap), matching opentime. Validated against RcppOTIO.
 
-# nle.api 0.0.2.21 (dev)
+# rotio 0.0.2.21 (dev)
 
 ## Fixes: source-fidelity pass across phases 1-4
 
@@ -65,9 +71,9 @@
   infers drop-frame; frame_for_time without frame_step quantization; ISR URL
   separator; trimmed_range_in_parent parent-coords + out-of-range error; Track
   available_range edge transitions; flatten disabled-track filter only for Stack;
-  Transition duration(). All validated against rotio.
+  Transition duration(). All validated against RcppOTIO.
 
-# nle.api 0.0.2.20 (dev)
+# rotio 0.0.2.20 (dev)
 
 ## Fixes: flatten length-normalization
 
@@ -75,56 +81,56 @@
   filters disabled tracks. `track_trimmed_to_range` mirrors the OTIO source. Found
   by reading OpenTimelineIO C++ source directly.
 
-# nle.api 0.0.2.19 (dev)
+# rotio 0.0.2.19 (dev)
 
 ## Fixes: transition parity in trim and flatten
 
 * `track_trimmed_to_range` keeps/drops/errors transitions correctly; `flatten_stack`
-  is gap-filling and preserves transitions. Validated against rotio.
+  is gap-filling and preserves transitions. Validated against RcppOTIO.
 
-# nle.api 0.0.2.18 (dev)
+# rotio 0.0.2.18 (dev)
 
 ## Fixes: Stack parallel semantics + transitions in algorithms
 
 * Stack children are parallel (range_in_parent starts at 0; available_range is
   the max child span); track_trimmed_to_range and flatten_stack handle tracks
-  with transitions. Validated against rotio.
+  with transitions. Validated against RcppOTIO.
 
-# nle.api 0.0.2.17 (dev)
+# rotio 0.0.2.17 (dev)
 
 ## Fixes: ImageSequenceReference parity (round 2)
 
 * `end_frame` correct for non-divisible durations; `frame_for_time` errors out of
   range; negative image numbers extrapolate (no error); signed zero-padding.
 
-# nle.api 0.0.2.16 (dev)
+# rotio 0.0.2.16 (dev)
 
 ## Fixes: coordinate model (transitions, tracks, rates)
 
 * `range_in_parent`/`visible_range` handle Transitions; `available_range`/
   `trimmed_range` work for tracks; `track_trimmed_to_range` is rate-faithful;
   `flatten_stack` honours `enabled`; `visible`/`overlapping` corrected. Validated
-  against rotio.
+  against RcppOTIO.
 
-# nle.api 0.0.2.15 (dev)
+# rotio 0.0.2.15 (dev)
 
 ## Fixes: ImageSequenceReference parity
 
 * `end_frame` (correct for frame_step>1 and no available_range), out-of-range
   errors for `target_url_for_image_number`/`presentation_time_for_image_number`,
   no zero-padding when `frame_zero_padding == 0`, and `frame_for_time` (the
-  ImageSequenceReference method). Validated against rotio.
+  ImageSequenceReference method). Validated against RcppOTIO.
 
-# nle.api 0.0.2.14 (dev)
+# rotio 0.0.2.14 (dev)
 
 ## Phase 4 of full OTIO parity: composition coordinate model
 
 * `range_in_parent`, `trimmed_range`, `trimmed_range_in_parent`, `visible_range`,
   item `available_range`, `video_tracks`/`audio_tracks`, `global_start_time`,
   `is_equivalent_to`, `visible`, `overlapping`, `track_trimmed_to_range`, and
-  `flatten_stack` -- positions from gaps + child order, validated against rotio.
+  `flatten_stack` -- positions from gaps + child order, validated against RcppOTIO.
 
-# nle.api 0.0.2.13 (dev)
+# rotio 0.0.2.13 (dev)
 
 ## Fixes: time-model rate fidelity
 
@@ -132,34 +138,34 @@
   opentime operator- rate; `end_time_inclusive` returns the start for spans <= 1
   frame; `almost_equal` rescales to the second arg; `to_timecode`/`from_timecode`
   are faithful for non-integer and drop-frame rates; `from_time_string` keeps the
-  fractional value. Validated against rotio (value AND rate).
+  fractional value. Validated against RcppOTIO (value AND rate).
 
-# nle.api 0.0.2.12 (dev)
+# rotio 0.0.2.12 (dev)
 
 ## Phase 3 of full OTIO parity: object surface
 
 * Media-reference subtypes (`MediaReference`, `GeneratorReference`,
   `ImageSequenceReference` with its computed frame/url methods), `Marker`,
   `Transition` (composable), and `TimeEffect`/`FreezeFrame` -- JSON-shape and
-  behavior matched to rotio.
+  behavior matched to RcppOTIO.
 
-# nle.api 0.0.2.11 (dev)
+# rotio 0.0.2.11 (dev)
 
 ## Phase 2 of full OTIO parity: time model
 
 * RationalTime/TimeRange arithmetic and queries matching libopentime exactly
-  (validated against rotio): `almost_equal`, `end_time_exclusive`/`inclusive`,
+  (validated against RcppOTIO): `almost_equal`, `end_time_exclusive`/`inclusive`,
   `range_from_start_end_time`, `contains`, `intersects`, `overlaps`, `extended_by`,
   `clamped`, `to_timecode`/`from_timecode`, `to_time_string`/`from_time_string`,
   and `TimeTransform`.
 
-# nle.api 0.0.2.10 (dev)
+# rotio 0.0.2.10 (dev)
 
 ## Phase 1 of full OTIO parity: environment-backed core
 
 * The object model is now environment-backed with reference semantics (internal
-  `.parent` pointers, never serialized), the foundation for full rotio parity
-  (see PLAN.md / OTIO_PARITY.md). Mutating tree ops mirror rotio: `append_child`,
+  `.parent` pointers, never serialized), the foundation for full RcppOTIO parity
+  (see PLAN.md / OTIO_PARITY.md). Mutating tree ops mirror RcppOTIO: `append_child`,
   `insert_child`, `set_child`, `set_children`, `remove_child`, `clear_children`
   (attaching an already-parented child errors); plus `parent`, `children`,
   `has_child`, `has_clips`, `is_parent_of`, `index_of_child`, `find_clips`,
@@ -167,31 +173,31 @@
   media-reference keys, and `SerializableCollection`.
 * The functional builders (`add_child`/`add_track`/`add_effect`) remain as
   value-semantics sugar over the mutating core, so existing callers (licuadora)
-  are unaffected. Serialized OTIO JSON is unchanged (still rotio-equivalent).
+  are unaffected. Serialized OTIO JSON is unchanged (still RcppOTIO-equivalent).
 
-# nle.api 0.0.2.9 (dev)
+# rotio 0.0.2.9 (dev)
 
 ## New: OTIO effects
 
-* `Effect()` and `LinearTimeWarp()` constructors (mirroring rotio's JSON shapes
+* `Effect()` and `LinearTimeWarp()` constructors (mirroring RcppOTIO's JSON shapes
   and defaults), plus functional `add_effect()` and the accessors `effects()`,
   `effect_name()`/`<-`, `time_scalar()`/`<-`, and `enabled()`/`<-` (a disabled
   clip is muted; a disabled effect is bypassed). Effects round-trip through JSON
-  and are accepted by the real OTIO library via `rotio`. This is the surface the
+  and are accepted by the real OTIO library via `RcppOTIO`. This is the surface the
   blendR bridge uses to carry speed (`LinearTimeWarp`) and Blender compositing.
 
-# nle.api 0.0.2.8 (dev)
+# rotio 0.0.2.8 (dev)
 
 ## Rewrite: pure-R OpenTimelineIO ("rotiolite")
 
-* nle.api is now a dependency-light, pure-R OTIO document layer. **All compiled
+* rotio is now a dependency-light, pure-R OTIO document layer. **All compiled
   code is gone** — no `Rcpp`, no `LinkingTo`, no `SystemRequirements`,
-  no libopentimelineio. `Imports: jsonlite` only; `rotio` moves to `Suggests`.
-  (Reason: `rotio`'s OTIO C++ is hard to get on CRAN; nle.api becomes the
+  no libopentimelineio. `Imports: jsonlite` only; `RcppOTIO` moves to `Suggests`.
+  (Reason: `RcppOTIO`'s OTIO C++ is hard to get on CRAN; rotio becomes the
   CRAN-clean layer the cornyverse can depend on.)
 * New object model: list-based constructors `Timeline()`, `Track()`, `Stack()`,
   `Clip()`, `Gap()`, `ExternalReference()`, `MissingReference()`,
-  `RationalTime()`, `TimeRange()` — names and JSON shapes match `rotio` so output
+  `RationalTime()`, `TimeRange()` — names and JSON shapes match `RcppOTIO` so output
   is interchangeable.
 * Functional, value-semantics builders: `add_child()` and `add_track()` return a
   new object rather than mutating in place. Accessors `metadata()`/`metadata<-`,
@@ -201,17 +207,17 @@
   `to_frames()`/`from_frames()`, `rescaled_to()`.
 * Serialization: `to_json_string()` / `to_json_file()` emit canonical OTIO JSON
   via `jsonlite`; `from_json_string()` / `from_json_file()` parse it back.
-  Verified byte-equivalent against `rotio` (and thus real libopentimelineio).
+  Verified byte-equivalent against `RcppOTIO` (and thus real libopentimelineio).
 * OTIOD bundles: `read_otiod()` / `write_otiod()` for `content.otio` + `media/`
   directory bundles.
 * Optional `validate_with_rotio()` round-trips emitted JSON through the real OTIO
-  library when `rotio` is installed; unverified otherwise.
+  library when `RcppOTIO` is installed; unverified otherwise.
 * **Removed** (return in a later pass, re-backed on the new objects): the
   `nle_timeline` verb layer (`clip_*`/`track_*`/`ripple_delete`/`shift_after`),
   the driver registry, the `timeline.md` Markdown carrier, and the old `otio_*`
   Rcpp object/ time wrappers.
 
-# nle.api 0.0.2.7 (dev)
+# rotio 0.0.2.7 (dev)
 
 ## New: generic clip effects (clone-based)
 
@@ -232,7 +238,7 @@
   (an OTIO `LinearTimeWarp`) is unchanged and lists alongside generic effects in
   `clip_effects()`.
 
-# nle.api 0.0.2.6 (dev)
+# rotio 0.0.2.6 (dev)
 
 ## Changes
 
@@ -255,7 +261,7 @@
   scalar-table rebuild can't carry arbitrary per-clip effects), which lands in
   its own PR. They error with a pointer for now.
 
-# nle.api 0.0.2.5 (dev)
+# rotio 0.0.2.5 (dev)
 
 ## New verbs
 
@@ -271,7 +277,7 @@ in the gap model):
 * `clip_duplicate()` - copy a clip to a new position (defaults to right after
   the original).
 
-# nle.api 0.0.2.4 (dev)
+# rotio 0.0.2.4 (dev)
 
 ## Changes
 
@@ -290,7 +296,7 @@ in the gap model):
   -->` state block; `inst/schema/SEQUENCE_SCHEMA.md` -> `TIMELINE_SCHEMA.md`.
 * No behaviour change. (blendR's driver bridge picks up the new names in PR 5.)
 
-# nle.api 0.0.2.3 (dev)
+# rotio 0.0.2.3 (dev)
 
 ## Changes
 
@@ -324,7 +330,7 @@ in the gap model):
   `speed != 1` error with a pointer to PR 4; they migrate to OTIO Effects /
   `LinearTimeWarp` / per-clip metadata.
 
-# nle.api 0.0.2.2 (dev)
+# rotio 0.0.2.2 (dev)
 
 ## Changes
 
@@ -344,11 +350,11 @@ in the gap model):
 * The pure-R `rational_time()`/`new_sequence()` model and `otio_time()` are
   unchanged. The user-facing verb layer migrates onto these objects in PR 3.
 
-# nle.api 0.0.2.1 (dev)
+# rotio 0.0.2.1 (dev)
 
 ## Changes
 
-* Begin the OpenTimelineIO migration (PLAN.md, PR 1: build chain). nle.api now
+* Begin the OpenTimelineIO migration (PLAN.md, PR 1: build chain). rotio now
   links the C++ OpenTimelineIO library through Rcpp. OTIO is built from source
   and installed under `/usr/local` (it is not packaged for apt and ships no
   pkg-config file); `src/Makevars` hard-codes the include and link paths.

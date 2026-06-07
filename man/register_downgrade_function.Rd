@@ -14,7 +14,7 @@ register_downgrade_function(schema_name, version_to_downgrade_from, fn)
 }
 \value{
 \code{TRUE} if registered; \code{FALSE} for an unknown schema or a
-  duplicate \code{(schema, version)} pair (matching rotio).
+  duplicate \code{(schema, version)} pair (matching RcppOTIO).
 }
 \description{
 \code{fn} receives the field list of a \code{schema_name} object at

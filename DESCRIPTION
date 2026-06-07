@@ -1,7 +1,7 @@
-Package: nle.api
+Package: rotio
 Type: Package
 Title: Pure-R OpenTimelineIO Document Model
-Version: 0.0.2.30
+Version: 0.0.2.31
 Date: 2026-06-06
 Authors@R: c(
     person("Troy", "Hernandez", role = c("aut", "cre"),
@@ -13,10 +13,10 @@ Description: A dependency-light OpenTimelineIO ("OTIO") document layer in
     tracks, clips, gaps, media references, rational times and time
     ranges), functional builders that return new objects, and readers and
     writers for canonical '.otio' files through 'jsonlite'. The optional
-    'rotio' package validates output against the real OpenTimelineIO C++
+    'RcppOTIO' package validates output against the real OpenTimelineIO C++
     library. No compiled code.
 License: MIT + file LICENSE
 Imports: jsonlite
-Suggests: tinytest, rotio
+Suggests: tinytest, RcppOTIO
 Encoding: UTF-8
 RoxygenNote: 7.3.2

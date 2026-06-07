@@ -20,7 +20,7 @@ A JSON string.
 \description{
 Emits canonical OpenTimelineIO JSON. Each object carries its own
 \code{OTIO_SCHEMA}, so the output is the standard \code{.otio} format and
-parses in any OTIO reader (verify with \code{\link{validate_with_rotio}}).
+parses in any OTIO reader (verify with \code{\link{validate_with_RcppOTIO}}).
 }
 \examples{
 to_json_string(Timeline("demo"))

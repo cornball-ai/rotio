@@ -1,7 +1,7 @@
-# nle.api — agent guidance
+# rotio — agent guidance
 
 Guidance for LLM agents (Claude, Codex, etc.) and humans editing timelines
-through nle.api. These rules apply whenever an agent is *constructing visual
+through rotio. These rules apply whenever an agent is *constructing visual
 content* that will appear in a timeline — text overlays, data slides, "console
 snapshot" frames, fake terminal frames, transcribed cards, etc.
 

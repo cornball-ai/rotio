@@ -183,6 +183,17 @@ available_range <- function(x) {
         if (is.null(cum)) {
             cum <- RationalTime(0, 24)
         }
+        # opentime Track::available_range: a leading transition adds its in_offset
+        # and a trailing transition its out_offset.
+        kids <- x$children
+        if (length(kids)) {
+            if (inherits(kids[[1L]], "Transition")) {
+                cum <- .rt_plus(cum, kids[[1L]]$in_offset)
+            }
+            if (inherits(kids[[length(kids)]], "Transition")) {
+                cum <- .rt_plus(cum, kids[[length(kids)]]$out_offset)
+            }
+        }
         return(TimeRange(RationalTime(0, cum$rate), cum))
     }
     x$available_range
@@ -353,9 +364,9 @@ frame_for_time <- function(x, time) {
         stop("frame_for_time: time is outside the available range",
              call. = FALSE)
     }
-    base <- .value_rescaled(x$available_range$start_time, x$rate)
-    off <- .value_rescaled(time, x$rate) - base
-    x$start_frame + as.integer(floor(off / x$frame_step)) * x$frame_step
+    # opentime: start_frame + (time - available.start).to_frames(rate). No
+    # quantization to frame_step.
+    x$start_frame + to_frames(.rt_minus(time, x$available_range$start_time), x$rate)
 }
 
 # Error like OTIO only when an image number exceeds the sequence (negative
@@ -396,6 +407,11 @@ target_url_for_image_number <- function(x, image_number) {
     } else {
         as.character(frame)
     }
-    paste0(x$target_url_base, x$name_prefix, num, x$name_suffix)
+    # opentime inserts a "/" when the base is non-empty and not already ended.
+    base <- x$target_url_base
+    if (nzchar(base) && substr(base, nchar(base), nchar(base)) != "/") {
+        base <- paste0(base, "/")
+    }
+    paste0(base, x$name_prefix, num, x$name_suffix)
 }
 

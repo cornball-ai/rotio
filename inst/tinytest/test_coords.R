@@ -226,3 +226,32 @@ if (requireNamespace("rotio", quietly = TRUE)) {
     expect_equal(cls(flatten_stack(list(trx, topgap))),
                  rcls(rotio::flatten_stack(list(rtx, rtopgap))))
 }
+
+# ---- phase 4 source review fixes ----
+ptrk <- Track("V")
+pcl <- Clip("A", ExternalReference("a.mov"), source_range = TimeRange(RationalTime(0, 24), RationalTime(10, 24)))
+append_child(ptrk, pcl)
+source_range(ptrk) <- TimeRange(RationalTime(5, 24), RationalTime(3, 24))
+tip <- trimmed_range_in_parent(pcl)
+expect_equal(c(value(start_time(tip)), value(duration(tip))), c(5, 3))   # parent coords, not translated
+ptrk2 <- Track("V")
+pgap <- Gap(RationalTime(10, 24))
+pcl2 <- Clip("A", ExternalReference("a.mov"), source_range = TimeRange(RationalTime(0, 24), RationalTime(3, 24)))
+append_child(ptrk2, pgap)
+append_child(ptrk2, pcl2)
+source_range(ptrk2) <- TimeRange(RationalTime(0, 24), RationalTime(3, 24))
+expect_error(trimmed_range_in_parent(pcl2))   # child fully outside parent source range
+
+# flatten list overload does NOT filter disabled tracks (only the Stack overload does)
+dbot <- Track("V0"); append_child(dbot, mkclip("B", 0, 20))
+dtop <- Track("V1"); append_child(dtop, mkclip("A", 0, 10)); enabled(dtop) <- FALSE
+dfd <- flatten_stack(list(dbot, dtop))
+expect_equal(vapply(children(dfd), function(c) class(c)[1], ""), c("Clip", "Clip"))
+expect_equal(value(duration(source_range(children(dfd)[[1L]]))), 10)
+# but the Stack overload DOES filter the disabled top: only B shows
+sbot <- Track("V0"); append_child(sbot, mkclip("B", 0, 20))
+stop_ <- Track("V1"); append_child(stop_, mkclip("A", 0, 10)); enabled(stop_) <- FALSE
+sstk <- Stack(); append_child(sstk, sbot); append_child(sstk, stop_)
+sfd <- flatten_stack(sstk)
+expect_equal(vapply(children(sfd), function(c) class(c)[1], ""), "Clip")
+expect_equal(value(duration(source_range(children(sfd)[[1L]]))), 20)

@@ -93,9 +93,15 @@ trimmed_range_in_parent <- function(x) {
     if (is.null(psr)) {
         return(ri)
     }
-    cl <- clamped(psr, ri)
-    range_from_start_end_time(.rt_minus(cl$start_time, psr$start_time),
-                              .rt_minus(end_time_exclusive(cl), psr$start_time))
+    # opentime trimmed_range_of_child: clamp to the parent source range, keep
+    # parent coordinates (no translation); no overlap is an error.
+    new_start <- .rt_max(psr$start_time, ri$start_time)
+    new_end <- .rt_min(end_time_exclusive(ri), end_time_exclusive(psr))
+    if (.rt_lt(new_end, new_start)) {
+        stop("trimmed_range_in_parent: child falls outside the parent source range",
+             call. = FALSE)
+    }
+    range_from_start_end_time(new_start, new_end)
 }
 
 #' Visible range of an item (including adjacent transitions)
@@ -292,11 +298,12 @@ track_trimmed_to_range <- function(in_track, trim_range) {
 #' @export
 flatten_stack <- function(x) {
     if (inherits(x, "Stack")) {
-        tracks <- children(x)
+        # opentime drops disabled tracks only for the Stack overload, not for a
+        # plain list of tracks.
+        tracks <- Filter(function(t) isTRUE(t$enabled), children(x))
     } else {
         tracks <- x
     }
-    tracks <- Filter(function(t) isTRUE(t$enabled), tracks) # disabled tracks dropped
     out <- Track("Flattened")
     if (length(tracks) == 0L) {
         return(out)

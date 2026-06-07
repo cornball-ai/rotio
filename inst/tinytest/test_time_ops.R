@@ -98,3 +98,18 @@ if (requireNamespace("rotio", quietly = TRUE)) {
     rfts <- rotio::from_time_string("00:00:00.041666", 24)
     expect_equal(c(value(fts), rate(fts)), rvr(rfts))
 }
+
+# ---- phase 1-2 source review fixes ----
+expect_equal(to_frames(RationalTime(2.7, 24)), 2L)    # truncate toward zero
+expect_equal(to_frames(RationalTime(-2.7, 24)), -2L)
+ee <- end_time_exclusive(TimeRange(RationalTime(0, 24), RationalTime(2.5, 12)))
+expect_equal(c(value(ee), rate(ee)), c(2.5, 12))      # result at duration's rate
+expect_equal(to_time_string(RationalTime(-1.5, 1)), "-00:00:01.5")
+expect_equal(to_timecode(RationalTime(0, 30000 / 1001), 30000 / 1001), "00:00:00;00")  # infer drop
+expect_equal(to_timecode(RationalTime(0, 30), 30), "00:00:00:00")
+if (requireNamespace("rotio", quietly = TRUE)) {
+    expect_equal(to_frames(RationalTime(2.7, 24)), rotio::to_frames(rotio::RationalTime(2.7, 24)))
+    eer <- rotio::end_time_exclusive(rotio::TimeRange(rotio::RationalTime(0, 24), rotio::RationalTime(2.5, 12)))
+    expect_equal(c(value(ee), rate(ee)), c(unname(eer[["value"]]), unname(eer[["rate"]])))
+    expect_equal(to_time_string(RationalTime(-1.5, 1)), rotio::to_time_string(rotio::RationalTime(-1.5, 1)))
+}

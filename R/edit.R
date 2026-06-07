@@ -399,10 +399,7 @@ insert <- function(item, composition, time, remove_transitions = TRUE,
     if (remove_transitions) {
         rng <- TimeRange(time, RationalTime(1, time$rate))
         for (tn in .transitions_in_range(composition, rng)) {
-            idx <- index_of_child(composition, tn)
-            if (!is.na(idx)) {
-                .remove_child_ptr(composition) # OTIO removes index 1, not the transition
-            }
+            .remove_child_obj(composition, tn)
         }
     }
     comp_range <- trimmed_range(composition)
@@ -456,18 +453,15 @@ insert <- function(item, composition, time, remove_transitions = TRUE,
     invisible(composition)
 }
 
-# Replicates OpenTimelineIO 0.18.1's remove_child(<pointer>): Composition only
-# defines remove_child(int), so a Composable* argument converts pointer -> bool
-# (TRUE) -> int (1), and the child at index 1 (0-based) is removed regardless of
-# which item was passed. overwrite() and insert() rely on this (an upstream bug);
-# replicated here so nle.api stays byte-for-byte equal to rotio.
-.remove_child_ptr <- function(comp) {
-    n <- length(children(comp))
-    if (n >= 2L) {
-        remove_child(comp, 2L) # 0-based index 1 == 1-based position 2
-    } else if (n == 1L) {
-        # OTIO remove_child(int): index >= size pops the last element.
-        remove_child(comp, 1L)
+# Remove a specific child (by its current index). NOTE: OTIO 0.18.1's
+# overwrite()/insert() call remove_child(<Composable*>) here, but Composition only
+# defines remove_child(int), so the pointer converts to bool(TRUE)->int(1) and the
+# WRONG child (index 1, or the last when size==1) is removed. nle.api removes the
+# intended child instead (the correct behaviour); see OpenTimelineIO upstream fix.
+.remove_child_obj <- function(comp, child) {
+    idx <- index_of_child(comp, child)
+    if (!is.na(idx)) {
+        remove_child(comp, idx)
     }
 }
 
@@ -532,10 +526,7 @@ overwrite <- function(item, composition, range, remove_transitions = TRUE,
     }
     if (remove_transitions) {
         for (tn in .transitions_in_range(composition, range)) {
-            idx <- index_of_child(composition, tn)
-            if (!is.na(idx)) {
-                .remove_child_ptr(composition) # OTIO removes index 1, not the transition
-            }
+            .remove_child_obj(composition, tn)
         }
     }
     items <- .items_in_range(composition, range)
@@ -622,8 +613,8 @@ overwrite <- function(item, composition, range, remove_transitions = TRUE,
             source_range(items[[length(items)]]) <- last_source
             remove_list <- remove_list[-length(remove_list)]
         }
-        for (k in seq_along(remove_list)) {
-            .remove_child_ptr(composition) # OTIO removes index 1, not remove_list[[k]]
+        for (rm in remove_list) {
+            .remove_child_obj(composition, rm)
         }
         trm <- trimmed_range(item)
         source_range(item) <- TimeRange(trm$start_time, range$duration)

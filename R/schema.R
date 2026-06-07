@@ -199,7 +199,7 @@ register_downgrade_function <- function(schema_name,
         stop("target_schema_versions versions must be whole numbers",
              call. = FALSE)
     }
-    setNames(as.list(as.integer(targets)), nm)
+    stats::setNames(as.list(as.integer(targets)), nm)
 }
 
 # Apply registered downgrade functions to a serialized field list whose schema

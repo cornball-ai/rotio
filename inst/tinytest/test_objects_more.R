@@ -126,3 +126,29 @@ if (requireNamespace("rotio", quietly = TRUE)) {
     expect_equal(value(presentation_time_for_image_number(isr, -1)),
                  unname(rotio::presentation_time_for_image_number(risr, -1)[["value"]]))
 }
+
+# ---- phase 3 source review fixes ----
+isr_s2 <- ImageSequenceReference("file:///b/", "f", ".png", start_frame = 1L,
+    frame_step = 2L, rate = 24, frame_zero_padding = 4L,
+    available_range = TimeRange(RationalTime(0, 24), RationalTime(20, 24)))
+expect_equal(frame_for_time(isr_s2, RationalTime(3, 24)), 4L)   # no frame_step quantization
+expect_equal(frame_for_time(isr_s2, RationalTime(4, 24)), 5L)
+isr_ns <- ImageSequenceReference("file:///path", "img.", ".exr", start_frame = 1L,
+    frame_step = 1L, rate = 24, frame_zero_padding = 0L,
+    available_range = TimeRange(RationalTime(0, 24), RationalTime(5, 24)))
+expect_equal(target_url_for_image_number(isr_ns, 1), "file:///path/img.1.exr")  # auto separator
+trk_lt <- Track("V")
+append_child(trk_lt, Transition("T", "SMPTE_Dissolve", RationalTime(2, 24), RationalTime(3, 24)))
+append_child(trk_lt, Clip("B", ExternalReference("b.mov"), source_range = TimeRange(RationalTime(0, 24), RationalTime(10, 24))))
+expect_equal(value(duration(available_range(trk_lt))), 12)   # leading transition in_offset
+expect_equal(value(duration(Transition("T", "SMPTE_Dissolve", RationalTime(2, 24), RationalTime(3, 24)))), 5)
+if (requireNamespace("rotio", quietly = TRUE)) {
+    risr_s2 <- rotio::ImageSequenceReference("file:///b/", "f", ".png", start_frame = 1L,
+        frame_step = 2L, rate = 24, frame_zero_padding = 4L,
+        available_range = rotio::TimeRange(rotio::RationalTime(0, 24), rotio::RationalTime(20, 24)))
+    expect_equal(frame_for_time(isr_s2, RationalTime(3, 24)), rotio::frame_for_time(risr_s2, rotio::RationalTime(3, 24)))
+    rtrk_lt <- rotio::Track("V")
+    rotio::append_child(rtrk_lt, rotio::Transition("T", "SMPTE_Dissolve", rotio::RationalTime(2, 24), rotio::RationalTime(3, 24)))
+    rotio::append_child(rtrk_lt, rotio::Clip("B", rotio::ExternalReference("b.mov"), source_range = rotio::TimeRange(rotio::RationalTime(0, 24), rotio::RationalTime(10, 24))))
+    expect_equal(value(duration(available_range(trk_lt))), unname(rotio::available_range(rtrk_lt)$duration[["value"]]))
+}

@@ -65,7 +65,10 @@ end_time_exclusive <- function(x) {
     if (!is_time_range(x)) {
         stop("end_time_exclusive: x must be a TimeRange", call. = FALSE)
     }
-    .rt_plus(x$start_time, x$duration)
+    # opentime: duration + start.rescaled_to(duration.rate); result at duration's
+    # rate (NOT the higher-rate operator+ convention).
+    d <- x$duration
+    RationalTime(d$value + .value_rescaled(x$start_time, d$rate), d$rate)
 }
 
 #' @rdname end_time_exclusive
@@ -182,11 +185,17 @@ clamped <- function(tr, other) {
 #' SMPTE timecode for a RationalTime
 #' @param x A \code{RationalTime}.
 #' @param rate Timecode rate (default \code{x}'s rate).
-#' @param drop_frame Drop-frame timecode (for 29.97 / 59.94). Default FALSE.
+#' @param drop_frame Drop-frame timecode. \code{NULL} (default) infers it from the
+#'   rate (on for 30000/1001 and 60000/1001), matching opentime's
+#'   \code{InferFromRate}; pass \code{TRUE}/\code{FALSE} to force.
 #' @export
-to_timecode <- function(x, rate = NULL, drop_frame = FALSE) {
+to_timecode <- function(x, rate = NULL, drop_frame = NULL) {
     if (is.null(rate)) {
         rate <- x$rate
+    }
+    if (is.null(drop_frame)) {
+        drop_frame <- isTRUE(all.equal(rate, 30000 / 1001)) ||
+        isTRUE(all.equal(rate, 60000 / 1001))
     }
     fps <- as.integer(round(rate))
     total <- .tc_frames(x, rate)
@@ -241,6 +250,8 @@ from_timecode <- function(timecode, rate) {
 #' @export
 to_time_string <- function(x) {
     s <- to_seconds(x)
+    sign <- if (s < 0) "-" else "" # opentime works on fabs, prepends sign
+    s <- abs(s)
     hh <- floor(s / 3600)
     s2 <- s - hh * 3600
     mm <- floor(s2 / 60)
@@ -251,7 +262,7 @@ to_time_string <- function(x) {
     if (!nzchar(fs)) {
         fs <- "0"
     }
-    sprintf("%02d:%02d:%02d.%s", as.integer(hh), as.integer(mm),
+    sprintf("%s%02d:%02d:%02d.%s", sign, as.integer(hh), as.integer(mm),
             as.integer(ss), fs)
 }
 

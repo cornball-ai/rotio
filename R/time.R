@@ -89,6 +89,10 @@ start_time <- function(x) {
 #' @rdname start_time
 #' @export
 duration <- function(x) {
+    # A Transition's duration is in_offset + out_offset (opentime).
+    if (inherits(x, "Transition")) {
+        return(.rt_plus(x$in_offset, x$out_offset))
+    }
     if (!is_time_range(x)) {
         stop("duration: x must be a TimeRange", call. = FALSE)
     }
@@ -115,8 +119,9 @@ from_seconds <- function(seconds, rate = 1) {
 
 #' Frame number of a RationalTime
 #'
-#' Integer frame number. With no \code{rate}, rounds at the time's own rate; with
-#' a \code{rate}, rescales first.
+#' Integer frame number. With no \code{rate}, truncates at the time's own rate;
+#' with a \code{rate}, rescales first. Truncates toward zero (opentime
+#' \code{int(value_rescaled_to(rate))}).
 #'
 #' @param x A \code{RationalTime}.
 #' @param rate Optional target rate to rescale to first.
@@ -128,7 +133,7 @@ to_frames <- function(x, rate = NULL) {
     if (!is.null(rate)) {
         x <- rescaled_to(x, rate)
     }
-    as.integer(round(x$value))
+    as.integer(trunc(x$value))
 }
 
 #' Construct a RationalTime from a frame number at a rate
@@ -136,7 +141,7 @@ to_frames <- function(x, rate = NULL) {
 #' @param rate Rate (fps).
 #' @export
 from_frames <- function(frame, rate) {
-    RationalTime(round(as.numeric(frame)), rate)
+    RationalTime(trunc(as.numeric(frame)), rate)
 }
 
 #' Rescale a RationalTime to a new rate
@@ -148,6 +153,9 @@ rescaled_to <- function(x, new_rate) {
         stop("rescaled_to: x must be a RationalTime", call. = FALSE)
     }
     new_rate <- as.numeric(new_rate)
+    if (new_rate == x$rate) {
+        return(RationalTime(x$value, new_rate))
+    }
     RationalTime(x$value * new_rate / x$rate, new_rate)
 }
 

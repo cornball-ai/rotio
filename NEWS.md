@@ -1,3 +1,14 @@
+# nle.api 0.0.2.21 (dev)
+
+## Fixes: source-fidelity pass across phases 1-4
+
+* Audited against the OTIO C++/Python source: to_frames/from_frames truncate;
+  end_time_exclusive at duration rate; to_time_string negatives; to_timecode
+  infers drop-frame; frame_for_time without frame_step quantization; ISR URL
+  separator; trimmed_range_in_parent parent-coords + out-of-range error; Track
+  available_range edge transitions; flatten disabled-track filter only for Stack;
+  Transition duration(). All validated against rotio.
+
 # nle.api 0.0.2.20 (dev)
 
 ## Fixes: flatten length-normalization

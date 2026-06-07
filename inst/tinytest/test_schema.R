@@ -57,6 +57,26 @@ expect_equal(target_url(media_reference(from_json_string(dn))), "c.mov")
 # a third-party schema cannot have migrations registered
 expect_false(is.null(register_upgrade_function))   # function exists
 
+# target_schema_versions validation (matches rotio's guard)
+cl2 <- Clip("c", ExternalReference("c.mov"))
+expect_error(to_json_string(cl2, target_schema_versions = c(1L)))                # unnamed
+expect_error(to_json_string(cl2, target_schema_versions = c(Clip = NA_integer_)))  # NA
+expect_error(to_json_string(cl2, target_schema_versions = c(Clip = 1.5)))         # non-whole
+expect_error(to_json_string(cl2, target_schema_versions = c(Clip = "1")))         # character
+dup <- c(1L, 1L); names(dup) <- c("Clip", "Clip")
+expect_error(to_json_string(cl2, target_schema_versions = dup))                   # duplicate
+
+# a minimal parsed Clip materializes current-schema defaults
+mc <- from_json_string(paste0(
+    '{"OTIO_SCHEMA":"Clip.1","name":"c","source_range":null,',
+    '"media_reference":{"OTIO_SCHEMA":"ExternalReference.1","target_url":"c.mov"}}'))
+expect_true(isTRUE(mc$enabled))     # would be NULL without default materialization
+expect_equal(mc$effects, list())
+expect_equal(mc$markers, list())
+expect_true("color" %in% mc$.keys)
+expect_true(visible(mc))            # enabled clip is visible
+expect_equal(target_url(media_reference(mc)), "c.mov")
+
 if (requireNamespace("rotio", quietly = TRUE)) {
     rcl <- rotio::Clip("a", rotio::ExternalReference("a.mov"))
     expect_equal(schema_name(cl), rotio::schema_name(rcl))

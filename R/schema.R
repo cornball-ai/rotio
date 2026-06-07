@@ -179,12 +179,27 @@ register_downgrade_function <- function(schema_name,
     x
 }
 
-# Coerce target_schema_versions (named vector/list) to a named list for lookup.
+# Validate and coerce target_schema_versions (a named whole-number vector) to a
+# named list for lookup. Rejects unnamed, duplicate, NA, non-numeric, and
+# non-whole versions (matching rotio's guard).
 .normalize_targets <- function(targets) {
     if (is.null(targets)) {
         return(NULL)
     }
-    as.list(targets)
+    nm <- names(targets)
+    if (is.null(nm) || anyNA(nm) || any(!nzchar(nm))) {
+        stop("target_schema_versions must be a named integer vector (schema -> version)",
+             call. = FALSE)
+    }
+    if (anyDuplicated(nm)) {
+        stop("target_schema_versions has duplicate schema names", call. = FALSE)
+    }
+    if (!is.numeric(targets) || anyNA(targets) ||
+        any(targets != floor(targets))) {
+        stop("target_schema_versions versions must be whole numbers",
+             call. = FALSE)
+    }
+    setNames(as.list(as.integer(targets)), nm)
 }
 
 # Apply registered downgrade functions to a serialized field list whose schema
@@ -216,6 +231,57 @@ register_downgrade_function <- function(schema_name,
     }
     d[["OTIO_SCHEMA"]] <- paste0(type, ".", reached)
     d
+}
+
+# ---- default-field materialization ----------------------------------------
+# A parsed (and possibly upgraded) object may omit fields that have current-schema
+# defaults; OTIO materializes them. We merge parsed values over a template built
+# from the type's constructor, in canonical key order.
+.schema_template_cache <- new.env(parent = emptyenv())
+
+.template_builder <- function(type) {
+    switch(type, Clip = function() Clip(""),
+           Gap = function() Gap(RationalTime(0, 1)),
+           Track = function() Track(""), Stack = function() Stack(),
+           Timeline = function() Timeline(), Item = function() Item(),
+           Marker = function() Marker(), Transition = function() Transition(),
+           Effect = function() Effect(), TimeEffect = function() TimeEffect(),
+           LinearTimeWarp = function() LinearTimeWarp(),
+           FreezeFrame = function() FreezeFrame(),
+           ExternalReference = function() ExternalReference(""),
+           MissingReference = function() MissingReference(),
+           MediaReference = function() MediaReference(),
+           GeneratorReference = function() GeneratorReference(),
+           ImageSequenceReference = function() ImageSequenceReference(),
+           SerializableCollection = function() SerializableCollection(), NULL)
+}
+
+# The plain (canonical keys + default values) field list for a type, cached.
+.schema_template <- function(type) {
+    cached <- .schema_template_cache[[type]]
+    if (!is.null(cached)) {
+        return(cached)
+    }
+    b <- .template_builder(type)
+    if (is.null(b)) {
+        return(NULL)
+    }
+    tmpl <- .to_plain(b())
+    .schema_template_cache[[type]] <- tmpl
+    tmpl
+}
+
+# Overlay a parsed field list over its type's template defaults (canonical order).
+.fill_schema_defaults <- function(x, type) {
+    tmpl <- .schema_template(type)
+    if (is.null(tmpl)) {
+        return(x)
+    }
+    out <- tmpl
+    for (k in names(x)) {
+        out[k] <- list(x[[k]]) # single-bracket: preserves an explicit NULL value
+    }
+    out
 }
 
 # ---- built-in migrations (mirroring OTIO typeRegistry.cpp) ----------------

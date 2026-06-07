@@ -109,12 +109,12 @@ nle.api-only extras (sugar / OTIOD / predicates).
 
 | function | status |
 |---|---|
-| schema_name | ⬜ |
-| schema_version | ⬜ |
-| is_unknown_schema | ⬜ |
-| register_upgrade_function | ⬜ |
-| register_downgrade_function | ⬜ |
-| type_version_map | ⬜ |
+| schema_name | ✅ |
+| schema_version | ✅ |
+| is_unknown_schema | ✅ |
+| register_upgrade_function | ✅ |
+| register_downgrade_function | ✅ |
+| type_version_map | ✅ |
 
 ## Done already (serialization)
 

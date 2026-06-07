@@ -1,3 +1,10 @@
+# nle.api 0.0.2.25 (dev)
+
+## Phase 5 edit algorithms (complete)
+
+* `overwrite` and `fill` added; all 10 edit algorithms validated against rotio,
+  including replicating OTIO 0.18.1's remove_child-by-pointer behaviour.
+
 # nle.api 0.0.2.24 (dev)
 
 ## Phase 5 edit algorithms (part 2)

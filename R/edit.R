@@ -399,7 +399,10 @@ insert <- function(item, composition, time, remove_transitions = TRUE,
     if (remove_transitions) {
         rng <- TimeRange(time, RationalTime(1, time$rate))
         for (tn in .transitions_in_range(composition, rng)) {
-            remove_child(composition, index_of_child(composition, tn))
+            idx <- index_of_child(composition, tn)
+            if (!is.na(idx)) {
+                .remove_child_ptr(composition) # OTIO removes index 1, not the transition
+            }
         }
     }
     comp_range <- trimmed_range(composition)
@@ -451,5 +454,236 @@ insert <- function(item, composition, time, remove_transitions = TRUE,
         }
     }
     invisible(composition)
+}
+
+# Replicates OpenTimelineIO 0.18.1's remove_child(<pointer>): Composition only
+# defines remove_child(int), so a Composable* argument converts pointer -> bool
+# (TRUE) -> int (1), and the child at index 1 (0-based) is removed regardless of
+# which item was passed. overwrite() and insert() rely on this (an upstream bug);
+# replicated here so nle.api stays byte-for-byte equal to rotio.
+.remove_child_ptr <- function(comp) {
+    n <- length(children(comp))
+    if (n >= 2L) {
+        remove_child(comp, 2L) # 0-based index 1 == 1-based position 2
+    } else if (n == 1L) {
+        # OTIO remove_child(int): index >= size pops the last element.
+        remove_child(comp, 1L)
+    }
+}
+
+# Direct-child Items (clips/gaps, not transitions) whose range_in_parent
+# intersects `range`, in child order (find_children<Item>(range, shallow=TRUE)).
+.items_in_range <- function(comp, range) {
+    out <- list()
+    for (ch in children(comp)) {
+        if (inherits(ch, "Item")) {
+            r <- tryCatch(range_in_parent(ch), error = function(e) NULL)
+            if (!is.null(r) && intersects(range, r)) {
+                out <- c(out, list(ch))
+            }
+        }
+    }
+    out
+}
+
+#' Overwrite a span of a composition with an item
+#'
+#' Places \code{item} over \code{range} (in composition coordinates), partitioning
+#' or removing the items it covers and filling any hole before/after with a gap
+#' (or \code{fill_template}). Mutates \code{composition} in place.
+#'
+#' @param item The item to place (usually a clip).
+#' @param composition A \code{\link{Track}} (or composition).
+#' @param range A \code{\link{TimeRange}} to overwrite.
+#' @param remove_transitions Remove transitions within \code{range} (default TRUE).
+#' @param fill_template Optional gap template for holes.
+#' @return \code{composition}, invisibly.
+#' @export
+overwrite <- function(item, composition, range, remove_transitions = TRUE,
+                      fill_template = NULL) {
+    comp_range <- trimmed_range(composition)
+    start_time <- range$start_time
+    if (!.rt_lt(start_time, end_time_exclusive(comp_range))) {
+        # start at/after the end: append item, with a fill gap for the hole.
+        fill_duration <- .rt_minus(range$start_time,
+                                   end_time_exclusive(comp_range))
+        if (!.is_zero(fill_duration)) {
+            if (is.null(fill_template)) {
+                fill_template <- Gap(fill_duration)
+            }
+            append_child(composition, fill_template)
+        }
+        append_child(composition, item)
+        return(invisible(composition))
+    }
+    if (.rt_lt(start_time, comp_range$start_time) &&
+        .rt_lt(end_time_exclusive(range), comp_range$start_time)) {
+        # entirely before the start: prepend item, with a fill gap.
+        fill_duration <- .rt_minus(.rt_minus(comp_range$start_time, start_time),
+                                   range$duration)
+        if (!.is_zero(fill_duration)) {
+            if (is.null(fill_template)) {
+                fill_template <- Gap(fill_duration)
+            }
+            insert_child(composition, 1L, fill_template)
+        }
+        insert_child(composition, 1L, item)
+        return(invisible(composition))
+    }
+    if (remove_transitions) {
+        for (tn in .transitions_in_range(composition, range)) {
+            idx <- index_of_child(composition, tn)
+            if (!is.na(idx)) {
+                .remove_child_ptr(composition) # OTIO removes index 1, not the transition
+            }
+        }
+    }
+    items <- .items_in_range(composition, range)
+    if (length(items) == 0L) {
+        stop("overwrite: no item in the given range", call. = FALSE)
+    }
+    item_range <- trimmed_range_in_parent(items[[1]])
+    if (length(items) == 1L && contains(item_range, range, epsilon_s = 0)) {
+        # range falls strictly inside a single item: split into first / second.
+        first_item <- items[[1]]
+        is_fill_fit <- FALSE
+        if (inherits(first_item, "Gap")) {
+            for (eff in effects(item)) {
+                if (inherits(eff, "LinearTimeWarp")) {
+                    is_fill_fit <- TRUE
+                    break
+                }
+            }
+        }
+        first_duration <- .rt_minus(range$start_time, item_range$start_time)
+        second_duration <- .rt_minus(.rt_minus(item_range$duration, range$duration),
+                                     first_duration)
+        first_index <- index_of_child(composition, first_item)
+        ins <- first_index
+        orig_trimmed <- trimmed_range(first_item)
+        if (.is_zero(first_duration)) {
+            remove_child(composition, first_index)
+        } else {
+            source_range(first_item) <- TimeRange(orig_trimmed$start_time, first_duration)
+            ins <- ins + 1L
+        }
+        item_own <- trimmed_range(item)
+        if (.rt_lt(range$duration, item_own$duration) && !is_fill_fit) {
+            source_range(item) <- TimeRange(orig_trimmed$start_time, range$duration)
+        }
+        insert_child(composition, ins, item)
+        if (!.is_zero(second_duration)) {
+            second_item <- clone(first_item)
+            second_trimmed <- trimmed_range(second_item)
+            ins <- ins + 1L
+            source_range(second_item) <- TimeRange(
+                .rt_plus(.rt_plus(second_trimmed$start_time, first_duration), range$duration),
+                second_duration)
+            insert_child(composition, ins, second_item)
+        }
+    } else {
+        # range spans item boundaries: partition first/last, drop the middle.
+        r_first <- index_of_child(composition, items[[1]])
+        first_partial <- FALSE
+        first_source <- NULL
+        if (.rt_lt(item_range$start_time, range$start_time)) {
+            first_partial <- TRUE
+            trm <- trimmed_range(items[[1]])
+            first_source <- TimeRange(trm$start_time,
+                                      .rt_minus(range$start_time, item_range$start_time))
+        }
+        if (first_partial) {
+            r_ins <- r_first + 1L
+        } else {
+            r_ins <- r_first
+        }
+        last_partial <- FALSE
+        last_source <- NULL
+        item_range_last <- trimmed_range_in_parent(items[[length(items)]])
+        if (.rt_lt(end_time_inclusive(range), end_time_inclusive(item_range_last))) {
+            last_partial <- TRUE
+            trm <- trimmed_range(items[[length(items)]])
+            duration <- .rt_minus(end_time_inclusive(item_range_last),
+                                  end_time_inclusive(range))
+            if (length(items) == 1L) {
+                duration <- .rt_plus(duration, range$start_time)
+                last_source <- TimeRange(.rt_plus(trm$start_time, range$duration), duration)
+            } else {
+                last_source <- TimeRange(.rt_plus(trm$start_time, duration),
+                    .rt_minus(trm$duration, duration))
+            }
+        }
+        remove_list <- items
+        if (first_partial) {
+            source_range(items[[1]]) <- first_source
+            remove_list <- remove_list[-1L]
+        }
+        if (last_partial) {
+            source_range(items[[length(items)]]) <- last_source
+            remove_list <- remove_list[-length(remove_list)]
+        }
+        for (k in seq_along(remove_list)) {
+            .remove_child_ptr(composition) # OTIO removes index 1, not remove_list[[k]]
+        }
+        trm <- trimmed_range(item)
+        source_range(item) <- TimeRange(trm$start_time, range$duration)
+        r_ins <- min(r_ins, length(children(composition)) + 1L)
+        insert_child(composition, r_ins, item)
+    }
+    invisible(composition)
+}
+
+#' Fill a gap with an item (3/4-point edit)
+#'
+#' Replaces the gap covering \code{track_time} with \code{item}. The
+#' \code{reference_point} controls the transform: \code{"Source"} uses the clip's
+#' own duration, \code{"Sequence"} clamps to the gap, \code{"Fit"} time-warps the
+#' clip to fill the gap exactly. Mutates \code{track} in place.
+#'
+#' @param item The item to place (usually a clip).
+#' @param track A \code{\link{Track}}.
+#' @param track_time A \code{\link{RationalTime}} inside the gap to fill.
+#' @param reference_point One of \code{"Source"}, \code{"Sequence"}, \code{"Fit"}.
+#' @return \code{track}, invisibly.
+#' @export
+fill <- function(item, track, track_time, reference_point = "Source") {
+    gap <- .child_at_time(track, track_time)
+    if (is.null(gap) || !inherits(gap, "Gap")) {
+        stop("fill: no gap at track_time", call. = FALSE)
+    }
+    clip_range <- trimmed_range(item)
+    gap_range <- trimmed_range(gap)
+    gap_track_range <- trimmed_range_in_parent(gap)
+    duration <- clip_range$duration
+    if (reference_point == "Sequence") {
+        start_time <- clip_range$start_time
+        gap_start <- gap_range$start_time
+        track_item <- clone(item)
+        if (.rt_lt(start_time, gap_start)) {
+            duration <- .rt_minus(duration, .rt_minus(gap_start, start_time))
+            start_time <- gap_start
+        }
+        if (.rt_lt(end_time_exclusive(gap_range),
+                   end_time_exclusive(clip_range))) {
+            duration <- .rt_minus(end_time_exclusive(gap_range), start_time)
+        }
+        source_range(track_item) <- TimeRange(start_time, duration)
+        if (.rt_lt(.rt_minus(end_time_exclusive(gap_track_range), track_time), duration)) {
+            duration <- .rt_minus(end_time_exclusive(gap_track_range), track_time)
+        }
+        overwrite(track_item, track, TimeRange(track_time, duration))
+    } else if (reference_point == "Fit") {
+        pct <- to_seconds(gap_range$duration) / to_seconds(duration)
+        nm <- name(item)
+        tw <- LinearTimeWarp(nm, paste0(nm, "_timeWarp"), time_scalar = pct)
+        new_item <- clone(item)
+        source_range(new_item) <- clip_range
+        new_item$effects <- c(effects(item), list(tw))
+        overwrite(new_item, track,
+                  TimeRange(track_time, .rt_minus(end_time_exclusive(gap_track_range), track_time)))
+    } else {
+        overwrite(item, track, TimeRange(track_time, duration))
+    }
+    invisible(track)
 }
 

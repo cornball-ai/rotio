@@ -94,7 +94,7 @@ nle.api-only extras (sugar / OTIOD / predicates).
 
 | function | status |
 |---|---|
-| overwrite | ⬜ |
+| overwrite | ✅ |
 | insert | ✅ |
 | trim | ✅ |
 | slice | ✅ |
@@ -102,7 +102,7 @@ nle.api-only extras (sugar / OTIOD / predicates).
 | slide | ✅ |
 | ripple | ✅ |
 | roll | ✅ |
-| fill | ⬜ |
+| fill | ✅ |
 | remove | ✅ |
 
 ## Phase 6 — schema machinery

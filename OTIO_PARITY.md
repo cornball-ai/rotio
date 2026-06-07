@@ -95,15 +95,15 @@ nle.api-only extras (sugar / OTIOD / predicates).
 | function | status |
 |---|---|
 | overwrite | ⬜ |
-| insert | ⬜ |
+| insert | ✅ |
 | trim | ✅ |
-| slice | ⬜ |
+| slice | ✅ |
 | slip | ✅ |
 | slide | ✅ |
 | ripple | ✅ |
 | roll | ✅ |
 | fill | ⬜ |
-| remove | ⬜ |
+| remove | ✅ |
 
 ## Phase 6 — schema machinery
 

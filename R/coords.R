@@ -200,14 +200,23 @@ track_trimmed_to_range <- function(in_track, trim_range) {
     ts <- to_seconds(trim_range$start_time)
     te <- to_seconds(end_time_exclusive(trim_range))
     out <- Track(in_track$name, kind = in_track$kind %||% "Video")
+    eps <- 1e-9
     for (ch in children(in_track)) {
-        if (inherits(ch, "Transition")) {
-            append_child(out, clone(ch))
-            next
-        }
         rip <- range_in_parent(ch)
         cs <- to_seconds(rip$start_time)
         ce <- to_seconds(end_time_exclusive(rip))
+        if (inherits(ch, "Transition")) {
+            # Keep only if the window strictly contains the transition; drop if
+            # fully clear; otherwise the window cuts it (OTIO forbids this).
+            if (ts < cs - eps && te > ce + eps) {
+                append_child(out, clone(ch))
+            } else if (te <= cs + eps || ts >= ce - eps) {
+                NULL
+            } else {
+                stop("Cannot trim in the middle of a transition", call. = FALSE)
+            }
+            next
+        }
         if (ce <= ts || cs >= te) {
             next
         }
@@ -226,11 +235,57 @@ track_trimmed_to_range <- function(in_track, trim_range) {
     out
 }
 
+# An item shows lower tracks through it: a Gap, or a disabled (invisible) item.
+.is_hole <- function(ch) {
+    inherits(ch, "Gap") || (!inherits(ch, "Transition") && !isTRUE(ch$enabled))
+}
+
+# Content of `lower` over the frame span [s, e), padded with a trailing gap if
+# the lower track runs out before the span ends.
+.lower_segment <- function(lower, s, e, rate) {
+    width <- e - s
+    tt <- track_trimmed_to_range(lower,
+                                 TimeRange(RationalTime(s, rate), RationalTime(width, rate)))
+    items <- lapply(children(tt), clone)
+    covered <- 0L
+    for (it in items) {
+        if (inherits(it, "Transition")) {
+            next
+        }
+        covered <- covered + to_frames(trimmed_range(it)$duration, rate)
+    }
+    if (covered < width) {
+        items <- c(items, list(Gap(RationalTime(width - covered, rate))))
+    }
+    items
+}
+
+# Replace each hole in `flat` with the corresponding content from `lower`.
+.fill_holes <- function(flat, lower, rate) {
+    res <- list()
+    pos <- 0L
+    for (ch in flat) {
+        if (inherits(ch, "Transition")) {
+            res[[length(res) + 1L]] <- ch
+            next
+        }
+        d <- to_frames(trimmed_range(ch)$duration, rate)
+        if (.is_hole(ch)) {
+            res <- c(res, .lower_segment(lower, pos, pos + d, rate))
+        } else {
+            res[[length(res) + 1L]] <- ch
+        }
+        pos <- pos + d
+    }
+    res
+}
+
 #' Flatten a stack of tracks into a single track
 #'
-#' Composites top-down: the topmost track with a non-gap clip wins each segment;
-#' gaps expose the tracks below. Returns a single \code{\link{Track}} of trimmed
-#' clips and gaps.
+#' Composites top-down: starts from the topmost track and fills its holes (gaps
+#' and disabled items) with content from the tracks below, recursing downward.
+#' Transitions are preserved; a lower transition cut by a hole boundary errors
+#' with "Cannot trim in the middle of a transition" (matching OTIO).
 #'
 #' @param x A \code{\link{Stack}} or a list of \code{\link{Track}}s
 #'   (bottom-to-top).
@@ -247,73 +302,13 @@ flatten_stack <- function(x) {
         return(out)
     }
     rate <- .first_rate(tracks)
-
-    # Per track: segments (start, end frames, child, is_gap). Transitions occupy
-    # no timeline space and are skipped.
-    segs <- lapply(tracks, function(trk) {
-        pos <- 0L
-        out_segs <- list()
-        for (ch in children(trk)) {
-            if (inherits(ch, "Transition")) next
-            d <- to_frames(trimmed_range(ch)$duration, rate)
-            out_segs[[length(out_segs) + 1L]] <- list(s = pos, e = pos + d,
-                ch = ch, gap = inherits(ch, "Gap"))
-            pos <- pos + d
-        }
-        out_segs
-    })
-    total <- max(vapply(segs, function(ss) if (length(ss)) {
-                ss[[length(ss)]]$e
-            } else {
-                0L
-            }, 0L))
-    if (total == 0L) {
-        return(out)
+    ordered <- rev(tracks) # topmost first
+    flat <- lapply(children(ordered[[1L]]), clone)
+    for (k in seq_along(ordered)[-1L]) {
+        flat <- .fill_holes(flat, ordered[[k]], rate)
     }
-
-    # Topmost non-gap clip covering each frame (0-based), with source offset.
-    winner <- vector("list", total)
-    for (f in seq_len(total)) {
-        fi <- f - 1L
-        w <- NULL
-        for (ti in seq_along(tracks)) { # bottom..top; later overrides
-            for (sg in segs[[ti]]) {
-                if (fi >= sg$s && fi < sg$e && !sg$gap &&
-                    isTRUE(sg$ch$enabled)) {
-                    w <- list(ch = sg$ch, off = fi - sg$s)
-                }
-            }
-        }
-        winner[[f]] <- w
-    }
-
-    # Group consecutive frames into trimmed clips / gaps.
-    i <- 1L
-    while (i <= total) {
-        w <- winner[[i]]
-        if (is.null(w)) {
-            j <- i
-            while (j <= total && is.null(winner[[j]])) {
-                j <- j + 1L
-            }
-            append_child(out, Gap(RationalTime(j - i, rate)))
-            i <- j
-        } else {
-            j <- i
-            while (j <= total && !is.null(winner[[j]]) &&
-                identical(winner[[j]]$ch, w$ch) &&
-                winner[[j]]$off == w$off + (j - i)) {
-                j <- j + 1L
-            }
-            n <- j - i
-            sr <- trimmed_range(w$ch)
-            nc <- clone(w$ch)
-            source_range(nc) <- TimeRange(
-                .rt_plus(sr$start_time, RationalTime(w$off, rate)),
-                RationalTime(n, sr$duration$rate))
-            append_child(out, nc)
-            i <- j
-        }
+    for (ch in flat) {
+        append_child(out, ch)
     }
     out
 }

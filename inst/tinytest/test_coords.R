@@ -158,9 +158,16 @@ append_child(trx, mkclip("B", 0, 10))
 ttx <- track_trimmed_to_range(trx, TimeRange(RationalTime(0, 24), RationalTime(20, 24)))
 expect_equal(vapply(children(ttx), function(c) class(c)[1], ""), c("Clip", "Transition", "Clip"))
 
-# flatten_stack with a transition in a track does not error
+# track_trimmed_to_range transition keep/drop/error (extent [8,13))
+expect_equal(length(children(track_trimmed_to_range(trx, TimeRange(RationalTime(0, 24), RationalTime(5, 24))))), 1L)   # drop T
+expect_equal(length(children(track_trimmed_to_range(trx, TimeRange(RationalTime(15, 24), RationalTime(5, 24))))), 1L)  # drop T
+expect_equal(vapply(children(track_trimmed_to_range(trx, TimeRange(RationalTime(5, 24), RationalTime(10, 24)))),
+                    function(c) class(c)[1], ""), c("Clip", "Transition", "Clip"))                                     # keep T
+expect_error(track_trimmed_to_range(trx, TimeRange(RationalTime(0, 24), RationalTime(10, 24))))                        # cut mid-T
+
+# flatten_stack preserves transitions
 ftx <- flatten_stack(list(trx))
-expect_true(inherits(ftx, "Track"))
+expect_equal(vapply(children(ftx), function(c) class(c)[1], ""), c("Clip", "Transition", "Clip"))
 
 if (requireNamespace("rotio", quietly = TRUE)) {
     rmk3 <- function(n, s, d) rotio::Clip(n, rotio::ExternalReference(paste0(n, ".mov")),
@@ -181,4 +188,27 @@ if (requireNamespace("rotio", quietly = TRUE)) {
     rotio::append_child(rtx, rmk3("B", 0, 10))
     rttx <- rotio::track_trimmed_to_range(rtx, rotio::TimeRange(rotio::RationalTime(0, 24), rotio::RationalTime(20, 24)))
     expect_equal(length(children(ttx)), length(rotio::children(rttx)))
+
+    cls <- function(t) vapply(children(t), function(c) class(c)[1], "")
+    rcls <- function(t) vapply(rotio::children(t), function(c) class(c)[1], "")
+    rwin <- function() {
+        rt <- rotio::TimeRange
+        rT <- rotio::RationalTime
+        for (w in list(c(0, 5), c(15, 5), c(5, 10), c(7, 9))) {
+            n <- track_trimmed_to_range(trx, TimeRange(RationalTime(w[1], 24), RationalTime(w[2], 24)))
+            r <- rotio::track_trimmed_to_range(rtx, rt(rT(w[1], 24), rT(w[2], 24)))
+            expect_equal(cls(n), rcls(r), info = paste("trim", w[1], w[2]))
+        }
+    }
+    rwin()
+    expect_error(rotio::track_trimmed_to_range(rtx, rotio::TimeRange(rotio::RationalTime(0, 24), rotio::RationalTime(10, 24))))
+
+    # flatten parity: single track + bottom-fill both preserve the transition
+    expect_equal(cls(flatten_stack(list(trx))), rcls(rotio::flatten_stack(list(rtx))))
+    botf <- Track("V0"); append_child(botf, mkclip("Z", 0, 20))
+    rbotf <- rotio::Track("V0"); rotio::append_child(rbotf, rmk3("Z", 0, 20))
+    topgap <- Track("V1"); append_child(topgap, Gap(RationalTime(20, 24)))
+    rtopgap <- rotio::Track("V1"); rotio::append_child(rtopgap, rotio::Gap(rotio::RationalTime(20, 24)))
+    expect_equal(cls(flatten_stack(list(trx, topgap))),
+                 rcls(rotio::flatten_stack(list(rtx, rtopgap))))
 }

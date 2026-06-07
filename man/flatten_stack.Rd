@@ -13,7 +13,8 @@ flatten_stack(x)
 A flattened \code{\link{Track}}.
 }
 \description{
-Composites top-down: the topmost track with a non-gap clip wins each segment;
-gaps expose the tracks below. Returns a single \code{\link{Track}} of trimmed
-clips and gaps.
+Composites top-down: starts from the topmost track and fills its holes (gaps
+and disabled items) with content from the tracks below, recursing downward.
+Transitions are preserved; a lower transition cut by a hole boundary errors
+with "Cannot trim in the middle of a transition" (matching OTIO).
 }

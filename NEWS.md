@@ -1,3 +1,10 @@
+# nle.api 0.0.2.24 (dev)
+
+## Phase 5 edit algorithms (part 2)
+
+* `slice`, `insert`, `remove` ported from the OTIO source and validated against
+  rotio.
+
 # nle.api 0.0.2.23 (dev)
 
 ## Phase 5 edit algorithms (part 1)

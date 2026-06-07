@@ -1,3 +1,11 @@
+# nle.api 0.0.2.29 (dev)
+
+## Fixes
+
+* `target_schema_versions` is validated (named, unique, whole numbers) like rotio.
+* Parsed known-schema objects materialize current-schema default fields
+  (effects/markers/enabled/color), fixing `enabled` becoming NULL.
+
 # nle.api 0.0.2.28 (dev)
 
 ## Phase 6 completion: schema migrations + downgrade

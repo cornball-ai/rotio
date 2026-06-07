@@ -1,10 +1,12 @@
 # OTIO parity matrix (nle.api vs rotio)
 
 Target: nle.api exports everything `rotio` does, in pure R. ✅ done · ⬜ to build.
-Progress: Phases 1-4 merged (env core, time model, object surface,
-composition coordinate model). Phases 5-6 remain. (frame_for_time is an ImageSequenceReference method, now done.) Replacement functions (`x<-`) are grouped with their getter and flagged
-separately where the getter exists but the setter doesn't yet. Plus 14
-nle.api-only extras (sugar / OTIOD / predicates).
+Progress: Phases 1-6 complete and merged (env core, time model, object surface,
+composition coordinate model, edit algorithms, schema machinery). Validated
+against rotio; schema migrations mirror OTIO's typeRegistry. Replacement
+functions (`x<-`) are grouped with their getter and flagged separately where the
+getter exists but the setter doesn't yet. Plus nle.api-only extras (sugar /
+OTIOD / predicates).
 
 ## Phase 1 — environment-backed object core + tree ops
 

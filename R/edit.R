@@ -667,10 +667,10 @@ fill <- function(item, track, track_time, reference_point = "Source") {
         pct <- to_seconds(gap_range$duration) / to_seconds(duration)
         nm <- name(item)
         tw <- LinearTimeWarp(nm, paste0(nm, "_timeWarp"), time_scalar = pct)
-        new_item <- clone(item)
-        source_range(new_item) <- clip_range
-        new_item$effects <- c(effects(item), list(tw))
-        overwrite(new_item, track,
+        # OTIO wraps the media in a base Item (not a Clip) carrying the time warp.
+        fit_item <- Item(name = nm, source_range = clip_range,
+                         effects = c(effects(item), list(tw)))
+        overwrite(fit_item, track,
                   TimeRange(track_time, .rt_minus(end_time_exclusive(gap_track_range), track_time)))
     } else {
         overwrite(item, track, TimeRange(track_time, duration))

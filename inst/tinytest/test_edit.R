@@ -152,12 +152,16 @@ if (requireNamespace("rotio", quietly = TRUE)) {
             expect_equal(nsnap(nt), rsnap(rt), info = paste("fill", rp, cd))
         }
     }
-    # ---- fill Fit: applies a LinearTimeWarp somewhere in the track ----
+    # ---- fill Fit: wraps the media in a base Item carrying a LinearTimeWarp ----
     nt <- ntrack(list(nclip("A", 0, 5), ngap(8), nclip("B", 0, 5)))
+    rt <- rtrack(list(rclip("A", 0, 5), rgap(8), rclip("B", 0, 5)))
     fill(nclip("X", 0, 4), nt, RT(8), reference_point = "Fit")
-    has_tw <- any(vapply(children(nt), function(c)
-        any(vapply(effects(c), function(e) inherits(e, "LinearTimeWarp"), logical(1))), logical(1)))
-    expect_true(has_tw)
+    rotio::fill(rclip("X", 0, 4), rt, rRT(8), reference_point = "Fit")
+    expect_equal(vapply(children(nt), function(c) class(c)[1], ""),
+                 vapply(rotio::children(rt), function(c) class(c)[1], ""))   # Clip, Gap, Item, Clip
+    fit_item <- children(nt)[[3]]
+    expect_equal(class(fit_item)[1], "Item")
+    expect_true(any(vapply(effects(fit_item), function(e) inherits(e, "LinearTimeWarp"), logical(1))))
 
     # ---- overwrite over a 3-item span: parity for cases rotio gets right ----
     # (8,10) and (10,8) span an item to the composition end, which trips the OTIO

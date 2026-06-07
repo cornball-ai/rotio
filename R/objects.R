@@ -208,6 +208,31 @@ Gap <- function(duration, name = "", metadata = NULL) {
                    markers = list(), enabled = TRUE, color = NULL))
 }
 
+#' Construct a base Item
+#'
+#' A generic OTIO \code{Item} (the base class of clips, gaps, and compositions).
+#' Mainly used by the \code{"Fit"} reference point of \code{\link{fill}}, which
+#' wraps media in a plain item carrying a time warp.
+#'
+#' @param name Item name.
+#' @param source_range Optional \code{\link{TimeRange}}.
+#' @param effects List of \code{\link{Effect}}s.
+#' @param markers List of \code{\link{Marker}}s.
+#' @param enabled Whether the item is enabled (default \code{TRUE}).
+#' @param metadata Named list of metadata.
+#' @return An \code{Item}.
+#' @export
+Item <- function(name = "", source_range = NULL, effects = NULL,
+                 markers = NULL, enabled = TRUE, metadata = NULL) {
+    .new_otio("Item",
+              c("OTIO_SCHEMA", "metadata", "name", "source_range", "effects",
+                "markers", "enabled", "color"),
+              list(OTIO_SCHEMA = "Item.1", metadata = .as_metadata(metadata),
+                   name = as.character(name), source_range = source_range,
+                   effects = effects %||% list(), markers = markers %||% list(),
+                   enabled = isTRUE(enabled), color = NULL))
+}
+
 #' Construct a Track
 #'
 #' An ordered sequence of items. Add children with \code{\link{add_child}} (or

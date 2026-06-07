@@ -6,14 +6,16 @@
 register_upgrade_function(schema_name, version_to_upgrade_to, fn)
 }
 \arguments{
-\item{schema_name}{Schema type name (e.g. \code{"Marker"}).}
+\item{schema_name}{Schema type name (e.g. \code{"Marker"}). Must be a known
+OTIO schema.}
 
 \item{version_to_upgrade_to}{Target version (integer).}
 
 \item{fn}{Function of one argument (the field list) returning a field list.}
 }
 \value{
-Invisibly \code{NULL}.
+\code{TRUE} if registered; \code{FALSE} for an unknown schema or a
+  duplicate \code{(schema, version)} pair (matching rotio).
 }
 \description{
 \code{fn} receives the parsed field list of a \code{schema_name} object at the

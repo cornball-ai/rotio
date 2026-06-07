@@ -1,3 +1,11 @@
+# nle.api 0.0.2.28 (dev)
+
+## Phase 6 completion: schema migrations + downgrade
+
+* Built-in Clip/Marker upgrades + Clip downgrade; `target_schema_versions` on
+  `to_json_string`/`to_json_file`; TRUE/FALSE registration semantics; `fill`
+  Fit emits a base `Item`. Validated against rotio.
+
 # nle.api 0.0.2.27 (dev)
 
 ## Phase 6: schema machinery

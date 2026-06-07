@@ -1,3 +1,10 @@
+# nle.api 0.0.2.26 (dev)
+
+## Fix: overwrite/insert remove the correct item
+
+* No longer replicate OTIO 0.18.1's remove_child-by-pointer bug; remove the
+  intended child instead. Correct where rotio is buggy.
+
 # nle.api 0.0.2.25 (dev)
 
 ## Phase 5 edit algorithms (complete)

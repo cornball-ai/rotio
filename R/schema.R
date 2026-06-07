@@ -90,23 +90,39 @@ is_unknown_schema <- function(x) {
 #' applied automatically by \code{\link{from_json_string}} when an older version
 #' is read.
 #'
-#' @param schema_name Schema type name (e.g. \code{"Marker"}).
+#' @param schema_name Schema type name (e.g. \code{"Marker"}). Must be a known
+#'   OTIO schema.
 #' @param version_to_upgrade_to Target version (integer).
 #' @param fn Function of one argument (the field list) returning a field list.
-#' @return Invisibly \code{NULL}.
+#' @return \code{TRUE} if registered; \code{FALSE} for an unknown schema or a
+#'   duplicate \code{(schema, version)} pair (matching rotio).
 #' @export
 register_upgrade_function <- function(schema_name, version_to_upgrade_to, fn) {
     if (!is.function(fn)) {
         stop("register_upgrade_function: fn must be a function", call. = FALSE)
     }
+    .register_migration(.schema_upgrades, schema_name, version_to_upgrade_to,
+                        fn)
+}
+
+# Shared registration: TRUE on a fresh registration; FALSE for an unknown schema
+# or a duplicate (schema, version) pair (matching rotio).
+.register_migration <- function(reg, schema_name, version, fn) {
     key <- as.character(schema_name)
-    if (is.null(.schema_upgrades[[key]])) {
-        .schema_upgrades[[key]] <- list()
+    if (!(key %in% names(.TYPE_VERSION_MAP))) {
+        return(FALSE)
     }
-    tbl <- .schema_upgrades[[key]]
-    tbl[[as.character(as.integer(version_to_upgrade_to))]] <- fn
-    .schema_upgrades[[key]] <- tbl
-    invisible(NULL)
+    vkey <- as.character(as.integer(version))
+    tbl <- reg[[key]]
+    if (!is.null(tbl) && !is.null(tbl[[vkey]])) {
+        return(FALSE)
+    }
+    if (is.null(tbl)) {
+        tbl <- list()
+    }
+    tbl[[vkey]] <- fn
+    reg[[key]] <- tbl
+    TRUE
 }
 
 #' Register a schema downgrade function
@@ -115,10 +131,11 @@ register_upgrade_function <- function(schema_name, version_to_upgrade_to, fn) {
 #' \code{version_to_downgrade_from} and returns the field list one version lower.
 #' Stored for use when writing older schema versions.
 #'
-#' @param schema_name Schema type name.
+#' @param schema_name Schema type name. Must be a known OTIO schema.
 #' @param version_to_downgrade_from Source version (integer).
 #' @param fn Function of one argument (the field list) returning a field list.
-#' @return Invisibly \code{NULL}.
+#' @return \code{TRUE} if registered; \code{FALSE} for an unknown schema or a
+#'   duplicate \code{(schema, version)} pair (matching rotio).
 #' @export
 register_downgrade_function <- function(schema_name,
                                         version_to_downgrade_from, fn) {
@@ -126,19 +143,13 @@ register_downgrade_function <- function(schema_name,
         stop("register_downgrade_function: fn must be a function",
              call. = FALSE)
     }
-    key <- as.character(schema_name)
-    if (is.null(.schema_downgrades[[key]])) {
-        .schema_downgrades[[key]] <- list()
-    }
-    tbl <- .schema_downgrades[[key]]
-    tbl[[as.character(as.integer(version_to_downgrade_from))]] <- fn
-    .schema_downgrades[[key]] <- tbl
-    invisible(NULL)
+    .register_migration(.schema_downgrades, schema_name,
+                        version_to_downgrade_from, fn)
 }
 
 # Apply registered upgrade functions to a parsed field list whose schema version
-# is below the current one. Returns the (possibly migrated) list with its
-# OTIO_SCHEMA bumped to the current version.
+# is below the current one. Only relabels OTIO_SCHEMA up to the highest version a
+# registered upgrade actually reached (so stale data is never mislabeled).
 .apply_upgrades <- function(x) {
     schema <- x[["OTIO_SCHEMA"]]
     type <- .schema_type(schema)
@@ -151,15 +162,88 @@ register_downgrade_function <- function(schema_name,
         return(x)
     }
     tbl <- .schema_upgrades[[type]]
-    if (!is.null(tbl)) {
-        for (v in (ver + 1L):target) {
+    reached <- ver
+    for (v in (ver + 1L):target) {
+        if (is.null(tbl)) {
+            fn <- NULL
+        } else {
             fn <- tbl[[as.character(v)]]
-            if (!is.null(fn)) {
-                x <- fn(x)
-            }
         }
+        if (is.null(fn)) {
+            break
+        }
+        x <- fn(x)
+        reached <- v
     }
-    x[["OTIO_SCHEMA"]] <- paste0(type, ".", target)
+    x[["OTIO_SCHEMA"]] <- paste0(type, ".", reached)
     x
 }
+
+# Coerce target_schema_versions (named vector/list) to a named list for lookup.
+.normalize_targets <- function(targets) {
+    if (is.null(targets)) {
+        return(NULL)
+    }
+    as.list(targets)
+}
+
+# Apply registered downgrade functions to a serialized field list whose schema
+# version is above the requested target. `targets` is a named list type->version.
+.apply_downgrades <- function(d, targets) {
+    schema <- d[["OTIO_SCHEMA"]]
+    if (is.null(schema)) {
+        return(d)
+    }
+    type <- .schema_type(schema)
+    ver <- .schema_ver(schema)
+    tgt <- targets[[type]]
+    if (is.null(tgt) || is.na(ver) || tgt >= ver) {
+        return(d)
+    }
+    tbl <- .schema_downgrades[[type]]
+    reached <- ver
+    for (v in ver:(as.integer(tgt) + 1L)) {
+        if (is.null(tbl)) {
+            fn <- NULL
+        } else {
+            fn <- tbl[[as.character(v)]]
+        }
+        if (is.null(fn)) {
+            break
+        }
+        d <- fn(d) # downgrade from v to v-1
+        reached <- v - 1L
+    }
+    d[["OTIO_SCHEMA"]] <- paste0(type, ".", reached)
+    d
+}
+
+# ---- built-in migrations (mirroring OTIO typeRegistry.cpp) ----------------
+.schema_upgrades[["Marker"]] <- list(`2` = function(d) {
+    d[["marked_range"]] <- d[["range"]]
+    d[["range"]] <- NULL
+    d
+})
+.schema_upgrades[["Clip"]] <- list(`2` = function(d) {
+    mref <- d[["media_reference"]]
+    if (is.null(mref)) {
+        mref <- list(OTIO_SCHEMA = "MissingReference.1",
+                     metadata = setNames(list(), character()), name = "",
+                     available_range = NULL, available_image_bounds = NULL)
+    }
+    d[["media_references"]] <- list(DEFAULT_MEDIA = mref)
+    d[["active_media_reference_key"]] <- "DEFAULT_MEDIA"
+    d[["media_reference"]] <- NULL
+    d
+})
+.schema_downgrades[["Clip"]] <- list(`2` = function(d) {
+    mrefs <- d[["media_references"]]
+    active <- d[["active_media_reference_key"]]
+    if (!is.null(mrefs) && !is.null(active) && !is.null(mrefs[[active]])) {
+        d[["media_reference"]] <- mrefs[[active]]
+    }
+    d[["media_references"]] <- NULL
+    d[["active_media_reference_key"]] <- NULL
+    d
+})
 

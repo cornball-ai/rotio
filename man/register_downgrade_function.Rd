@@ -6,14 +6,15 @@
 register_downgrade_function(schema_name, version_to_downgrade_from, fn)
 }
 \arguments{
-\item{schema_name}{Schema type name.}
+\item{schema_name}{Schema type name. Must be a known OTIO schema.}
 
 \item{version_to_downgrade_from}{Source version (integer).}
 
 \item{fn}{Function of one argument (the field list) returning a field list.}
 }
 \value{
-Invisibly \code{NULL}.
+\code{TRUE} if registered; \code{FALSE} for an unknown schema or a
+  duplicate \code{(schema, version)} pair (matching rotio).
 }
 \description{
 \code{fn} receives the field list of a \code{schema_name} object at

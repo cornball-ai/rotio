@@ -1,3 +1,10 @@
+# nle.api 0.0.2.22 (dev)
+
+## Fixes
+
+* `trimmed_range_in_parent` errors on exact boundary contact with the parent
+  source range (no overlap), matching opentime. Validated against rotio.
+
 # nle.api 0.0.2.21 (dev)
 
 ## Fixes: source-fidelity pass across phases 1-4

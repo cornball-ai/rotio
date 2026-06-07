@@ -294,8 +294,9 @@ register_downgrade_function <- function(schema_name,
     mref <- d[["media_reference"]]
     if (is.null(mref)) {
         mref <- list(OTIO_SCHEMA = "MissingReference.1",
-                     metadata = setNames(list(), character()), name = "",
-                     available_range = NULL, available_image_bounds = NULL)
+                     metadata = stats::setNames(list(), character()),
+                     name = "", available_range = NULL,
+                     available_image_bounds = NULL)
     }
     d[["media_references"]] <- list(DEFAULT_MEDIA = mref)
     d[["active_media_reference_key"]] <- "DEFAULT_MEDIA"

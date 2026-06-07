@@ -27,7 +27,7 @@
 #'
 #' @param x An OTIO object (typically a \code{\link{Timeline}}).
 #' @param indent Indent width for pretty-printing (default 2). Use 0 for compact.
-#' @param target_schema_versions Optional named integer vector/list mapping schema
+#' @param target_schema_versions Optional named integer vector mapping schema
 #'   type to a target version; objects above that version are downgraded using
 #'   the registered downgrade functions (e.g. \code{c(Clip = 1L)}).
 #' @return A JSON string.

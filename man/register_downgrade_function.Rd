@@ -21,3 +21,6 @@ register_downgrade_function(schema_name, version_to_downgrade_from, fn)
 \code{version_to_downgrade_from} and returns the field list one version lower.
 Stored for use when writing older schema versions.
 }
+\examples{
+register_downgrade_function("Effect", 2, function(fields) fields)
+}

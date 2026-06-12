@@ -10,6 +10,14 @@ frame_for_time(x, time)
 
 \item{time}{A \code{\link{RationalTime}}.}
 }
+\value{
+Integer frame number for \code{time}.
+}
 \description{
 Errors if \code{time} falls outside the available range (matching OTIO).
+}
+\examples{
+isr <- ImageSequenceReference("file:///frames", "frame.", ".exr", rate = 24,
+    available_range = TimeRange(RationalTime(0, 24), RationalTime(48, 24)))
+frame_for_time(isr, RationalTime(10, 24))
 }

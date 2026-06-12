@@ -18,3 +18,9 @@ Returns a new track containing each child trimmed to the portion that falls
 within \code{trim_range} (in track coordinates); children fully outside are
 dropped.
 }
+\examples{
+trk <- add_child(Track("V1"), Clip("a",
+    source_range = TimeRange(RationalTime(0, 24), RationalTime(48, 24))))
+track_trimmed_to_range(trk,
+    TimeRange(RationalTime(0, 24), RationalTime(24, 24)))
+}

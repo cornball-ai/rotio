@@ -27,3 +27,6 @@ A generic OTIO \code{Item} (the base class of clips, gaps, and compositions).
 Mainly used by the \code{"Fit"} reference point of \code{\link{fill}}, which
 wraps media in a plain item carrying a time warp.
 }
+\examples{
+Item("warp", source_range = TimeRange(RationalTime(0, 30), RationalTime(60, 30)))
+}

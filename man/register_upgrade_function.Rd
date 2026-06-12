@@ -23,3 +23,6 @@ version below \code{version_to_upgrade_to} and returns the upgraded list. It is
 applied automatically by \code{\link{from_json_string}} when an older version
 is read.
 }
+\examples{
+register_upgrade_function("Effect", 2, function(fields) fields)
+}

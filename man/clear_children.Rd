@@ -14,3 +14,9 @@ clear_children(x)
 \description{
 Remove all children (in place)
 }
+\examples{
+trk <- Track("V1")
+append_child(trk, Clip("a"))
+clear_children(trk)
+length(children(trk))
+}

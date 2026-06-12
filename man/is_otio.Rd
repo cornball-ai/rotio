@@ -17,6 +17,13 @@ is_media_reference(x)
 \arguments{
 \item{x}{Object to test.}
 }
+\value{
+\code{TRUE} if \code{x} is of the corresponding class, else \code{FALSE}.
+}
 \description{
 Type predicates for OTIO objects
+}
+\examples{
+is_otio(Timeline("demo"))
+is_timeline(Track("V1"))
 }

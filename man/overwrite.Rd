@@ -25,3 +25,11 @@ Places \code{item} over \code{range} (in composition coordinates), partitioning
 or removing the items it covers and filling any hole before/after with a gap
 (or \code{fill_template}). Mutates \code{composition} in place.
 }
+\examples{
+trk <- Track("V1")
+append_child(trk, Gap(RationalTime(48, 24)))
+cl <- Clip("a", source_range = TimeRange(RationalTime(0, 24),
+                                         RationalTime(12, 24)))
+overwrite(cl, trk, TimeRange(RationalTime(12, 24), RationalTime(12, 24)))
+length(children(trk))
+}

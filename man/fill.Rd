@@ -23,3 +23,11 @@ Replaces the gap covering \code{track_time} with \code{item}. The
 own duration, \code{"Sequence"} clamps to the gap, \code{"Fit"} time-warps the
 clip to fill the gap exactly. Mutates \code{track} in place.
 }
+\examples{
+trk <- Track("V1")
+append_child(trk, Gap(RationalTime(48, 24)))
+cl <- Clip("a", source_range = TimeRange(RationalTime(0, 24),
+                                         RationalTime(24, 24)))
+fill(cl, trk, RationalTime(0, 24))
+name(children(trk)[[1]])
+}

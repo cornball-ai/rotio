@@ -18,3 +18,8 @@ set_media_references(x, media_references, new_active_key = NULL)
 \description{
 Replace the media references of a clip (in place)
 }
+\examples{
+cl <- Clip("a")
+set_media_references(cl, list(DEFAULT_MEDIA = ExternalReference("a.mp4")))
+target_url(cl)
+}

@@ -11,6 +11,13 @@ is_time_range(x)
 \arguments{
 \item{x}{Object to test.}
 }
+\value{
+Logical scalar.
+}
 \description{
 Is x a RationalTime / TimeRange?
+}
+\examples{
+is_rational_time(RationalTime(24, 24))
+is_time_range(TimeRange(RationalTime(0, 24), RationalTime(48, 24)))
 }

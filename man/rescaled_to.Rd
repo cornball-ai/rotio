@@ -10,6 +10,12 @@ rescaled_to(x, new_rate)
 
 \item{new_rate}{Target rate (fps).}
 }
+\value{
+A \code{RationalTime} at \code{new_rate}.
+}
 \description{
 Rescale a RationalTime to a new rate
+}
+\examples{
+rescaled_to(RationalTime(24, 24), 48)
 }

@@ -19,3 +19,9 @@ set_child(x, index, child)
 Detaches the replaced child and attaches the new one. Returns \code{x}
 invisibly.
 }
+\examples{
+trk <- Track("V1")
+append_child(trk, Clip("a"))
+set_child(trk, 1, Clip("b"))
+name(children(trk)[[1]])
+}

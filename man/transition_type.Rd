@@ -25,6 +25,16 @@ out_offset(x) <- value
 
 \item{value}{New value.}
 }
+\value{
+\code{transition_type} returns a string, \code{in_offset} and
+  \code{out_offset} a \code{\link{RationalTime}}; setters return \code{x}.
+}
 \description{
 Transition type / offsets
+}
+\examples{
+tr <- Transition(transition_type = "SMPTE_Dissolve",
+                 in_offset = RationalTime(5, 30), out_offset = RationalTime(5, 30))
+transition_type(tr)
+in_offset(tr)
 }

@@ -14,6 +14,13 @@ to_timecode(x, rate = NULL, drop_frame = NULL)
 rate (on for 30000/1001 and 60000/1001), matching opentime's
 \code{InferFromRate}; pass \code{TRUE}/\code{FALSE} to force.}
 }
+\value{
+Character scalar, the timecode as \code{"HH:MM:SS:FF"} (or
+  \code{";FF"} for drop-frame).
+}
 \description{
 SMPTE timecode for a RationalTime
+}
+\examples{
+to_timecode(RationalTime(86400, 24))
 }

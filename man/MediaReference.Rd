@@ -18,3 +18,6 @@ A \code{MediaReference}.
 \description{
 Construct a generic MediaReference
 }
+\examples{
+MediaReference("ref")
+}

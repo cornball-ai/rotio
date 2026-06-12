@@ -10,6 +10,16 @@ index_of_child(x, child)
 
 \item{child}{An OTIO object.}
 }
+\value{
+The 1-based integer position of \code{child} in \code{x}, or
+  \code{NA_integer_} if it is not a direct child.
+}
 \description{
 1-based position of a child, or NA
+}
+\examples{
+trk <- Track("V1")
+cl <- Clip("a")
+append_child(trk, cl)
+index_of_child(trk, cl)
 }

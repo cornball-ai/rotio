@@ -10,6 +10,12 @@ from_time_string(time_string, rate)
 
 \item{rate}{Rate (fps).}
 }
+\value{
+A \code{RationalTime}.
+}
 \description{
 Preserves the fractional value (no rounding to a frame boundary).
+}
+\examples{
+from_time_string("00:00:03.75", 24)
 }

@@ -12,6 +12,11 @@
 #'
 #' @param dir Bundle directory.
 #' @return The bundle's OTIO object (typically a \code{\link{Timeline}}).
+#' @examples
+#' d <- tempfile("bundle")
+#' write_otiod(Timeline("demo"), d)
+#' name(read_otiod(d))
+#' unlink(d, recursive = TRUE)
 #' @export
 read_otiod <- function(dir) {
     otio <- file.path(dir, "content.otio")
@@ -34,6 +39,11 @@ read_otiod <- function(dir) {
 #'   \code{<dir>/media/}.
 #' @param indent Indent width for content.otio (default 2).
 #' @return The path to the written \code{content.otio}, invisibly.
+#' @examples
+#' d <- tempfile("bundle")
+#' write_otiod(Timeline("demo"), d)
+#' dir(d)
+#' unlink(d, recursive = TRUE)
 #' @export
 write_otiod <- function(timeline, dir, media = NULL, indent = 2) {
     if (!is_timeline(timeline)) {

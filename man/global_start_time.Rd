@@ -13,6 +13,15 @@ global_start_time(x) <- value
 
 \item{value}{A \code{\link{RationalTime}} or \code{NULL}.}
 }
+\value{
+The timeline's global start time (a \code{\link{RationalTime}} or
+  \code{NULL}); the setter returns \code{x}.
+}
 \description{
 Global start time of a timeline
+}
+\examples{
+tl <- Timeline("demo")
+global_start_time(tl) <- RationalTime(0, 24)
+global_start_time(tl)
 }

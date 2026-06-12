@@ -13,6 +13,14 @@ source_range(x) <- value
 
 \item{value}{A \code{\link{TimeRange}}.}
 }
+\value{
+The item's \code{\link{TimeRange}}, or \code{NULL} if unset.
+}
 \description{
 Get or set an item's source range
+}
+\examples{
+cl <- Clip("a")
+source_range(cl) <- TimeRange(RationalTime(0, 24), RationalTime(48, 24))
+source_range(cl)
 }

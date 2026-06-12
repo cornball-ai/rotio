@@ -13,6 +13,13 @@ marked_range(x) <- value
 
 \item{value}{A \code{\link{TimeRange}}.}
 }
+\value{
+The marker's \code{\link{TimeRange}}; the setter returns \code{x}.
+}
 \description{
 Marked range of a Marker
+}
+\examples{
+m <- Marker("note", TimeRange(RationalTime(0, 30), RationalTime(30, 30)))
+marked_range(m)
 }

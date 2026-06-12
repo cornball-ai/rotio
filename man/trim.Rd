@@ -21,3 +21,11 @@ item) and its exclusive end by \code{delta_out}, filling now-empty time with a
 gap (or \code{fill_template}); an adjacent gap is grown instead. Mutates in
 place.
 }
+\examples{
+trk <- Track("V1")
+cl <- Clip("a", source_range = TimeRange(RationalTime(0, 24),
+                                         RationalTime(48, 24)))
+append_child(trk, cl)
+trim(cl, RationalTime(6, 24), RationalTime(0, 24))
+source_range(cl)
+}

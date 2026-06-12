@@ -15,3 +15,9 @@ The parent object or \code{NULL}.
 The containing composition/collection, or \code{NULL}. A Timeline's root track
 Stack is parentless.
 }
+\examples{
+trk <- Track("V1")
+cl <- Clip("a")
+append_child(trk, cl)
+name(parent(cl))
+}

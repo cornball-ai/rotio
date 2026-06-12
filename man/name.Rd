@@ -13,6 +13,14 @@ name(x) <- value
 
 \item{value}{New name.}
 }
+\value{
+The object's name, a character string.
+}
 \description{
 Get or set the name of an OTIO object
+}
+\examples{
+cl <- Clip("a")
+name(cl) <- "b"
+name(cl)
 }

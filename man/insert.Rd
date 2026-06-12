@@ -24,3 +24,12 @@ Inserts \code{item} at \code{time}, splitting whatever item spans that point;
 before the start it prepends, past the end it appends (filling any gap).
 Mutates \code{composition} in place.
 }
+\examples{
+trk <- Track("V1")
+append_child(trk, Clip("a", source_range = TimeRange(RationalTime(0, 24),
+                                                     RationalTime(48, 24))))
+cl <- Clip("b", source_range = TimeRange(RationalTime(0, 24),
+                                         RationalTime(12, 24)))
+insert(cl, trk, RationalTime(24, 24))
+length(children(trk))
+}

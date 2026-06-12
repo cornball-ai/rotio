@@ -38,6 +38,10 @@
 
 #' Type predicates for OTIO objects
 #' @param x Object to test.
+#' @return \code{TRUE} if \code{x} is of the corresponding class, else \code{FALSE}.
+#' @examples
+#' is_otio(Timeline("demo"))
+#' is_timeline(Track("V1"))
 #' @export
 is_otio <- function(x) inherits(x, "otio_object")
 
@@ -221,6 +225,8 @@ Gap <- function(duration, name = "", metadata = NULL) {
 #' @param enabled Whether the item is enabled (default \code{TRUE}).
 #' @param metadata Named list of metadata.
 #' @return An \code{Item}.
+#' @examples
+#' Item("warp", source_range = TimeRange(RationalTime(0, 30), RationalTime(60, 30)))
 #' @export
 Item <- function(name = "", source_range = NULL, effects = NULL,
                  markers = NULL, enabled = TRUE, metadata = NULL) {
@@ -265,6 +271,8 @@ Track <- function(name, kind = "Video", source_range = NULL, metadata = NULL) {
 #' @param source_range Optional \code{\link{TimeRange}}.
 #' @param metadata Named list of metadata.
 #' @return A \code{Stack}.
+#' @examples
+#' Stack()
 #' @export
 Stack <- function(name = "tracks", source_range = NULL, metadata = NULL) {
     .new_otio(

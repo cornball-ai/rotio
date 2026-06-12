@@ -8,6 +8,12 @@ is_missing_reference(x)
 \arguments{
 \item{x}{Object to test.}
 }
+\value{
+\code{TRUE} if \code{x} is a \code{MissingReference}, else \code{FALSE}.
+}
 \description{
 Is x a MissingReference?
+}
+\examples{
+is_missing_reference(MissingReference())
 }

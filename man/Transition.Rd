@@ -22,3 +22,7 @@ A \code{Transition}.
 \description{
 A transition (e.g. a dissolve) between adjacent items on a track.
 }
+\examples{
+Transition(transition_type = "SMPTE_Dissolve",
+           in_offset = RationalTime(5, 30), out_offset = RationalTime(5, 30))
+}

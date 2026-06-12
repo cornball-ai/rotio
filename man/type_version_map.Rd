@@ -12,3 +12,6 @@ A named integer vector.
 A named integer vector mapping each schema type to its current version,
 matching OpenTimelineIO 0.18.1.
 }
+\examples{
+type_version_map()["Clip"]
+}

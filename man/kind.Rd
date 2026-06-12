@@ -13,6 +13,13 @@ kind(x) <- value
 
 \item{value}{\code{"Video"} or \code{"Audio"}.}
 }
+\value{
+The track kind, \code{"Video"} or \code{"Audio"}.
+}
 \description{
 Get or set a track's kind
+}
+\examples{
+trk <- Track("A1", kind = "Audio")
+kind(trk)
 }

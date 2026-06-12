@@ -33,6 +33,9 @@
 #' @param children A list of OTIO objects.
 #' @param metadata Named list of metadata.
 #' @return A \code{SerializableCollection}.
+#' @examples
+#' col <- SerializableCollection("shots", list(Clip("a"), Clip("b")))
+#' length(children(col))
 #' @export
 SerializableCollection <- function(name = "", children = list(),
                                    metadata = NULL) {
@@ -50,6 +53,10 @@ SerializableCollection <- function(name = "", children = list(),
 #' Children of a composition or collection
 #' @param x A composition (Track/Stack) or collection.
 #' @return A list of child OTIO objects, in order.
+#' @examples
+#' trk <- Track("V1")
+#' append_child(trk, Clip("a"))
+#' children(trk)
 #' @export
 children <- function(x) {
     if (!.is_container(x)) {
@@ -65,6 +72,11 @@ children <- function(x) {
 #'
 #' @param x An OTIO object.
 #' @return The parent object or \code{NULL}.
+#' @examples
+#' trk <- Track("V1")
+#' cl <- Clip("a")
+#' append_child(trk, cl)
+#' name(parent(cl))
 #' @export
 parent <- function(x) x$.parent
 
@@ -97,6 +109,11 @@ append_child <- function(x, child) {
 #' @param index 1-based position.
 #' @param child An OTIO object with no parent.
 #' @return \code{x}, invisibly.
+#' @examples
+#' trk <- Track("V1")
+#' append_child(trk, Clip("b"))
+#' insert_child(trk, 1, Clip("a"))
+#' name(children(trk)[[1]])
 #' @export
 insert_child <- function(x, index, child) {
     if (!.is_container(x)) {
@@ -122,6 +139,11 @@ insert_child <- function(x, index, child) {
 #' @param index 1-based position.
 #' @param child An OTIO object with no parent.
 #' @return \code{x}, invisibly.
+#' @examples
+#' trk <- Track("V1")
+#' append_child(trk, Clip("a"))
+#' set_child(trk, 1, Clip("b"))
+#' name(children(trk)[[1]])
 #' @export
 set_child <- function(x, index, child) {
     if (!.is_container(x)) {
@@ -145,6 +167,10 @@ set_child <- function(x, index, child) {
 #' @param x A composition or collection.
 #' @param children,value A list of parentless OTIO objects.
 #' @return \code{x} (invisibly from the function form).
+#' @examples
+#' trk <- Track("V1")
+#' set_children(trk, list(Clip("a"), Clip("b")))
+#' length(children(trk))
 #' @export
 set_children <- function(x, children) {
     if (!.is_container(x)) {
@@ -174,6 +200,11 @@ set_children <- function(x, children) {
 #' @param x A composition or collection.
 #' @param index 1-based position.
 #' @return \code{x}, invisibly.
+#' @examples
+#' trk <- Track("V1")
+#' append_child(trk, Clip("a"))
+#' remove_child(trk, 1)
+#' length(children(trk))
 #' @export
 remove_child <- function(x, index) {
     if (!.is_container(x)) {
@@ -191,6 +222,11 @@ remove_child <- function(x, index) {
 #' Remove all children (in place)
 #' @param x A composition or collection.
 #' @return \code{x}, invisibly.
+#' @examples
+#' trk <- Track("V1")
+#' append_child(trk, Clip("a"))
+#' clear_children(trk)
+#' length(children(trk))
 #' @export
 clear_children <- function(x) {
     if (!.is_container(x)) {
@@ -206,6 +242,13 @@ clear_children <- function(x) {
 #' 1-based position of a child, or NA
 #' @param x A composition or collection.
 #' @param child An OTIO object.
+#' @return The 1-based integer position of \code{child} in \code{x}, or
+#'   \code{NA_integer_} if it is not a direct child.
+#' @examples
+#' trk <- Track("V1")
+#' cl <- Clip("a")
+#' append_child(trk, cl)
+#' index_of_child(trk, cl)
 #' @export
 index_of_child <- function(x, child) {
     hits <- which(vapply(x$children, function(c) identical(c, child),
@@ -220,6 +263,13 @@ index_of_child <- function(x, child) {
 #' Does a composition directly contain a child?
 #' @param x A composition or collection.
 #' @param child An OTIO object.
+#' @return \code{TRUE} if \code{child} is a direct child of \code{x}, else
+#'   \code{FALSE}.
+#' @examples
+#' trk <- Track("V1")
+#' cl <- Clip("a")
+#' append_child(trk, cl)
+#' has_child(trk, cl)
 #' @export
 has_child <- function(x, child) {
     any(vapply(x$children, function(c) identical(c, child), logical(1)))
@@ -228,6 +278,13 @@ has_child <- function(x, child) {
 #' Is x an ancestor of other?
 #' @param x A composition or collection.
 #' @param other An OTIO object.
+#' @return \code{TRUE} if \code{x} appears anywhere in \code{other}'s parent
+#'   chain, else \code{FALSE}.
+#' @examples
+#' trk <- Track("V1")
+#' cl <- Clip("a")
+#' append_child(trk, cl)
+#' is_parent_of(trk, cl)
 #' @export
 is_parent_of <- function(x, other) {
     p <- other$.parent
@@ -243,6 +300,10 @@ is_parent_of <- function(x, other) {
 #' All clips within an object (recursive)
 #' @param x A Timeline, composition, or collection.
 #' @return A list of \code{Clip} objects.
+#' @examples
+#' trk <- Track("V1")
+#' append_child(trk, Clip("a"))
+#' length(find_clips(trk))
 #' @export
 find_clips <- function(x) {
     acc <- list()
@@ -263,6 +324,11 @@ find_clips <- function(x) {
 
 #' Does an object contain any clips (recursive)?
 #' @param x A Timeline, composition, or collection.
+#' @return \code{TRUE} if \code{x} contains at least one clip, else \code{FALSE}.
+#' @examples
+#' trk <- Track("V1")
+#' append_child(trk, Clip("a"))
+#' has_clips(trk)
 #' @export
 has_clips <- function(x) length(find_clips(x)) > 0L
 
@@ -270,6 +336,10 @@ has_clips <- function(x) length(find_clips(x)) > 0L
 
 #' Media references of a clip
 #' @param x A \code{\link{Clip}}.
+#' @return The clip's named list of media references.
+#' @examples
+#' cl <- Clip("a", ExternalReference("a.mp4"))
+#' names(media_references(cl))
 #' @export
 media_references <- function(x) x$media_references
 
@@ -278,6 +348,10 @@ media_references <- function(x) x$media_references
 #' @param media_references A named list of media references.
 #' @param new_active_key Optional new active key.
 #' @return \code{x}, invisibly.
+#' @examples
+#' cl <- Clip("a")
+#' set_media_references(cl, list(DEFAULT_MEDIA = ExternalReference("a.mp4")))
+#' target_url(cl)
 #' @export
 set_media_references <- function(x, media_references, new_active_key = NULL) {
     x$media_references <- media_references
@@ -290,6 +364,10 @@ set_media_references <- function(x, media_references, new_active_key = NULL) {
 #' Active media reference key of a clip
 #' @param x A \code{\link{Clip}}.
 #' @param value New active key.
+#' @return The active media reference key, a character string.
+#' @examples
+#' cl <- Clip("a", ExternalReference("a.mp4"))
+#' active_media_reference_key(cl)
 #' @export
 active_media_reference_key <- function(x) x$active_media_reference_key
 
@@ -301,6 +379,9 @@ active_media_reference_key <- function(x) x$active_media_reference_key
 }
 
 #' The default media reference key (\code{"DEFAULT_MEDIA"})
+#' @return The string \code{"DEFAULT_MEDIA"}.
+#' @examples
+#' default_media_key()
 #' @export
 default_media_key <- function() "DEFAULT_MEDIA"
 

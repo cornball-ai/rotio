@@ -14,3 +14,7 @@ A list of \code{\link{Effect}} objects.
 \description{
 Effects of an item or composition
 }
+\examples{
+clip <- add_effect(Clip("a"), FreezeFrame())
+effects(clip)
+}

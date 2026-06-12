@@ -14,3 +14,6 @@ An integer.
 \description{
 Schema version of an OTIO object
 }
+\examples{
+schema_version(Clip("shot1"))
+}

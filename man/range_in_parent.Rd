@@ -15,3 +15,10 @@ A \code{\link{TimeRange}} in the parent's coordinates.
 Computed from the durations of the preceding siblings (gaps included). The
 duration is the item's trimmed duration.
 }
+\examples{
+trk <- Track("V1")
+cl <- Clip("a",
+    source_range = TimeRange(RationalTime(0, 24), RationalTime(48, 24)))
+append_child(trk, cl)
+range_in_parent(cl)
+}

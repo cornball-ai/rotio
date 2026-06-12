@@ -13,6 +13,13 @@ generator_kind(x) <- value
 
 \item{value}{New generator kind.}
 }
+\value{
+The generator kind string; the setter returns \code{x}.
+}
 \description{
 Generator kind of a GeneratorReference
+}
+\examples{
+g <- GeneratorReference("bars", generator_kind = "SMPTEBars")
+generator_kind(g)
 }

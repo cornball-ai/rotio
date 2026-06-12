@@ -82,6 +82,11 @@ from_json_string <- function(input) {
 #'
 #' @param file_name Path to a \code{.otio} JSON file.
 #' @return The reconstructed OTIO object, with parent pointers wired.
+#' @examples
+#' f <- tempfile(fileext = ".otio")
+#' to_json_file(Timeline("demo"), f)
+#' name(from_json_file(f))
+#' unlink(f)
 #' @export
 from_json_file <- function(file_name) {
     obj <- .parse_node(jsonlite::fromJSON(file_name, simplifyVector = FALSE))

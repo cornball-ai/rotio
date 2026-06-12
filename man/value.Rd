@@ -11,6 +11,13 @@ rate(x)
 \arguments{
 \item{x}{A \code{RationalTime}.}
 }
+\value{
+Numeric scalar, the time's value or rate.
+}
 \description{
 RationalTime value and rate
+}
+\examples{
+value(RationalTime(180, 30))
+rate(RationalTime(180, 30))
 }

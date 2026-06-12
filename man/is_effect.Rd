@@ -8,6 +8,12 @@ is_effect(x)
 \arguments{
 \item{x}{Object to test.}
 }
+\value{
+\code{TRUE} if \code{x} is an \code{Effect}, else \code{FALSE}.
+}
 \description{
 Is x an Effect?
+}
+\examples{
+is_effect(Effect("blur", "GaussianBlur"))
 }

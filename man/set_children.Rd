@@ -19,3 +19,8 @@ set_children(x) <- value
 \description{
 Available as \code{set_children(x, kids)} and \code{set_children(x) <- kids}.
 }
+\examples{
+trk <- Track("V1")
+set_children(trk, list(Clip("a"), Clip("b")))
+length(children(trk))
+}

@@ -18,3 +18,6 @@ A \code{Stack}.
 \description{
 Parallel tracks (a Timeline's \code{tracks} is a Stack).
 }
+\examples{
+Stack()
+}

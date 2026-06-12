@@ -10,6 +10,14 @@ intersects(tr, other, epsilon_s = .EPS)
 
 \item{tr,other}{\code{TimeRange}s.}
 }
+\value{
+Logical scalar.
+}
 \description{
 Do two TimeRanges intersect?
+}
+\examples{
+a <- TimeRange(RationalTime(0, 24), RationalTime(48, 24))
+b <- TimeRange(RationalTime(24, 24), RationalTime(48, 24))
+intersects(a, b)
 }

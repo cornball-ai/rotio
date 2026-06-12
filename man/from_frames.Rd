@@ -10,6 +10,12 @@ from_frames(frame, rate)
 
 \item{rate}{Rate (fps).}
 }
+\value{
+A \code{RationalTime}.
+}
 \description{
 Construct a RationalTime from a frame number at a rate
+}
+\examples{
+from_frames(48, 24)
 }

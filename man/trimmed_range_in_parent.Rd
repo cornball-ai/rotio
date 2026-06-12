@@ -14,3 +14,11 @@ A \code{\link{TimeRange}}.
 \description{
 Range of an item within its parent, trimmed by the parent's source range
 }
+\examples{
+trk <- Track("V1",
+    source_range = TimeRange(RationalTime(12, 24), RationalTime(24, 24)))
+cl <- Clip("a",
+    source_range = TimeRange(RationalTime(0, 24), RationalTime(48, 24)))
+append_child(trk, cl)
+trimmed_range_in_parent(cl)
+}

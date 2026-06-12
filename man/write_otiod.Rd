@@ -24,3 +24,9 @@ Writes \code{timeline} to \code{<dir>/content.otio} and ensures a
 it. Media references inside \code{timeline} should already be relative paths
 (e.g. \code{"media/clip01.mp4"}); this writer does not rewrite them.
 }
+\examples{
+d <- tempfile("bundle")
+write_otiod(Timeline("demo"), d)
+dir(d)
+unlink(d, recursive = TRUE)
+}

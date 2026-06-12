@@ -23,3 +23,7 @@ A \code{Marker}.
 \description{
 Annotates a time range on an item.
 }
+\examples{
+Marker("note", TimeRange(RationalTime(0, 30), RationalTime(30, 30)),
+       comment = "check color")
+}

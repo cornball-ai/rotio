@@ -21,3 +21,10 @@ Mutates \code{composition} in place. A slice exactly at an item boundary is a
 no-op; slicing through a transition removes it (or errors if
 \code{remove_transitions} is \code{FALSE}).
 }
+\examples{
+trk <- Track("V1")
+append_child(trk, Clip("a", source_range = TimeRange(RationalTime(0, 24),
+                                                     RationalTime(48, 24))))
+slice(trk, RationalTime(24, 24))
+length(children(trk))
+}

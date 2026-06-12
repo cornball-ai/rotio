@@ -8,7 +8,6 @@
 *.Rproj
 vignettes/*.html
 vignettes/*.pdf
-.httr-oauth
 /*_cache/
 /cache/
 *.utf8.md

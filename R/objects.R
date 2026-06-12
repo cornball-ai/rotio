@@ -330,5 +330,4 @@ print.ExternalReference <- function(x, ...) {
     invisible(x)
 }
 
-`%||%` <- function(a, b) if (is.null(a)) b else a
 

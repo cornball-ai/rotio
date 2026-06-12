@@ -1,4 +1,10 @@
-# rotio 0.0.2.32 (dev)
+# rotio 0.1.0
+
+First CRAN release: a pure-R OpenTimelineIO document model, with
+constructors for the OTIO object model, functional builders, the OTIO edit
+algorithms, schema upgrade/downgrade, and canonical `.otio` / OTIOD bundle
+IO through jsonlite. The optional RcppOTIO package (cornball-ai drat
+repository) validates output against the OpenTimelineIO C++ library.
 
 * Relicensed from MIT to Apache License 2.0 to match upstream
   OpenTimelineIO.
@@ -18,7 +24,7 @@
   package takes the rotio name; the Rcpp/C++ binding is now RcppOTIO, which
   this package validates against (Suggests: RcppOTIO).
 
-# rotio 0.0.2.29 (dev)
+# rotio 0.0.2.29
 
 ## Fixes
 
@@ -26,7 +32,7 @@
 * Parsed known-schema objects materialize current-schema default fields
   (effects/markers/enabled/color), fixing `enabled` becoming NULL.
 
-# rotio 0.0.2.28 (dev)
+# rotio 0.0.2.28
 
 ## Phase 6 completion: schema migrations + downgrade
 
@@ -34,49 +40,49 @@
   `to_json_string`/`to_json_file`; TRUE/FALSE registration semantics; `fill`
   Fit emits a base `Item`. Validated against RcppOTIO.
 
-# rotio 0.0.2.27 (dev)
+# rotio 0.0.2.27
 
 ## Phase 6: schema machinery
 
 * `schema_name`, `schema_version`, `is_unknown_schema`, `type_version_map`,
   `register_upgrade_function`, `register_downgrade_function`. Completes phases 1-6.
 
-# rotio 0.0.2.26 (dev)
+# rotio 0.0.2.26
 
 ## Fix: overwrite/insert remove the correct item
 
 * No longer replicate OTIO 0.18.1's remove_child-by-pointer bug; remove the
   intended child instead. Correct where RcppOTIO is buggy.
 
-# rotio 0.0.2.25 (dev)
+# rotio 0.0.2.25
 
 ## Phase 5 edit algorithms (complete)
 
 * `overwrite` and `fill` added; all 10 edit algorithms validated against RcppOTIO,
   including replicating OTIO 0.18.1's remove_child-by-pointer behaviour.
 
-# rotio 0.0.2.24 (dev)
+# rotio 0.0.2.24
 
 ## Phase 5 edit algorithms (part 2)
 
 * `slice`, `insert`, `remove` ported from the OTIO source and validated against
   RcppOTIO.
 
-# rotio 0.0.2.23 (dev)
+# rotio 0.0.2.23
 
 ## Phase 5 edit algorithms (part 1)
 
 * `slip`, `ripple`, `slide`, `trim`, `roll` ported from the OTIO source and
   validated against RcppOTIO (confirmed via treesitR to delegate 1:1 to upstream).
 
-# rotio 0.0.2.22 (dev)
+# rotio 0.0.2.22
 
 ## Fixes
 
 * `trimmed_range_in_parent` errors on exact boundary contact with the parent
   source range (no overlap), matching opentime. Validated against RcppOTIO.
 
-# rotio 0.0.2.21 (dev)
+# rotio 0.0.2.21
 
 ## Fixes: source-fidelity pass across phases 1-4
 
@@ -87,7 +93,7 @@
   available_range edge transitions; flatten disabled-track filter only for Stack;
   Transition duration(). All validated against RcppOTIO.
 
-# rotio 0.0.2.20 (dev)
+# rotio 0.0.2.20
 
 ## Fixes: flatten length-normalization
 
@@ -95,14 +101,14 @@
   filters disabled tracks. `track_trimmed_to_range` mirrors the OTIO source. Found
   by reading OpenTimelineIO C++ source directly.
 
-# rotio 0.0.2.19 (dev)
+# rotio 0.0.2.19
 
 ## Fixes: transition parity in trim and flatten
 
 * `track_trimmed_to_range` keeps/drops/errors transitions correctly; `flatten_stack`
   is gap-filling and preserves transitions. Validated against RcppOTIO.
 
-# rotio 0.0.2.18 (dev)
+# rotio 0.0.2.18
 
 ## Fixes: Stack parallel semantics + transitions in algorithms
 
@@ -110,14 +116,14 @@
   the max child span); track_trimmed_to_range and flatten_stack handle tracks
   with transitions. Validated against RcppOTIO.
 
-# rotio 0.0.2.17 (dev)
+# rotio 0.0.2.17
 
 ## Fixes: ImageSequenceReference parity (round 2)
 
 * `end_frame` correct for non-divisible durations; `frame_for_time` errors out of
   range; negative image numbers extrapolate (no error); signed zero-padding.
 
-# rotio 0.0.2.16 (dev)
+# rotio 0.0.2.16
 
 ## Fixes: coordinate model (transitions, tracks, rates)
 
@@ -126,7 +132,7 @@
   `flatten_stack` honours `enabled`; `visible`/`overlapping` corrected. Validated
   against RcppOTIO.
 
-# rotio 0.0.2.15 (dev)
+# rotio 0.0.2.15
 
 ## Fixes: ImageSequenceReference parity
 
@@ -135,7 +141,7 @@
   no zero-padding when `frame_zero_padding == 0`, and `frame_for_time` (the
   ImageSequenceReference method). Validated against RcppOTIO.
 
-# rotio 0.0.2.14 (dev)
+# rotio 0.0.2.14
 
 ## Phase 4 of full OTIO parity: composition coordinate model
 
@@ -144,7 +150,7 @@
   `is_equivalent_to`, `visible`, `overlapping`, `track_trimmed_to_range`, and
   `flatten_stack` -- positions from gaps + child order, validated against RcppOTIO.
 
-# rotio 0.0.2.13 (dev)
+# rotio 0.0.2.13
 
 ## Fixes: time-model rate fidelity
 
@@ -154,7 +160,7 @@
   are faithful for non-integer and drop-frame rates; `from_time_string` keeps the
   fractional value. Validated against RcppOTIO (value AND rate).
 
-# rotio 0.0.2.12 (dev)
+# rotio 0.0.2.12
 
 ## Phase 3 of full OTIO parity: object surface
 
@@ -163,7 +169,7 @@
   `Transition` (composable), and `TimeEffect`/`FreezeFrame` -- JSON-shape and
   behavior matched to RcppOTIO.
 
-# rotio 0.0.2.11 (dev)
+# rotio 0.0.2.11
 
 ## Phase 2 of full OTIO parity: time model
 
@@ -173,7 +179,7 @@
   `clamped`, `to_timecode`/`from_timecode`, `to_time_string`/`from_time_string`,
   and `TimeTransform`.
 
-# rotio 0.0.2.10 (dev)
+# rotio 0.0.2.10
 
 ## Phase 1 of full OTIO parity: environment-backed core
 
@@ -189,7 +195,7 @@
   value-semantics sugar over the mutating core, so existing callers (licuadora)
   are unaffected. Serialized OTIO JSON is unchanged (still RcppOTIO-equivalent).
 
-# rotio 0.0.2.9 (dev)
+# rotio 0.0.2.9
 
 ## New: OTIO effects
 
@@ -200,7 +206,7 @@
   and are accepted by the real OTIO library via `RcppOTIO`. This is the surface the
   blendR bridge uses to carry speed (`LinearTimeWarp`) and Blender compositing.
 
-# rotio 0.0.2.8 (dev)
+# rotio 0.0.2.8
 
 ## Rewrite: pure-R OpenTimelineIO ("rotiolite")
 
@@ -231,7 +237,7 @@
   the driver registry, the `timeline.md` Markdown carrier, and the old `otio_*`
   Rcpp object/ time wrappers.
 
-# rotio 0.0.2.7 (dev)
+# rotio 0.0.2.7
 
 ## New: generic clip effects (clone-based)
 
@@ -252,7 +258,7 @@
   (an OTIO `LinearTimeWarp`) is unchanged and lists alongside generic effects in
   `clip_effects()`.
 
-# rotio 0.0.2.6 (dev)
+# rotio 0.0.2.6
 
 ## Changes
 
@@ -275,7 +281,7 @@
   scalar-table rebuild can't carry arbitrary per-clip effects), which lands in
   its own PR. They error with a pointer for now.
 
-# rotio 0.0.2.5 (dev)
+# rotio 0.0.2.5
 
 ## New verbs
 
@@ -291,7 +297,7 @@ in the gap model):
 * `clip_duplicate()` - copy a clip to a new position (defaults to right after
   the original).
 
-# rotio 0.0.2.4 (dev)
+# rotio 0.0.2.4
 
 ## Changes
 
@@ -310,7 +316,7 @@ in the gap model):
   -->` state block; `inst/schema/SEQUENCE_SCHEMA.md` -> `TIMELINE_SCHEMA.md`.
 * No behaviour change. (blendR's driver bridge picks up the new names in PR 5.)
 
-# rotio 0.0.2.3 (dev)
+# rotio 0.0.2.3
 
 ## Changes
 
@@ -344,7 +350,7 @@ in the gap model):
   `speed != 1` error with a pointer to PR 4; they migrate to OTIO Effects /
   `LinearTimeWarp` / per-clip metadata.
 
-# rotio 0.0.2.2 (dev)
+# rotio 0.0.2.2
 
 ## Changes
 
@@ -364,7 +370,7 @@ in the gap model):
 * The pure-R `rational_time()`/`new_sequence()` model and `otio_time()` are
   unchanged. The user-facing verb layer migrates onto these objects in PR 3.
 
-# rotio 0.0.2.1 (dev)
+# rotio 0.0.2.1
 
 ## Changes
 

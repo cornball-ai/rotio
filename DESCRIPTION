@@ -16,7 +16,7 @@ Description: A dependency-light 'OpenTimelineIO' (OTIO)
     canonical '.otio' files through 'jsonlite'. The optional 'RcppOTIO'
     package validates output against the real 'OpenTimelineIO' C++
     library. No compiled code.
-License: MIT + file LICENSE
+License: Apache License (== 2.0)
 URL: https://github.com/cornball-ai/rotio
 BugReports: https://github.com/cornball-ai/rotio/issues
 Depends: R (>= 4.4.0)

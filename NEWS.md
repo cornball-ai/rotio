@@ -1,5 +1,7 @@
 # rotio 0.0.2.32 (dev)
 
+* Relicensed from MIT to Apache License 2.0 to match upstream
+  OpenTimelineIO.
 * CRAN pre-submission pass: single-quote 'OpenTimelineIO' and add its URL in
   DESCRIPTION, add URL/BugReports, fix the maintainer email, and declare
   `Additional_repositories` (cornball-ai drat) so the suggested RcppOTIO

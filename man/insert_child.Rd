@@ -18,3 +18,9 @@ insert_child(x, index, child)
 \description{
 Insert a child at a 1-based position (in place)
 }
+\examples{
+trk <- Track("V1")
+append_child(trk, Clip("b"))
+insert_child(trk, 1, Clip("a"))
+name(children(trk)[[1]])
+}

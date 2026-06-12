@@ -22,6 +22,10 @@
 #'
 #' @param x An item (clip, gap).
 #' @return A \code{\link{TimeRange}}.
+#' @examples
+#' cl <- Clip("a",
+#'     source_range = TimeRange(RationalTime(0, 24), RationalTime(48, 24)))
+#' trimmed_range(cl)
 #' @export
 trimmed_range <- function(x) {
     if (!is.null(x$source_range)) {
@@ -37,6 +41,12 @@ trimmed_range <- function(x) {
 #'
 #' @param x An item with a parent.
 #' @return A \code{\link{TimeRange}} in the parent's coordinates.
+#' @examples
+#' trk <- Track("V1")
+#' cl <- Clip("a",
+#'     source_range = TimeRange(RationalTime(0, 24), RationalTime(48, 24)))
+#' append_child(trk, cl)
+#' range_in_parent(cl)
 #' @export
 range_in_parent <- function(x) {
     p <- parent(x)
@@ -85,6 +95,13 @@ range_in_parent <- function(x) {
 #' Range of an item within its parent, trimmed by the parent's source range
 #' @param x An item with a parent.
 #' @return A \code{\link{TimeRange}}.
+#' @examples
+#' trk <- Track("V1",
+#'     source_range = TimeRange(RationalTime(12, 24), RationalTime(24, 24)))
+#' cl <- Clip("a",
+#'     source_range = TimeRange(RationalTime(0, 24), RationalTime(48, 24)))
+#' append_child(trk, cl)
+#' trimmed_range_in_parent(cl)
 #' @export
 trimmed_range_in_parent <- function(x) {
     ri <- range_in_parent(x)
@@ -111,6 +128,12 @@ trimmed_range_in_parent <- function(x) {
 #' Visible range of an item (including adjacent transitions)
 #' @param x An item with a parent.
 #' @return A \code{\link{TimeRange}}.
+#' @examples
+#' trk <- Track("V1")
+#' cl <- Clip("a",
+#'     source_range = TimeRange(RationalTime(0, 24), RationalTime(48, 24)))
+#' append_child(trk, cl)
+#' visible_range(cl)
 #' @export
 visible_range <- function(x) {
     vr <- trimmed_range(x)
@@ -135,6 +158,10 @@ visible_range <- function(x) {
 #' Video / audio tracks of a timeline
 #' @param x A \code{\link{Timeline}}.
 #' @return A list of \code{\link{Track}}s of the matching kind.
+#' @examples
+#' tl <- add_track(Timeline("demo"), Track("V1", kind = "Video"))
+#' video_tracks(tl)
+#' audio_tracks(tl)
 #' @export
 video_tracks <- function(x) {
     Filter(function(t) identical(kind(t), "Video"), children(tracks(x)))
@@ -149,6 +176,12 @@ audio_tracks <- function(x) {
 #' Global start time of a timeline
 #' @param x A \code{\link{Timeline}}.
 #' @param value A \code{\link{RationalTime}} or \code{NULL}.
+#' @return The timeline's global start time (a \code{\link{RationalTime}} or
+#'   \code{NULL}); the setter returns \code{x}.
+#' @examples
+#' tl <- Timeline("demo")
+#' global_start_time(tl) <- RationalTime(0, 24)
+#' global_start_time(tl)
 #' @export
 global_start_time <- function(x) x$global_start_time
 
@@ -164,6 +197,9 @@ global_start_time <- function(x) x$global_start_time
 #' Structural equality, compared via canonical OTIO JSON.
 #'
 #' @param x,other OTIO objects.
+#' @return Logical scalar.
+#' @examples
+#' is_equivalent_to(Timeline("a"), Timeline("a"))
 #' @export
 is_equivalent_to <- function(x, other) {
     is_otio(other) && identical(to_json_string(x), to_json_string(other))
@@ -175,6 +211,10 @@ is_equivalent_to <- function(x, other) {
 #' when enabled (matching OTIO).
 #'
 #' @param x An item.
+#' @return Logical scalar.
+#' @examples
+#' visible(Gap(RationalTime(24, 24)))
+#' visible(Clip("a", ExternalReference("a.mp4")))
 #' @export
 visible <- function(x) {
     if (inherits(x, "Gap")) {
@@ -192,6 +232,9 @@ visible <- function(x) {
 #' \code{FALSE}.
 #'
 #' @param x An item.
+#' @return Logical scalar.
+#' @examples
+#' overlapping(Clip("a", ExternalReference("a.mp4")))
 #' @export
 overlapping <- function(x) inherits(x, "Transition")
 
@@ -204,6 +247,11 @@ overlapping <- function(x) inherits(x, "Transition")
 #' @param in_track A \code{\link{Track}}.
 #' @param trim_range A \code{\link{TimeRange}} in track coordinates.
 #' @return A new \code{\link{Track}}.
+#' @examples
+#' trk <- add_child(Track("V1"), Clip("a",
+#'     source_range = TimeRange(RationalTime(0, 24), RationalTime(48, 24))))
+#' track_trimmed_to_range(trk,
+#'     TimeRange(RationalTime(0, 24), RationalTime(24, 24)))
 #' @export
 track_trimmed_to_range <- function(in_track, trim_range) {
     # Work in seconds so the child source rate is honoured (no truncation).
@@ -299,6 +347,10 @@ track_trimmed_to_range <- function(in_track, trim_range) {
 #' @param x A \code{\link{Stack}} or a list of \code{\link{Track}}s
 #'   (bottom-to-top).
 #' @return A flattened \code{\link{Track}}.
+#' @examples
+#' trk <- add_child(Track("V1"), Clip("a",
+#'     source_range = TimeRange(RationalTime(0, 24), RationalTime(48, 24))))
+#' flatten_stack(list(trk))
 #' @export
 flatten_stack <- function(x) {
     if (inherits(x, "Stack")) {

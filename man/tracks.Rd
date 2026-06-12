@@ -19,3 +19,7 @@ The timeline's \code{\link{Stack}}.
 \description{
 The track stack of a timeline
 }
+\examples{
+tl <- add_track(Timeline("demo"), Track("V1", kind = "Video"))
+length(children(tracks(tl)))
+}

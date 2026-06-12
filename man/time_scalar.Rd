@@ -13,6 +13,13 @@ time_scalar(x) <- value
 
 \item{value}{New time scalar.}
 }
+\value{
+The numeric time scalar; the setter returns \code{x}.
+}
 \description{
 Time scalar of a LinearTimeWarp
+}
+\examples{
+w <- LinearTimeWarp(effect_name = "LinearTimeWarp", time_scalar = 2)
+time_scalar(w)
 }

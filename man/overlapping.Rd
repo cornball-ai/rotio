@@ -8,7 +8,13 @@ overlapping(x)
 \arguments{
 \item{x}{An item.}
 }
+\value{
+Logical scalar.
+}
 \description{
 Only transitions overlap (they span a cut); everything else returns
 \code{FALSE}.
+}
+\examples{
+overlapping(Clip("a", ExternalReference("a.mp4")))
 }

@@ -34,3 +34,7 @@ An \code{ImageSequenceReference}.
 \description{
 A numbered image sequence (e.g. \code{frame.0001.exr}).
 }
+\examples{
+ImageSequenceReference("file:///frames", "frame.", ".exr",
+                       frame_zero_padding = 4, rate = 24)
+}

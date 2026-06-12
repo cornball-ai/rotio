@@ -47,6 +47,9 @@
 #'
 #' @param a,b \code{RationalTime}s.
 #' @param delta Tolerance in \code{b}'s rate units (default 0).
+#' @return Logical scalar.
+#' @examples
+#' almost_equal(RationalTime(24, 24), RationalTime(48, 48))
 #' @export
 almost_equal <- function(a, b, delta = 0) {
     abs(.value_rescaled(a, b$rate) - b$value) <= delta
@@ -60,6 +63,10 @@ almost_equal <- function(a, b, delta = 0) {
 #'
 #' @param x A \code{TimeRange}.
 #' @return A \code{RationalTime}.
+#' @examples
+#' tr <- TimeRange(RationalTime(0, 24), RationalTime(48, 24))
+#' end_time_exclusive(tr)
+#' end_time_inclusive(tr)
 #' @export
 end_time_exclusive <- function(x) {
     if (!is_time_range(x)) {
@@ -97,6 +104,8 @@ end_time_inclusive <- function(x) {
 #' @param start_time A \code{RationalTime}.
 #' @param end_time_exclusive A \code{RationalTime}.
 #' @return A \code{TimeRange}.
+#' @examples
+#' range_from_start_end_time(RationalTime(0, 24), RationalTime(48, 24))
 #' @export
 range_from_start_end_time <- function(start_time, end_time_exclusive) {
     TimeRange(start_time, .dur_from_se(start_time, end_time_exclusive))
@@ -111,6 +120,10 @@ range_from_start_end_time <- function(start_time, end_time_exclusive) {
 #' @param tr A \code{TimeRange}.
 #' @param other A \code{RationalTime} or \code{TimeRange}.
 #' @param epsilon_s Tolerance in seconds.
+#' @return Logical scalar.
+#' @examples
+#' tr <- TimeRange(RationalTime(0, 24), RationalTime(48, 24))
+#' contains(tr, RationalTime(12, 24))
 #' @export
 contains <- function(tr, other, epsilon_s = .EPS) {
     ts <- to_seconds(tr$start_time)
@@ -127,6 +140,11 @@ contains <- function(tr, other, epsilon_s = .EPS) {
 #' Do two TimeRanges intersect?
 #' @param tr,other \code{TimeRange}s.
 #' @param epsilon_s Tolerance in seconds.
+#' @return Logical scalar.
+#' @examples
+#' a <- TimeRange(RationalTime(0, 24), RationalTime(48, 24))
+#' b <- TimeRange(RationalTime(24, 24), RationalTime(48, 24))
+#' intersects(a, b)
 #' @export
 intersects <- function(tr, other, epsilon_s = .EPS) {
     ts <- to_seconds(tr$start_time) ; te <- to_seconds(end_time_exclusive(tr))
@@ -137,6 +155,11 @@ intersects <- function(tr, other, epsilon_s = .EPS) {
 #' Do two TimeRanges overlap (cross without containment)?
 #' @param tr,other \code{TimeRange}s.
 #' @param epsilon_s Tolerance in seconds.
+#' @return Logical scalar.
+#' @examples
+#' a <- TimeRange(RationalTime(0, 24), RationalTime(48, 24))
+#' b <- TimeRange(RationalTime(24, 24), RationalTime(48, 24))
+#' overlaps(a, b)
 #' @export
 overlaps <- function(tr, other, epsilon_s = .EPS) {
     ts <- to_seconds(tr$start_time) ; te <- to_seconds(end_time_exclusive(tr))
@@ -147,6 +170,10 @@ overlaps <- function(tr, other, epsilon_s = .EPS) {
 #' Smallest TimeRange covering two ranges
 #' @param tr,other \code{TimeRange}s.
 #' @return A \code{TimeRange}.
+#' @examples
+#' a <- TimeRange(RationalTime(0, 24), RationalTime(48, 24))
+#' b <- TimeRange(RationalTime(24, 24), RationalTime(48, 24))
+#' extended_by(a, b)
 #' @export
 extended_by <- function(tr, other) {
     new_start <- .rt_min(tr$start_time, other$start_time)
@@ -161,6 +188,11 @@ extended_by <- function(tr, other) {
 #'
 #' @param tr The bounding \code{TimeRange}.
 #' @param other A \code{RationalTime} or \code{TimeRange} to clamp.
+#' @return A clamped \code{RationalTime} or \code{TimeRange}, matching
+#'   \code{other}.
+#' @examples
+#' tr <- TimeRange(RationalTime(0, 24), RationalTime(48, 24))
+#' clamped(tr, RationalTime(96, 24))
 #' @export
 clamped <- function(tr, other) {
     if (!is_time_range(tr)) {
@@ -188,6 +220,10 @@ clamped <- function(tr, other) {
 #' @param drop_frame Drop-frame timecode. \code{NULL} (default) infers it from the
 #'   rate (on for 30000/1001 and 60000/1001), matching opentime's
 #'   \code{InferFromRate}; pass \code{TRUE}/\code{FALSE} to force.
+#' @return Character scalar, the timecode as \code{"HH:MM:SS:FF"} (or
+#'   \code{";FF"} for drop-frame).
+#' @examples
+#' to_timecode(RationalTime(86400, 24))
 #' @export
 to_timecode <- function(x, rate = NULL, drop_frame = NULL) {
     if (is.null(rate)) {
@@ -231,6 +267,9 @@ to_timecode <- function(x, rate = NULL, drop_frame = NULL) {
 #'
 #' @param timecode A \code{"HH:MM:SS:FF"} (or \code{";FF"} for drop-frame) string.
 #' @param rate Timecode rate.
+#' @return A \code{RationalTime}.
+#' @examples
+#' from_timecode("01:00:00:00", 24)
 #' @export
 from_timecode <- function(timecode, rate) {
     drop <- grepl(";", timecode)
@@ -247,6 +286,9 @@ from_timecode <- function(timecode, rate) {
 
 #' Time string ("HH:MM:SS.sss") for a RationalTime
 #' @param x A \code{RationalTime}.
+#' @return Character scalar, the time as \code{"HH:MM:SS.sss"}.
+#' @examples
+#' to_time_string(RationalTime(90, 24))
 #' @export
 to_time_string <- function(x) {
     s <- to_seconds(x)
@@ -272,6 +314,9 @@ to_time_string <- function(x) {
 #'
 #' @param time_string A time string.
 #' @param rate Rate (fps).
+#' @return A \code{RationalTime}.
+#' @examples
+#' from_time_string("00:00:03.75", 24)
 #' @export
 from_time_string <- function(time_string, rate) {
     parts <- strsplit(time_string, ":")[[1]]
@@ -293,6 +338,8 @@ from_time_string <- function(time_string, rate) {
 #' @param scale Time scale (default 1).
 #' @param rate Target rate, or -1 to preserve (default -1).
 #' @return A \code{TimeTransform}.
+#' @examples
+#' TimeTransform(RationalTime(12, 24), scale = 2)
 #' @export
 TimeTransform <- function(offset = RationalTime(0, 1), scale = 1, rate = -1) {
     if (!is_rational_time(offset)) {

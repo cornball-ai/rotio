@@ -14,3 +14,8 @@ A \code{TimeRange}.
 \description{
 Smallest TimeRange covering two ranges
 }
+\examples{
+a <- TimeRange(RationalTime(0, 24), RationalTime(48, 24))
+b <- TimeRange(RationalTime(24, 24), RationalTime(48, 24))
+extended_by(a, b)
+}

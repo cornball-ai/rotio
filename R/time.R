@@ -50,6 +50,10 @@ TimeRange <- function(start_time, duration) {
 
 #' Is x a RationalTime / TimeRange?
 #' @param x Object to test.
+#' @return Logical scalar.
+#' @examples
+#' is_rational_time(RationalTime(24, 24))
+#' is_time_range(TimeRange(RationalTime(0, 24), RationalTime(48, 24)))
 #' @export
 is_rational_time <- function(x) inherits(x, "RationalTime")
 
@@ -59,6 +63,10 @@ is_time_range <- function(x) inherits(x, "TimeRange")
 
 #' RationalTime value and rate
 #' @param x A \code{RationalTime}.
+#' @return Numeric scalar, the time's value or rate.
+#' @examples
+#' value(RationalTime(180, 30))
+#' rate(RationalTime(180, 30))
 #' @export
 value <- function(x) {
     if (!is_rational_time(x)) {
@@ -78,6 +86,11 @@ rate <- function(x) {
 
 #' TimeRange start_time and duration
 #' @param x A \code{TimeRange}.
+#' @return A \code{RationalTime}.
+#' @examples
+#' tr <- TimeRange(RationalTime(0, 24), RationalTime(48, 24))
+#' start_time(tr)
+#' duration(tr)
 #' @export
 start_time <- function(x) {
     if (!is_time_range(x)) {
@@ -101,6 +114,9 @@ duration <- function(x) {
 
 #' Convert a RationalTime to seconds
 #' @param x A \code{RationalTime}.
+#' @return Numeric scalar, the time in seconds.
+#' @examples
+#' to_seconds(RationalTime(48, 24))
 #' @export
 to_seconds <- function(x) {
     if (!is_rational_time(x)) {
@@ -112,6 +128,9 @@ to_seconds <- function(x) {
 #' Construct a RationalTime from seconds at a rate
 #' @param seconds Numeric seconds.
 #' @param rate Rate (fps).
+#' @return A \code{RationalTime}.
+#' @examples
+#' from_seconds(1.5, 24)
 #' @export
 from_seconds <- function(seconds, rate = 1) {
     RationalTime(as.numeric(seconds) * as.numeric(rate), rate)
@@ -125,6 +144,10 @@ from_seconds <- function(seconds, rate = 1) {
 #'
 #' @param x A \code{RationalTime}.
 #' @param rate Optional target rate to rescale to first.
+#' @return Integer scalar, the frame number.
+#' @examples
+#' to_frames(from_seconds(1.5, 24))
+#' to_frames(RationalTime(48, 24), 48)
 #' @export
 to_frames <- function(x, rate = NULL) {
     if (!is_rational_time(x)) {
@@ -139,6 +162,9 @@ to_frames <- function(x, rate = NULL) {
 #' Construct a RationalTime from a frame number at a rate
 #' @param frame Integer frame number.
 #' @param rate Rate (fps).
+#' @return A \code{RationalTime}.
+#' @examples
+#' from_frames(48, 24)
 #' @export
 from_frames <- function(frame, rate) {
     RationalTime(trunc(as.numeric(frame)), rate)
@@ -147,6 +173,9 @@ from_frames <- function(frame, rate) {
 #' Rescale a RationalTime to a new rate
 #' @param x A \code{RationalTime}.
 #' @param new_rate Target rate (fps).
+#' @return A \code{RationalTime} at \code{new_rate}.
+#' @examples
+#' rescaled_to(RationalTime(24, 24), 48)
 #' @export
 rescaled_to <- function(x, new_rate) {
     if (!is_rational_time(x)) {

@@ -22,3 +22,10 @@ Removes the item covering \code{time}; if \code{fill}, replaces it with a gap
 (or \code{fill_template}) of the same range, otherwise the neighbours
 concatenate. Mutates \code{composition} in place.
 }
+\examples{
+trk <- Track("V1")
+append_child(trk, Clip("a", source_range = TimeRange(RationalTime(0, 24),
+                                                     RationalTime(48, 24))))
+remove(trk, RationalTime(0, 24))
+class(children(trk)[[1]])
+}

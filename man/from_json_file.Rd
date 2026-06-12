@@ -14,3 +14,9 @@ The reconstructed OTIO object, with parent pointers wired.
 \description{
 Read an OTIO JSON file into the object model
 }
+\examples{
+f <- tempfile(fileext = ".otio")
+to_json_file(Timeline("demo"), f)
+name(from_json_file(f))
+unlink(f)
+}

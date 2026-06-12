@@ -28,6 +28,15 @@ frame_zero_padding(x)
 
 \item{value}{New value.}
 }
+\value{
+The stored field value; the setter returns \code{x}.
+}
 \description{
 ImageSequenceReference fields
+}
+\examples{
+isr <- ImageSequenceReference("file:///frames", "frame.", ".exr",
+                              frame_zero_padding = 4, rate = 24)
+target_url_base(isr)
+start_frame(isr)
 }

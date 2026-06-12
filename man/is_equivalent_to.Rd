@@ -8,6 +8,12 @@ is_equivalent_to(x, other)
 \arguments{
 \item{x,other}{OTIO objects.}
 }
+\value{
+Logical scalar.
+}
 \description{
 Structural equality, compared via canonical OTIO JSON.
+}
+\examples{
+is_equivalent_to(Timeline("a"), Timeline("a"))
 }

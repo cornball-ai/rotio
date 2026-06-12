@@ -13,6 +13,14 @@ metadata(x) <- value
 
 \item{value}{A named list.}
 }
+\value{
+The object's metadata as a named list (possibly empty).
+}
 \description{
 Get or set object metadata
+}
+\examples{
+cl <- Clip("a")
+metadata(cl) <- list(note = "take 2")
+metadata(cl)
 }

@@ -13,6 +13,13 @@ parameters(x) <- value
 
 \item{value}{A named list of parameters.}
 }
+\value{
+A named list of generator parameters; the setter returns \code{x}.
+}
 \description{
 Parameters of a GeneratorReference
+}
+\examples{
+g <- GeneratorReference("bars", parameters = list(width = 1920))
+parameters(g)
 }

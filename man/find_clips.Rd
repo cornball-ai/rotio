@@ -14,3 +14,8 @@ A list of \code{Clip} objects.
 \description{
 All clips within an object (recursive)
 }
+\examples{
+trk <- Track("V1")
+append_child(trk, Clip("a"))
+length(find_clips(trk))
+}

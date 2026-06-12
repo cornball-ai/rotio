@@ -19,3 +19,8 @@ A \code{RationalTime}.
 last whole frame; for a span of one frame or less it is the start time
 (matching opentime).
 }
+\examples{
+tr <- TimeRange(RationalTime(0, 24), RationalTime(48, 24))
+end_time_exclusive(tr)
+end_time_inclusive(tr)
+}

@@ -18,3 +18,7 @@ A \code{SerializableCollection}.
 \description{
 A flat, named collection of OTIO objects (not a composition).
 }
+\examples{
+col <- SerializableCollection("shots", list(Clip("a"), Clip("b")))
+length(children(col))
+}

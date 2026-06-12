@@ -14,3 +14,10 @@ A \code{\link{TimeRange}}.
 \description{
 Visible range of an item (including adjacent transitions)
 }
+\examples{
+trk <- Track("V1")
+cl <- Clip("a",
+    source_range = TimeRange(RationalTime(0, 24), RationalTime(48, 24)))
+append_child(trk, cl)
+visible_range(cl)
+}

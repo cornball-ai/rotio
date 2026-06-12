@@ -14,3 +14,8 @@ A list of child OTIO objects, in order.
 \description{
 Children of a composition or collection
 }
+\examples{
+trk <- Track("V1")
+append_child(trk, Clip("a"))
+children(trk)
+}

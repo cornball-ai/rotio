@@ -5,6 +5,12 @@
 \usage{
 default_media_key()
 }
+\value{
+The string \code{"DEFAULT_MEDIA"}.
+}
 \description{
 The default media reference key (\code{"DEFAULT_MEDIA"})
+}
+\examples{
+default_media_key()
 }

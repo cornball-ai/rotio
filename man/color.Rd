@@ -13,6 +13,14 @@ color(x) <- value
 
 \item{value}{A color value (or \code{NULL}).}
 }
+\value{
+The item's color value, or \code{NULL} if unset.
+}
 \description{
 Get or set an item's display color
+}
+\examples{
+cl <- Clip("a")
+color(cl) <- "RED"
+color(cl)
 }

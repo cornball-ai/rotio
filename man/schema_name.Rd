@@ -15,3 +15,6 @@ A character scalar.
 The schema type (without the version suffix); unrecognised types report
 \code{"UnknownSchema"} (matching OTIO).
 }
+\examples{
+schema_name(Clip("shot1"))
+}

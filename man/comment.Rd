@@ -13,6 +13,13 @@ comment(x) <- value
 
 \item{value}{New comment.}
 }
+\value{
+The comment string; the setter returns \code{x}.
+}
 \description{
 Comment of a Marker
+}
+\examples{
+m <- Marker("note", comment = "check color")
+comment(m)
 }

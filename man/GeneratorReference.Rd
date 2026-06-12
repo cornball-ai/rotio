@@ -23,3 +23,6 @@ A \code{GeneratorReference}.
 \description{
 Procedurally-generated media (color bars, solids, ...).
 }
+\examples{
+GeneratorReference("bars", generator_kind = "SMPTEBars")
+}

@@ -18,3 +18,9 @@ and exclusive end.}
 Adjusts the item's \code{source_range} start by \code{delta_in} and exclusive
 end by \code{delta_out} without moving any other item. Mutates in place.
 }
+\examples{
+cl <- Clip("a", source_range = TimeRange(RationalTime(0, 24),
+                                         RationalTime(48, 24)))
+ripple(cl, RationalTime(0, 24), RationalTime(12, 24))
+source_range(cl)
+}

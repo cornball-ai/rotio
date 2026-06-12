@@ -10,7 +10,15 @@ clamped(tr, other)
 
 \item{other}{A \code{RationalTime} or \code{TimeRange} to clamp.}
 }
+\value{
+A clamped \code{RationalTime} or \code{TimeRange}, matching
+  \code{other}.
+}
 \description{
 \code{tr} is the bounding range; \code{other} is clamped into it (opentime
 \code{TimeRange::clamped}).
+}
+\examples{
+tr <- TimeRange(RationalTime(0, 24), RationalTime(48, 24))
+clamped(tr, RationalTime(96, 24))
 }

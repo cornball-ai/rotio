@@ -10,6 +10,12 @@ from_timecode(timecode, rate)
 
 \item{rate}{Timecode rate.}
 }
+\value{
+A \code{RationalTime}.
+}
 \description{
 A \code{;} frame separator is treated as drop-frame.
+}
+\examples{
+from_timecode("01:00:00:00", 24)
 }

@@ -13,6 +13,14 @@ enabled(x) <- value
 
 \item{value}{\code{TRUE} or \code{FALSE}.}
 }
+\value{
+\code{TRUE} if the object is enabled, else \code{FALSE}.
+}
 \description{
 A disabled clip/track is muted; a disabled effect is bypassed.
+}
+\examples{
+cl <- Clip("a")
+enabled(cl) <- FALSE
+enabled(cl)
 }

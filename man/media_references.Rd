@@ -8,6 +8,13 @@ media_references(x)
 \arguments{
 \item{x}{A \code{\link{Clip}}.}
 }
+\value{
+The clip's named list of media references.
+}
 \description{
 Media references of a clip
+}
+\examples{
+cl <- Clip("a", ExternalReference("a.mp4"))
+names(media_references(cl))
 }

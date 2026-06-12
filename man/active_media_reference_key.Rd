@@ -13,6 +13,13 @@ active_media_reference_key(x) <- value
 
 \item{value}{New active key.}
 }
+\value{
+The active media reference key, a character string.
+}
 \description{
 Active media reference key of a clip
+}
+\examples{
+cl <- Clip("a", ExternalReference("a.mp4"))
+active_media_reference_key(cl)
 }

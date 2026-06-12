@@ -51,6 +51,9 @@ add_track <- function(timeline, track) {
 #' @param x A \code{\link{Timeline}}.
 #' @param value A \code{\link{Stack}}.
 #' @return The timeline's \code{\link{Stack}}.
+#' @examples
+#' tl <- add_track(Timeline("demo"), Track("V1", kind = "Video"))
+#' length(children(tracks(tl)))
 #' @export
 tracks <- function(x) {
     if (!is_timeline(x)) {
@@ -69,6 +72,11 @@ tracks <- function(x) {
 #' Get or set object metadata
 #' @param x An OTIO object.
 #' @param value A named list.
+#' @return The object's metadata as a named list (possibly empty).
+#' @examples
+#' cl <- Clip("a")
+#' metadata(cl) <- list(note = "take 2")
+#' metadata(cl)
 #' @export
 metadata <- function(x) x$metadata
 
@@ -82,6 +90,11 @@ metadata <- function(x) x$metadata
 #' Get or set the name of an OTIO object
 #' @param x An OTIO object.
 #' @param value New name.
+#' @return The object's name, a character string.
+#' @examples
+#' cl <- Clip("a")
+#' name(cl) <- "b"
+#' name(cl)
 #' @export
 name <- function(x) x$name
 
@@ -95,6 +108,10 @@ name <- function(x) x$name
 #' Get or set a track's kind
 #' @param x A \code{\link{Track}}.
 #' @param value \code{"Video"} or \code{"Audio"}.
+#' @return The track kind, \code{"Video"} or \code{"Audio"}.
+#' @examples
+#' trk <- Track("A1", kind = "Audio")
+#' kind(trk)
 #' @export
 kind <- function(x) x$kind
 
@@ -108,6 +125,11 @@ kind <- function(x) x$kind
 #' Get or set an item's source range
 #' @param x An item (clip, gap, track).
 #' @param value A \code{\link{TimeRange}}.
+#' @return The item's \code{\link{TimeRange}}, or \code{NULL} if unset.
+#' @examples
+#' cl <- Clip("a")
+#' source_range(cl) <- TimeRange(RationalTime(0, 24), RationalTime(48, 24))
+#' source_range(cl)
 #' @export
 source_range <- function(x) x$source_range
 
@@ -124,6 +146,11 @@ source_range <- function(x) x$source_range
 #'
 #' @param x An object with an \code{enabled} field.
 #' @param value \code{TRUE} or \code{FALSE}.
+#' @return \code{TRUE} if the object is enabled, else \code{FALSE}.
+#' @examples
+#' cl <- Clip("a")
+#' enabled(cl) <- FALSE
+#' enabled(cl)
 #' @export
 enabled <- function(x) x$enabled
 
@@ -137,6 +164,11 @@ enabled <- function(x) x$enabled
 #' Get or set an item's display color
 #' @param x An item or composition.
 #' @param value A color value (or \code{NULL}).
+#' @return The item's color value, or \code{NULL} if unset.
+#' @examples
+#' cl <- Clip("a")
+#' color(cl) <- "RED"
+#' color(cl)
 #' @export
 color <- function(x) x$color
 
@@ -150,6 +182,10 @@ color <- function(x) x$color
 #' Active media reference of a clip
 #' @param x A \code{\link{Clip}}.
 #' @param value A media reference.
+#' @return The clip's active media reference object.
+#' @examples
+#' cl <- Clip("a", ExternalReference("a.mp4"))
+#' media_reference(cl)
 #' @export
 media_reference <- function(x) {
     if (!inherits(x, "Clip")) {
@@ -175,6 +211,12 @@ media_reference <- function(x) {
 #' Target URL of a clip or external reference
 #' @param x A \code{\link{Clip}} or \code{\link{ExternalReference}}.
 #' @param value New URL.
+#' @return The target URL string, or \code{NULL} if the active reference has
+#'   no URL.
+#' @examples
+#' cl <- Clip("a", ExternalReference("a.mp4"))
+#' target_url(cl) <- "b.mp4"
+#' target_url(cl)
 #' @export
 target_url <- function(x) {
     if (inherits(x, "ExternalReference")) {

@@ -15,3 +15,9 @@ The bundle's OTIO object (typically a \code{\link{Timeline}}).
 Reads \code{<dir>/content.otio} into the object model. Media references stay
 relative to the bundle directory.
 }
+\examples{
+d <- tempfile("bundle")
+write_otiod(Timeline("demo"), d)
+name(read_otiod(d))
+unlink(d, recursive = TRUE)
+}

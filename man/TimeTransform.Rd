@@ -21,3 +21,6 @@ An offset/scale/rate transform (OTIO \code{TimeTransform}). Note: in RcppOTIO
 JSON; rotio gives it an \code{OTIO_SCHEMA} for its own (de)serialization,
 which is not verified against RcppOTIO JSON.
 }
+\examples{
+TimeTransform(RationalTime(12, 24), scale = 2)
+}

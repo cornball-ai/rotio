@@ -10,6 +10,12 @@ from_seconds(seconds, rate = 1)
 
 \item{rate}{Rate (fps).}
 }
+\value{
+A \code{RationalTime}.
+}
 \description{
 Construct a RationalTime from seconds at a rate
+}
+\examples{
+from_seconds(1.5, 24)
 }

@@ -10,6 +10,16 @@ is_parent_of(x, other)
 
 \item{other}{An OTIO object.}
 }
+\value{
+\code{TRUE} if \code{x} appears anywhere in \code{other}'s parent
+  chain, else \code{FALSE}.
+}
 \description{
 Is x an ancestor of other?
+}
+\examples{
+trk <- Track("V1")
+cl <- Clip("a")
+append_child(trk, cl)
+is_parent_of(trk, cl)
 }

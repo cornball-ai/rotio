@@ -24,6 +24,11 @@
 #' @param item An item (usually a clip).
 #' @param delta A \code{\link{RationalTime}} to slip by.
 #' @return \code{item}, invisibly.
+#' @examples
+#' cl <- Clip("a", source_range = TimeRange(RationalTime(0, 24),
+#'                                          RationalTime(48, 24)))
+#' slip(cl, RationalTime(6, 24))
+#' source_range(cl)
 #' @export
 slip <- function(item, delta) {
     range <- trimmed_range(item)
@@ -52,6 +57,11 @@ slip <- function(item, delta) {
 #' @param delta_in,delta_out \code{\link{RationalTime}} adjustments to the start
 #'   and exclusive end.
 #' @return \code{item}, invisibly.
+#' @examples
+#' cl <- Clip("a", source_range = TimeRange(RationalTime(0, 24),
+#'                                          RationalTime(48, 24)))
+#' ripple(cl, RationalTime(0, 24), RationalTime(12, 24))
+#' source_range(cl)
 #' @export
 ripple <- function(item, delta_in, delta_out) {
     range <- trimmed_range(item)
@@ -90,6 +100,13 @@ ripple <- function(item, delta_in, delta_out) {
 #' @param item An item (usually a clip).
 #' @param delta A \code{\link{RationalTime}} to slide by.
 #' @return \code{item}, invisibly.
+#' @examples
+#' trk <- Track("V1")
+#' append_child(trk, Gap(RationalTime(24, 24)))
+#' cl <- Clip("a", source_range = TimeRange(RationalTime(0, 24),
+#'                                          RationalTime(48, 24)))
+#' append_child(trk, cl)
+#' slide(cl, RationalTime(-6, 24))
 #' @export
 slide <- function(item, delta) {
     comp <- parent(item)
@@ -131,6 +148,13 @@ slide <- function(item, delta) {
 #' @param delta_in,delta_out \code{\link{RationalTime}} adjustments.
 #' @param fill_template Optional item to fill freed time with (default a gap).
 #' @return \code{item}, invisibly.
+#' @examples
+#' trk <- Track("V1")
+#' cl <- Clip("a", source_range = TimeRange(RationalTime(0, 24),
+#'                                          RationalTime(48, 24)))
+#' append_child(trk, cl)
+#' trim(cl, RationalTime(6, 24), RationalTime(0, 24))
+#' source_range(cl)
 #' @export
 trim <- function(item, delta_in, delta_out, fill_template = NULL) {
     comp <- parent(item)
@@ -193,6 +217,15 @@ trim <- function(item, delta_in, delta_out, fill_template = NULL) {
 #' @param item An item (usually a clip).
 #' @param delta_in,delta_out \code{\link{RationalTime}} adjustments.
 #' @return \code{item}, invisibly.
+#' @examples
+#' trk <- Track("V1")
+#' a <- Clip("a", source_range = TimeRange(RationalTime(0, 24),
+#'                                         RationalTime(24, 24)))
+#' b <- Clip("b", source_range = TimeRange(RationalTime(24, 24),
+#'                                         RationalTime(24, 24)))
+#' append_child(trk, a)
+#' append_child(trk, b)
+#' roll(b, RationalTime(-6, 24), RationalTime(0, 24))
 #' @export
 roll <- function(item, delta_in, delta_out) {
     comp <- parent(item)
@@ -306,6 +339,12 @@ roll <- function(item, delta_in, delta_out) {
 #' @param time A \code{\link{RationalTime}} to slice at.
 #' @param remove_transitions Remove transitions at \code{time} (default TRUE).
 #' @return \code{composition}, invisibly.
+#' @examples
+#' trk <- Track("V1")
+#' append_child(trk, Clip("a", source_range = TimeRange(RationalTime(0, 24),
+#'                                                      RationalTime(48, 24))))
+#' slice(trk, RationalTime(24, 24))
+#' length(children(trk))
 #' @export
 slice <- function(composition, time, remove_transitions = TRUE) {
     item <- .child_at_time(composition, time)
@@ -362,6 +401,12 @@ slice <- function(composition, time, remove_transitions = TRUE) {
 #' @param fill Fill the hole with a gap/template (default TRUE).
 #' @param fill_template Optional item to fill with (default a gap).
 #' @return \code{composition}, invisibly.
+#' @examples
+#' trk <- Track("V1")
+#' append_child(trk, Clip("a", source_range = TimeRange(RationalTime(0, 24),
+#'                                                      RationalTime(48, 24))))
+#' remove(trk, RationalTime(0, 24))
+#' class(children(trk)[[1]])
 #' @export
 remove <- function(composition, time, fill = TRUE, fill_template = NULL) {
     item <- .child_at_time(composition, time)
@@ -393,6 +438,14 @@ remove <- function(composition, time, fill = TRUE, fill_template = NULL) {
 #' @param remove_transitions Remove transitions at \code{time} (default TRUE).
 #' @param fill_template Optional gap template when appending past the end.
 #' @return \code{composition}, invisibly.
+#' @examples
+#' trk <- Track("V1")
+#' append_child(trk, Clip("a", source_range = TimeRange(RationalTime(0, 24),
+#'                                                      RationalTime(48, 24))))
+#' cl <- Clip("b", source_range = TimeRange(RationalTime(0, 24),
+#'                                          RationalTime(12, 24)))
+#' insert(cl, trk, RationalTime(24, 24))
+#' length(children(trk))
 #' @export
 insert <- function(item, composition, time, remove_transitions = TRUE,
                    fill_template = NULL) {
@@ -492,6 +545,13 @@ insert <- function(item, composition, time, remove_transitions = TRUE,
 #' @param remove_transitions Remove transitions within \code{range} (default TRUE).
 #' @param fill_template Optional gap template for holes.
 #' @return \code{composition}, invisibly.
+#' @examples
+#' trk <- Track("V1")
+#' append_child(trk, Gap(RationalTime(48, 24)))
+#' cl <- Clip("a", source_range = TimeRange(RationalTime(0, 24),
+#'                                          RationalTime(12, 24)))
+#' overwrite(cl, trk, TimeRange(RationalTime(12, 24), RationalTime(12, 24)))
+#' length(children(trk))
 #' @export
 overwrite <- function(item, composition, range, remove_transitions = TRUE,
                       fill_template = NULL) {
@@ -636,6 +696,13 @@ overwrite <- function(item, composition, range, remove_transitions = TRUE,
 #' @param track_time A \code{\link{RationalTime}} inside the gap to fill.
 #' @param reference_point One of \code{"Source"}, \code{"Sequence"}, \code{"Fit"}.
 #' @return \code{track}, invisibly.
+#' @examples
+#' trk <- Track("V1")
+#' append_child(trk, Gap(RationalTime(48, 24)))
+#' cl <- Clip("a", source_range = TimeRange(RationalTime(0, 24),
+#'                                          RationalTime(24, 24)))
+#' fill(cl, trk, RationalTime(0, 24))
+#' name(children(trk)[[1]])
 #' @export
 fill <- function(item, track, track_time, reference_point = "Source") {
     gap <- .child_at_time(track, track_time)

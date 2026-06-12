@@ -13,6 +13,13 @@ media_reference(x) <- value
 
 \item{value}{A media reference.}
 }
+\value{
+The clip's active media reference object.
+}
 \description{
 Active media reference of a clip
+}
+\examples{
+cl <- Clip("a", ExternalReference("a.mp4"))
+media_reference(cl)
 }

@@ -35,6 +35,8 @@
 #' matching OpenTimelineIO 0.18.1.
 #'
 #' @return A named integer vector.
+#' @examples
+#' type_version_map()["Clip"]
 #' @export
 type_version_map <- function() .TYPE_VERSION_MAP
 
@@ -45,6 +47,8 @@ type_version_map <- function() .TYPE_VERSION_MAP
 #'
 #' @param x An OTIO object.
 #' @return A character scalar.
+#' @examples
+#' schema_name(Clip("shot1"))
 #' @export
 schema_name <- function(x) {
     if (!is_otio(x) || is.null(x$OTIO_SCHEMA)) {
@@ -61,6 +65,8 @@ schema_name <- function(x) {
 #' Schema version of an OTIO object
 #' @param x An OTIO object.
 #' @return An integer.
+#' @examples
+#' schema_version(Clip("shot1"))
 #' @export
 schema_version <- function(x) {
     if (!is_otio(x) || is.null(x$OTIO_SCHEMA)) {
@@ -75,6 +81,9 @@ schema_version <- function(x) {
 #' (e.g. parsed from JSON written by a newer or third-party schema).
 #'
 #' @param x An OTIO object.
+#' @return A logical scalar.
+#' @examples
+#' is_unknown_schema(Timeline("demo"))
 #' @export
 is_unknown_schema <- function(x) {
     if (!is_otio(x) || is.null(x$OTIO_SCHEMA)) {
@@ -96,6 +105,8 @@ is_unknown_schema <- function(x) {
 #' @param fn Function of one argument (the field list) returning a field list.
 #' @return \code{TRUE} if registered; \code{FALSE} for an unknown schema or a
 #'   duplicate \code{(schema, version)} pair (matching RcppOTIO).
+#' @examples
+#' register_upgrade_function("Effect", 2, function(fields) fields)
 #' @export
 register_upgrade_function <- function(schema_name, version_to_upgrade_to, fn) {
     if (!is.function(fn)) {
@@ -136,6 +147,8 @@ register_upgrade_function <- function(schema_name, version_to_upgrade_to, fn) {
 #' @param fn Function of one argument (the field list) returning a field list.
 #' @return \code{TRUE} if registered; \code{FALSE} for an unknown schema or a
 #'   duplicate \code{(schema, version)} pair (matching RcppOTIO).
+#' @examples
+#' register_downgrade_function("Effect", 2, function(fields) fields)
 #' @export
 register_downgrade_function <- function(schema_name,
                                         version_to_downgrade_from, fn) {

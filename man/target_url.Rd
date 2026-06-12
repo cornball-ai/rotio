@@ -13,6 +13,15 @@ target_url(x) <- value
 
 \item{value}{New URL.}
 }
+\value{
+The target URL string, or \code{NULL} if the active reference has
+  no URL.
+}
 \description{
 Target URL of a clip or external reference
+}
+\examples{
+cl <- Clip("a", ExternalReference("a.mp4"))
+target_url(cl) <- "b.mp4"
+target_url(cl)
 }

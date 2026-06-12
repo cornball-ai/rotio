@@ -13,6 +13,13 @@ effect_name(x) <- value
 
 \item{value}{New effect_name.}
 }
+\value{
+The effect kind string; the setter returns \code{x}.
+}
 \description{
 Effect kind label
+}
+\examples{
+e <- Effect("blur", "GaussianBlur")
+effect_name(e)
 }

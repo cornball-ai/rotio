@@ -7,6 +7,8 @@
 #' @param available_range Optional \code{\link{TimeRange}}.
 #' @param metadata Named list of metadata.
 #' @return A \code{MediaReference}.
+#' @examples
+#' MediaReference("ref")
 #' @export
 MediaReference <- function(name = "", available_range = NULL, metadata = NULL) {
     .new_otio(c("MediaReference"),
@@ -27,6 +29,8 @@ MediaReference <- function(name = "", available_range = NULL, metadata = NULL) {
 #' @param parameters Named list of generator parameters.
 #' @param metadata Named list of metadata.
 #' @return A \code{GeneratorReference}.
+#' @examples
+#' GeneratorReference("bars", generator_kind = "SMPTEBars")
 #' @export
 GeneratorReference <- function(name = "", generator_kind = "",
                                available_range = NULL, parameters = NULL,
@@ -56,6 +60,9 @@ GeneratorReference <- function(name = "", generator_kind = "",
 #' @param available_range Optional \code{\link{TimeRange}}.
 #' @param metadata Named list of metadata.
 #' @return An \code{ImageSequenceReference}.
+#' @examples
+#' ImageSequenceReference("file:///frames", "frame.", ".exr",
+#'                        frame_zero_padding = 4, rate = 24)
 #' @export
 ImageSequenceReference <- function(target_url_base = "", name_prefix = "",
                                    name_suffix = "", start_frame = 1L,
@@ -90,6 +97,9 @@ ImageSequenceReference <- function(target_url_base = "", name_prefix = "",
 #' @param comment Free-text comment.
 #' @param metadata Named list of metadata.
 #' @return A \code{Marker}.
+#' @examples
+#' Marker("note", TimeRange(RationalTime(0, 30), RationalTime(30, 30)),
+#'        comment = "check color")
 #' @export
 Marker <- function(name = "", marked_range = NULL, color = "GREEN",
                    comment = "", metadata = NULL) {
@@ -114,6 +124,9 @@ Marker <- function(name = "", marked_range = NULL, color = "GREEN",
 #'   neighbouring clips.
 #' @param metadata Named list of metadata.
 #' @return A \code{Transition}.
+#' @examples
+#' Transition(transition_type = "SMPTE_Dissolve",
+#'            in_offset = RationalTime(5, 30), out_offset = RationalTime(5, 30))
 #' @export
 Transition <- function(name = "", transition_type = "",
                        in_offset = RationalTime(0, 1),
@@ -131,6 +144,9 @@ Transition <- function(name = "", transition_type = "",
 
 #' Is x a MissingReference?
 #' @param x Object to test.
+#' @return \code{TRUE} if \code{x} is a \code{MissingReference}, else \code{FALSE}.
+#' @examples
+#' is_missing_reference(MissingReference())
 #' @export
 is_missing_reference <- function(x) inherits(x, "MissingReference")
 
@@ -143,6 +159,12 @@ is_missing_reference <- function(x) inherits(x, "MissingReference")
 #'
 #' @param x A media reference or clip.
 #' @param value A \code{\link{TimeRange}} or \code{NULL}.
+#' @return A \code{\link{TimeRange}} (\code{NULL} for a media reference with none
+#'   set); the setter returns \code{x}.
+#' @examples
+#' ref <- ExternalReference("a.mp4",
+#'     available_range = TimeRange(RationalTime(0, 30), RationalTime(90, 30)))
+#' available_range(ref)
 #' @export
 available_range <- function(x) {
     if (inherits(x, "Clip")) {
@@ -209,6 +231,10 @@ available_range <- function(x) {
 #' Generator kind of a GeneratorReference
 #' @param x A \code{\link{GeneratorReference}}.
 #' @param value New generator kind.
+#' @return The generator kind string; the setter returns \code{x}.
+#' @examples
+#' g <- GeneratorReference("bars", generator_kind = "SMPTEBars")
+#' generator_kind(g)
 #' @export
 generator_kind <- function(x) x$generator_kind
 
@@ -222,6 +248,10 @@ generator_kind <- function(x) x$generator_kind
 #' Parameters of a GeneratorReference
 #' @param x A \code{\link{GeneratorReference}}.
 #' @param value A named list of parameters.
+#' @return A named list of generator parameters; the setter returns \code{x}.
+#' @examples
+#' g <- GeneratorReference("bars", parameters = list(width = 1920))
+#' parameters(g)
 #' @export
 parameters <- function(x) x$parameters
 
@@ -235,6 +265,10 @@ parameters <- function(x) x$parameters
 #' Marked range of a Marker
 #' @param x A \code{\link{Marker}}.
 #' @param value A \code{\link{TimeRange}}.
+#' @return The marker's \code{\link{TimeRange}}; the setter returns \code{x}.
+#' @examples
+#' m <- Marker("note", TimeRange(RationalTime(0, 30), RationalTime(30, 30)))
+#' marked_range(m)
 #' @export
 marked_range <- function(x) x$marked_range
 
@@ -248,6 +282,10 @@ marked_range <- function(x) x$marked_range
 #' Comment of a Marker
 #' @param x A \code{\link{Marker}}.
 #' @param value New comment.
+#' @return The comment string; the setter returns \code{x}.
+#' @examples
+#' m <- Marker("note", comment = "check color")
+#' comment(m)
 #' @export
 comment <- function(x) x$comment
 
@@ -261,6 +299,13 @@ comment <- function(x) x$comment
 #' Transition type / offsets
 #' @param x A \code{\link{Transition}}.
 #' @param value New value.
+#' @return \code{transition_type} returns a string, \code{in_offset} and
+#'   \code{out_offset} a \code{\link{RationalTime}}; setters return \code{x}.
+#' @examples
+#' tr <- Transition(transition_type = "SMPTE_Dissolve",
+#'                  in_offset = RationalTime(5, 30), out_offset = RationalTime(5, 30))
+#' transition_type(tr)
+#' in_offset(tr)
 #' @export
 transition_type <- function(x) x$transition_type
 
@@ -298,6 +343,12 @@ out_offset <- function(x) x$out_offset
 #' ImageSequenceReference fields
 #' @param x An \code{\link{ImageSequenceReference}}.
 #' @param value New value.
+#' @return The stored field value; the setter returns \code{x}.
+#' @examples
+#' isr <- ImageSequenceReference("file:///frames", "frame.", ".exr",
+#'                               frame_zero_padding = 4, rate = 24)
+#' target_url_base(isr)
+#' start_frame(isr)
 #' @export
 target_url_base <- function(x) x$target_url_base
 
@@ -330,6 +381,11 @@ frame_zero_padding <- function(x) x$frame_zero_padding
 
 #' Number of images in an ImageSequenceReference
 #' @param x An \code{\link{ImageSequenceReference}}.
+#' @return Integer count of images (0 if no available range is set).
+#' @examples
+#' isr <- ImageSequenceReference("file:///frames", "frame.", ".exr", rate = 24,
+#'     available_range = TimeRange(RationalTime(0, 24), RationalTime(48, 24)))
+#' number_of_images_in_sequence(isr)
 #' @export
 number_of_images_in_sequence <- function(x) {
     ar <- x$available_range
@@ -341,6 +397,11 @@ number_of_images_in_sequence <- function(x) {
 
 #' Last frame number of an ImageSequenceReference
 #' @param x An \code{\link{ImageSequenceReference}}.
+#' @return Integer frame number of the last image in the sequence.
+#' @examples
+#' isr <- ImageSequenceReference("file:///frames", "frame.", ".exr", rate = 24,
+#'     available_range = TimeRange(RationalTime(0, 24), RationalTime(48, 24)))
+#' end_frame(isr)
 #' @export
 end_frame <- function(x) {
     if (is.null(x$available_range)) {
@@ -358,6 +419,11 @@ end_frame <- function(x) {
 #'
 #' @param x An \code{\link{ImageSequenceReference}}.
 #' @param time A \code{\link{RationalTime}}.
+#' @return Integer frame number for \code{time}.
+#' @examples
+#' isr <- ImageSequenceReference("file:///frames", "frame.", ".exr", rate = 24,
+#'     available_range = TimeRange(RationalTime(0, 24), RationalTime(48, 24)))
+#' frame_for_time(isr, RationalTime(10, 24))
 #' @export
 frame_for_time <- function(x, time) {
     if (is.null(x$available_range) || !contains(x$available_range, time)) {
@@ -380,6 +446,11 @@ frame_for_time <- function(x, time) {
 #' Presentation time of the nth image (1-based)
 #' @param x An \code{\link{ImageSequenceReference}}.
 #' @param image_number 1-based image index.
+#' @return A \code{\link{RationalTime}} at the reference's rate.
+#' @examples
+#' isr <- ImageSequenceReference("file:///frames", "frame.", ".exr", rate = 24,
+#'     available_range = TimeRange(RationalTime(0, 24), RationalTime(48, 24)))
+#' presentation_time_for_image_number(isr, 2)
 #' @export
 presentation_time_for_image_number <- function(x, image_number) {
     .check_image_number(x, image_number)
@@ -390,6 +461,12 @@ presentation_time_for_image_number <- function(x, image_number) {
 #' Target URL of the nth image (1-based)
 #' @param x An \code{\link{ImageSequenceReference}}.
 #' @param image_number 1-based image index.
+#' @return The image URL as a string.
+#' @examples
+#' isr <- ImageSequenceReference("file:///frames", "frame.", ".exr",
+#'     frame_zero_padding = 4, rate = 24,
+#'     available_range = TimeRange(RationalTime(0, 24), RationalTime(48, 24)))
+#' target_url_for_image_number(isr, 1)
 #' @export
 target_url_for_image_number <- function(x, image_number) {
     .check_image_number(x, image_number)

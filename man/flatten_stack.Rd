@@ -18,3 +18,8 @@ and disabled items) with content from the tracks below, recursing downward.
 Transitions are preserved; a lower transition cut by a hole boundary errors
 with "Cannot trim in the middle of a transition" (matching OTIO).
 }
+\examples{
+trk <- add_child(Track("V1"), Clip("a",
+    source_range = TimeRange(RationalTime(0, 24), RationalTime(48, 24))))
+flatten_stack(list(trk))
+}

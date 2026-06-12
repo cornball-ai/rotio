@@ -69,6 +69,9 @@ FreezeFrame <- function(name = "", metadata = NULL) {
 
 #' Is x an Effect?
 #' @param x Object to test.
+#' @return \code{TRUE} if \code{x} is an \code{Effect}, else \code{FALSE}.
+#' @examples
+#' is_effect(Effect("blur", "GaussianBlur"))
 #' @export
 is_effect <- function(x) inherits(x, "Effect")
 
@@ -102,12 +105,19 @@ add_effect <- function(x, effect) {
 #' Effects of an item or composition
 #' @param x An item or composition.
 #' @return A list of \code{\link{Effect}} objects.
+#' @examples
+#' clip <- add_effect(Clip("a"), FreezeFrame())
+#' effects(clip)
 #' @export
 effects <- function(x) x$effects
 
 #' Effect kind label
 #' @param x An \code{\link{Effect}}.
 #' @param value New effect_name.
+#' @return The effect kind string; the setter returns \code{x}.
+#' @examples
+#' e <- Effect("blur", "GaussianBlur")
+#' effect_name(e)
 #' @export
 effect_name <- function(x) x$effect_name
 
@@ -121,6 +131,10 @@ effect_name <- function(x) x$effect_name
 #' Time scalar of a LinearTimeWarp
 #' @param x A \code{\link{LinearTimeWarp}}.
 #' @param value New time scalar.
+#' @return The numeric time scalar; the setter returns \code{x}.
+#' @examples
+#' w <- LinearTimeWarp(effect_name = "LinearTimeWarp", time_scalar = 2)
+#' time_scalar(w)
 #' @export
 time_scalar <- function(x) x$time_scalar
 

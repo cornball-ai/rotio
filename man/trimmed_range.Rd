@@ -15,3 +15,8 @@ A \code{\link{TimeRange}}.
 The item's \code{source_range} if set, else (for a clip) the active media
 reference's available range.
 }
+\examples{
+cl <- Clip("a",
+    source_range = TimeRange(RationalTime(0, 24), RationalTime(48, 24)))
+trimmed_range(cl)
+}

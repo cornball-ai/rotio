@@ -9,7 +9,8 @@ Authors@R: c(
            comment = c(ORCID = "0009-0005-4248-604X")),
     person("cornball.ai", role = "cph"))
 Description: A dependency-light 'OpenTimelineIO' (OTIO)
-    <https://opentimeline.io/> document layer in pure R. Provides
+    <https://github.com/AcademySoftwareFoundation/OpenTimelineIO>
+    document layer in pure R. Provides
     constructors for the OTIO object model (timelines, tracks, clips,
     gaps, media references, rational times and time ranges), functional
     builders that return new objects, and readers and writers for

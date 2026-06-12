@@ -1,8 +1,8 @@
 Package: rotio
 Type: Package
 Title: Pure-R 'OpenTimelineIO' Document Model
-Version: 0.0.2.31
-Date: 2026-06-06
+Version: 0.0.2.32
+Date: 2026-06-12
 Authors@R: c(
     person("Troy", "Hernandez", role = c("aut", "cre"),
            email = "troy@cornball.ai",

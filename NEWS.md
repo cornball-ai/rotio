@@ -1,3 +1,15 @@
+# rotio 0.0.2.32 (dev)
+
+* CRAN pre-submission pass: single-quote 'OpenTimelineIO' and add its URL in
+  DESCRIPTION, add URL/BugReports, fix the maintainer email, and declare
+  `Additional_repositories` (cornball-ai drat) so the suggested RcppOTIO
+  oracle is installable.
+* Every exported function now documents its return value and ships a small
+  runnable example.
+* Drop the local `%||%` definition in favour of base R's (new floor:
+  R >= 4.4.0).
+* Test harness redirects the R user cache/data/config dirs to tempfiles.
+
 # rotio 0.0.2.31
 
 * Renamed the package from nle.api to rotio. This pure-R OpenTimelineIO
